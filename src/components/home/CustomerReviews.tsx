@@ -1,7 +1,11 @@
 import { Star, Quote } from 'lucide-react';
-import { reviews } from '@/data/products';
+import { useReviews } from '@/hooks/useShopData';
 
 export function CustomerReviews() {
+  const { data: reviews = [], isLoading } = useReviews();
+
+  if (isLoading || reviews.length === 0) return null;
+
   return (
     <section className="section-padding bg-primary text-primary-foreground">
       <div className="container-shop">
@@ -13,7 +17,7 @@ export function CustomerReviews() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {reviews.map((review) => (
+          {reviews.slice(0, 3).map((review) => (
             <div
               key={review.id}
               className="bg-primary-foreground/5 backdrop-blur-sm rounded-xl p-6 border border-primary-foreground/10"
@@ -39,7 +43,7 @@ export function CustomerReviews() {
                   </div>
                 </div>
                 <p className="text-sm text-primary-foreground/50">
-                  {new Date(review.date).toLocaleDateString('en-US', {
+                  {new Date(review.created_at).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',

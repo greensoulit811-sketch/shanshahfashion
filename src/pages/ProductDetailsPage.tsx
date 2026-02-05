@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
-import { getProductBySlug, getRelatedProducts } from '@/data/products';
+import { useProduct, useRelatedProducts } from '@/hooks/useShopData';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -12,9 +12,27 @@ export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addItem } = useCart();
-  const product = slug ? getProductBySlug(slug) : undefined;
+  const { data: product, isLoading } = useProduct(slug || '');
+  const { data: relatedProducts = [] } = useRelatedProducts(product);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container-shop section-padding">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <div className="aspect-square rounded-2xl bg-muted animate-pulse" />
+            <div className="space-y-4">
+              <div className="h-8 bg-muted rounded animate-pulse w-3/4" />
+              <div className="h-6 bg-muted rounded animate-pulse w-1/2" />
+              <div className="h-24 bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -29,16 +47,15 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const relatedProducts = getRelatedProducts(product, 4);
-  const hasDiscount = product.salePrice && product.salePrice < product.price;
+  const hasDiscount = product.sale_price && product.sale_price < product.price;
 
   const handleAddToCart = () => {
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      salePrice: product.salePrice,
-      image: product.images[0],
+      salePrice: product.sale_price ?? undefined,
+      image: product.images[0] || '/placeholder.svg',
       quantity,
       stock: product.stock,
     });
@@ -52,8 +69,8 @@ export default function ProductDetailsPage() {
       id: product.id,
       name: product.name,
       price: product.price,
-      salePrice: product.salePrice,
-      image: product.images[0],
+      salePrice: product.sale_price ?? undefined,
+      image: product.images[0] || '/placeholder.svg',
       quantity,
       stock: product.stock,
     });
@@ -69,10 +86,14 @@ export default function ProductDetailsPage() {
           <ChevronRight className="h-4 w-4" />
           <Link to="/shop" className="hover:text-foreground">Shop</Link>
           <ChevronRight className="h-4 w-4" />
-          <Link to={`/category/${product.categorySlug}`} className="hover:text-foreground">
-            {product.category}
-          </Link>
-          <ChevronRight className="h-4 w-4" />
+          {product.category && (
+            <>
+              <Link to={`/category/${product.category.slug}`} className="hover:text-foreground">
+                {product.category.name}
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+            </>
+          )}
           <span className="text-foreground line-clamp-1">{product.name}</span>
         </nav>
 
@@ -82,7 +103,7 @@ export default function ProductDetailsPage() {
             {/* Main Image */}
             <div className="aspect-square rounded-2xl overflow-hidden bg-secondary">
               <img
-                src={product.images[selectedImage]}
+                src={product.images[selectedImage] || '/placeholder.svg'}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -115,7 +136,7 @@ export default function ProductDetailsPage() {
           <div className="space-y-6">
             <div>
               <p className="text-sm text-muted-foreground mb-2">
-                {product.category}
+                {product.category?.name || 'Uncategorized'}
               </p>
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 {product.name}
@@ -126,13 +147,13 @@ export default function ProductDetailsPage() {
                 {hasDiscount ? (
                   <>
                     <span className="text-3xl font-bold text-accent">
-                      ${product.salePrice?.toFixed(2)}
+                      ${product.sale_price?.toFixed(2)}
                     </span>
                     <span className="text-xl text-muted-foreground line-through">
                       ${product.price.toFixed(2)}
                     </span>
                     <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
-                      Save ${(product.price - product.salePrice!).toFixed(2)}
+                      Save ${(product.price - product.sale_price!).toFixed(2)}
                     </span>
                   </>
                 ) : (
@@ -159,7 +180,9 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Short Description */}
-            <p className="text-muted-foreground">{product.shortDescription}</p>
+            {product.short_description && (
+              <p className="text-muted-foreground">{product.short_description}</p>
+            )}
 
             {/* Quantity */}
             <div>
@@ -216,12 +239,14 @@ export default function ProductDetailsPage() {
             </p>
 
             {/* Description */}
-            <div className="pt-6 border-t border-border">
-              <h3 className="font-semibold mb-3">Description</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
-            </div>
+            {product.description && (
+              <div className="pt-6 border-t border-border">
+                <h3 className="font-semibold mb-3">Description</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

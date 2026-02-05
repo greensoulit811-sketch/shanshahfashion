@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
-import { products, categories } from '@/data/products';
+import { useProducts, useCategories } from '@/hooks/useShopData';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -21,6 +21,9 @@ export default function ShopPage() {
   const [sortBy, setSortBy] = useState<string>('newest');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
 
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
@@ -29,47 +32,52 @@ export default function ShopPage() {
       filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase())
+          (p.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
       );
     }
 
     // Category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter((p) => p.categorySlug === selectedCategory);
+      const category = categories.find(c => c.slug === selectedCategory);
+      if (category) {
+        filtered = filtered.filter((p) => p.category_id === category.id);
+      }
     }
 
     // Price filter
     filtered = filtered.filter((p) => {
-      const price = p.salePrice ?? p.price;
+      const price = p.sale_price ?? p.price;
       return price >= priceRange[0] && price <= priceRange[1];
     });
 
     // URL params filter
     const filter = searchParams.get('filter');
     if (filter === 'new') {
-      filtered = filtered.filter((p) => p.isNew);
+      filtered = filtered.filter((p) => p.is_new);
     } else if (filter === 'bestsellers') {
-      filtered = filtered.filter((p) => p.isBestSeller);
+      filtered = filtered.filter((p) => p.is_best_seller);
     } else if (filter === 'sale') {
-      filtered = filtered.filter((p) => p.salePrice);
+      filtered = filtered.filter((p) => p.sale_price);
     }
 
     // Sort
     switch (sortBy) {
       case 'price-low':
-        filtered.sort((a, b) => (a.salePrice ?? a.price) - (b.salePrice ?? b.price));
+        filtered.sort((a, b) => (a.sale_price ?? a.price) - (b.sale_price ?? b.price));
         break;
       case 'price-high':
-        filtered.sort((a, b) => (b.salePrice ?? b.price) - (a.salePrice ?? a.price));
+        filtered.sort((a, b) => (b.sale_price ?? b.price) - (a.sale_price ?? a.price));
         break;
       case 'newest':
       default:
-        filtered.sort((a, b) => (a.isNew ? -1 : 1));
+        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         break;
     }
 
     return filtered;
-  }, [searchQuery, selectedCategory, sortBy, priceRange, searchParams]);
+  }, [searchQuery, selectedCategory, sortBy, priceRange, searchParams, products, categories]);
+
+  const isLoading = productsLoading || categoriesLoading;
 
   const FilterContent = () => (
     <div className="space-y-6">
@@ -148,7 +156,7 @@ export default function ShopPage() {
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Shop</h1>
           <p className="text-muted-foreground">
-            {filteredProducts.length} products found
+            {isLoading ? 'Loading...' : `${filteredProducts.length} products found`}
           </p>
         </div>
 
@@ -216,7 +224,13 @@ export default function ShopPage() {
             </div>
 
             {/* Products Grid */}
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
+              <div className="product-grid">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className="aspect-product rounded-xl bg-muted animate-pulse" />
+                ))}
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className="product-grid">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />

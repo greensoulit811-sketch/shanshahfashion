@@ -1,12 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Zap } from 'lucide-react';
-import { Product } from '@/data/products';
+import { Product, Category } from '@/hooks/useShopData';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
-  product: Product;
+  product: Product & { category?: Category | null };
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -20,8 +20,8 @@ export function ProductCard({ product }: ProductCardProps) {
       id: product.id,
       name: product.name,
       price: product.price,
-      salePrice: product.salePrice,
-      image: product.images[0],
+      salePrice: product.sale_price ?? undefined,
+      image: product.images[0] || '/placeholder.svg',
       quantity: 1,
       stock: product.stock,
     });
@@ -37,17 +37,17 @@ export function ProductCard({ product }: ProductCardProps) {
       id: product.id,
       name: product.name,
       price: product.price,
-      salePrice: product.salePrice,
-      image: product.images[0],
+      salePrice: product.sale_price ?? undefined,
+      image: product.images[0] || '/placeholder.svg',
       quantity: 1,
       stock: product.stock,
     });
     navigate('/checkout?mode=buynow');
   };
 
-  const hasDiscount = product.salePrice && product.salePrice < product.price;
+  const hasDiscount = product.sale_price && product.sale_price < product.price;
   const discountPercent = hasDiscount
-    ? Math.round((1 - product.salePrice! / product.price) * 100)
+    ? Math.round((1 - product.sale_price! / product.price) * 100)
     : 0;
 
   return (
@@ -56,14 +56,14 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Image */}
         <div className="relative aspect-product overflow-hidden bg-secondary">
           <img
-            src={product.images[0]}
+            src={product.images[0] || '/placeholder.svg'}
             alt={product.name}
             className="product-image-zoom w-full h-full object-cover"
           />
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.isNew && (
+            {product.is_new && (
               <span className="badge-new px-2 py-1 text-xs font-semibold rounded">
                 NEW
               </span>
@@ -99,7 +99,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Content */}
         <div className="p-4">
-          <p className="text-xs text-muted-foreground mb-1">{product.category}</p>
+          <p className="text-xs text-muted-foreground mb-1">
+            {product.category?.name || 'Uncategorized'}
+          </p>
           <h3 className="font-medium text-sm md:text-base line-clamp-2 mb-2 group-hover:text-accent transition-colors">
             {product.name}
           </h3>
@@ -107,7 +109,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {hasDiscount ? (
               <>
                 <span className="font-bold text-accent">
-                  ${product.salePrice?.toFixed(2)}
+                  ${product.sale_price?.toFixed(2)}
                 </span>
                 <span className="text-sm text-muted-foreground line-through">
                   ${product.price.toFixed(2)}

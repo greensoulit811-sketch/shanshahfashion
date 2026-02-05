@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useCreateOrder } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { items, subtotal, clearCart } = useCart();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const createOrder = useCreateOrder();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -22,12 +24,12 @@ export default function CheckoutPage() {
     paymentMethod: 'cod',
   });
 
-  const shippingCosts = {
+  const shippingCosts: Record<string, number> = {
     'inside-dhaka': 60,
     'outside-dhaka': 120,
   };
 
-  const shippingCost = shippingCosts[formData.shippingMethod as keyof typeof shippingCosts];
+  const shippingCost = shippingCosts[formData.shippingMethod] || 60;
   const total = subtotal + shippingCost;
 
   const handleChange = (
@@ -49,16 +51,40 @@ export default function CheckoutPage() {
       return;
     }
 
-    setIsSubmitting(true);
+    const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
 
-    // Simulate order creation
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      await createOrder.mutateAsync({
+        order: {
+          order_number: orderNumber,
+          user_id: user?.id || null,
+          customer_name: formData.fullName,
+          customer_phone: formData.phone,
+          customer_email: formData.email || null,
+          shipping_address: formData.address,
+          shipping_city: formData.city,
+          shipping_method: formData.shippingMethod,
+          shipping_cost: shippingCost,
+          payment_method: formData.paymentMethod,
+          subtotal,
+          total,
+          status: 'pending',
+          notes: formData.notes || null,
+        },
+        items: items.map((item) => ({
+          product_id: item.id,
+          product_name: item.name,
+          product_image: item.image,
+          quantity: item.quantity,
+          price: item.salePrice ?? item.price,
+        })),
+      });
 
-    const orderId = `ORD-${Date.now().toString().slice(-8)}`;
-
-    // Clear cart and navigate to success page
-    clearCart();
-    navigate(`/order-success?orderId=${orderId}`);
+      clearCart();
+      navigate(`/order-success?orderId=${orderNumber}`);
+    } catch (error) {
+      // Error is handled by the mutation
+    }
   };
 
   if (items.length === 0) {
@@ -306,9 +332,9 @@ export default function CheckoutPage() {
                   type="submit"
                   size="lg"
                   className="btn-accent w-full"
-                  disabled={isSubmitting}
+                  disabled={createOrder.isPending}
                 >
-                  {isSubmitting ? 'Processing...' : 'Place Order'}
+                  {createOrder.isPending ? 'Processing...' : 'Place Order'}
                 </Button>
               </div>
             </div>
