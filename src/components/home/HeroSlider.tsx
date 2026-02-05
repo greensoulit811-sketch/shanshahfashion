@@ -1,29 +1,53 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { sliderSlides } from '@/data/products';
+import { useSliderSlides } from '@/hooks/useShopData';
 import { Button } from '@/components/ui/button';
 
 export function HeroSlider() {
+  const { data: slides = [], isLoading } = useSliderSlides();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % sliderSlides.length);
-  }, []);
+    if (slides.length === 0) return;
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + sliderSlides.length) % sliderSlides.length);
+    if (slides.length === 0) return;
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   useEffect(() => {
+    if (slides.length === 0) return;
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
-  }, [nextSlide]);
+  }, [nextSlide, slides.length]);
+
+  if (isLoading) {
+    return (
+      <section className="relative overflow-hidden bg-secondary h-[60vh] md:h-[70vh] lg:h-[80vh]">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
+        </div>
+      </section>
+    );
+  }
+
+  if (slides.length === 0) {
+    return (
+      <section className="relative overflow-hidden bg-secondary h-[60vh] md:h-[70vh] lg:h-[80vh]">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-muted-foreground">No slides configured</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative overflow-hidden bg-secondary">
       <div className="relative h-[60vh] md:h-[70vh] lg:h-[80vh]">
-        {sliderSlides.map((slide, index) => (
+        {slides.map((slide, index) => (
           <div
             key={slide.id}
             className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
@@ -49,9 +73,9 @@ export function HeroSlider() {
                 <p className="text-lg md:text-xl text-white/90 mb-8">
                   {slide.text}
                 </p>
-                <Link to={slide.ctaLink}>
+                <Link to={slide.cta_link}>
                   <Button size="lg" className="btn-accent text-base px-8">
-                    {slide.ctaText}
+                    {slide.cta_text}
                   </Button>
                 </Link>
               </div>
@@ -78,7 +102,7 @@ export function HeroSlider() {
 
       {/* Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {sliderSlides.map((_, index) => (
+        {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}

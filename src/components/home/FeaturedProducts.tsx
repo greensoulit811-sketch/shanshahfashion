@@ -1,10 +1,32 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { getFeaturedProducts } from '@/data/products';
+import { useFeaturedProducts } from '@/hooks/useShopData';
 import { ProductCard } from '@/components/products/ProductCard';
 
 export function FeaturedProducts() {
-  const products = getFeaturedProducts();
+  const { data: products = [], isLoading } = useFeaturedProducts();
+
+  if (isLoading) {
+    return (
+      <section className="section-padding bg-secondary/50">
+        <div className="container-shop">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold">Featured Products</h2>
+              <p className="text-muted-foreground mt-1">Handpicked just for you</p>
+            </div>
+          </div>
+          <div className="product-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-product rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) return null;
 
   return (
     <section className="section-padding bg-secondary/50">
@@ -12,9 +34,7 @@ export function FeaturedProducts() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">Featured Products</h2>
-            <p className="text-muted-foreground mt-1">
-              Handpicked just for you
-            </p>
+            <p className="text-muted-foreground mt-1">Handpicked just for you</p>
           </div>
           <Link
             to="/shop"

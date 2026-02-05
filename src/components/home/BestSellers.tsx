@@ -1,10 +1,32 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { getBestSellers } from '@/data/products';
+import { useBestSellers } from '@/hooks/useShopData';
 import { ProductCard } from '@/components/products/ProductCard';
 
 export function BestSellers() {
-  const products = getBestSellers();
+  const { data: products = [], isLoading } = useBestSellers();
+
+  if (isLoading) {
+    return (
+      <section className="section-padding">
+        <div className="container-shop">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold">Best Sellers</h2>
+              <p className="text-muted-foreground mt-1">Customer favorites this month</p>
+            </div>
+          </div>
+          <div className="product-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-product rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) return null;
 
   return (
     <section className="section-padding">
@@ -12,9 +34,7 @@ export function BestSellers() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">Best Sellers</h2>
-            <p className="text-muted-foreground mt-1">
-              Customer favorites this month
-            </p>
+            <p className="text-muted-foreground mt-1">Customer favorites this month</p>
           </div>
           <Link
             to="/shop?filter=bestsellers"

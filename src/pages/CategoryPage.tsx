@@ -2,12 +2,29 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
-import { getCategoryBySlug, getProductsByCategory } from '@/data/products';
+import { useCategory, useProductsByCategory } from '@/hooks/useShopData';
 
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>();
-  const category = slug ? getCategoryBySlug(slug) : undefined;
-  const products = slug ? getProductsByCategory(slug) : [];
+  const { data: category, isLoading: categoryLoading } = useCategory(slug || '');
+  const { data: products = [], isLoading: productsLoading } = useProductsByCategory(slug || '');
+
+  const isLoading = categoryLoading || productsLoading;
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="h-48 md:h-64 bg-muted animate-pulse" />
+        <div className="container-shop section-padding">
+          <div className="product-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-product rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!category) {
     return (
