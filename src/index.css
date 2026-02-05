@@ -245,7 +245,7 @@
 
   /* Category card */
   .category-card {
-    @apply relative overflow-hidden rounded-xl aspect-square group cursor-pointer;
+    @apply relative overflow-hidden rounded-xl aspect-square cursor-pointer;
   }
 
   .category-card::after {
