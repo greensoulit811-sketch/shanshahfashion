@@ -1,0 +1,42 @@
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { getFeaturedProducts } from '@/data/products';
+import { ProductCard } from '@/components/products/ProductCard';
+
+export function FeaturedProducts() {
+  const products = getFeaturedProducts();
+
+  return (
+    <section className="section-padding bg-secondary/50">
+      <div className="container-shop">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold">Featured Products</h2>
+            <p className="text-muted-foreground mt-1">
+              Handpicked just for you
+            </p>
+          </div>
+          <Link
+            to="/shop"
+            className="hidden sm:flex items-center gap-2 text-sm font-medium text-accent hover:underline"
+          >
+            View All <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="product-grid">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+
+        <Link
+          to="/shop"
+          className="mt-8 flex sm:hidden items-center justify-center gap-2 text-sm font-medium text-accent hover:underline"
+        >
+          View All Products <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </section>
+  );
+}
