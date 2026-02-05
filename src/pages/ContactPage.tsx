@@ -1,0 +1,156 @@
+import { useState } from 'react';
+import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
+import { Layout } from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+
+export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success('Message sent!', {
+      description: "We'll get back to you within 24 hours.",
+    });
+    setFormData({ name: '', email: '', subject: '', message: '' });
+  };
+
+  return (
+    <Layout>
+      <div className="container-shop section-padding">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Contact Us</h1>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Have a question or need help? We're here for you. Reach out and
+              we'll get back to you as soon as possible.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-card rounded-xl border border-border p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <Phone className="h-5 w-5 text-accent" />
+              </div>
+              <h3 className="font-semibold mb-2">Phone</h3>
+              <p className="text-muted-foreground">+880 1234 567890</p>
+            </div>
+            <div className="bg-card rounded-xl border border-border p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <Mail className="h-5 w-5 text-accent" />
+              </div>
+              <h3 className="font-semibold mb-2">Email</h3>
+              <p className="text-muted-foreground">hello@store.com</p>
+            </div>
+            <div className="bg-card rounded-xl border border-border p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-5 w-5 text-accent" />
+              </div>
+              <h3 className="font-semibold mb-2">Hours</h3>
+              <p className="text-muted-foreground">Sat–Thu: 10am–8pm</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Contact Form */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-xl font-semibold mb-6">Send us a message</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="input-shop"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="input-shop"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Subject
+                  </label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className="input-shop"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Message
+                  </label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    className="input-shop min-h-[150px]"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="btn-accent w-full">
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Message
+                </Button>
+              </form>
+            </div>
+
+            {/* Map/Address */}
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="h-64 bg-secondary">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233668.38703692678!2d90.27923994863282!3d23.780573258035967!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka!5e0!3m2!1sen!2sbd!4v1706601234567!5m2!1sen!2sbd"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-accent mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold mb-1">Our Location</h3>
+                    <p className="text-muted-foreground">
+                      123 Store Street, Gulshan-1
+                      <br />
+                      Dhaka 1212, Bangladesh
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}
