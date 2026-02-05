@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check, Loader2 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
+import { VariantSelector } from '@/components/products/VariantSelector';
+import { WishlistButton } from '@/components/products/WishlistButton';
 import { useProduct, useRelatedProducts } from '@/hooks/useShopData';
+import { useProductVariants, ProductVariant } from '@/hooks/useVariants';
 import { useCart } from '@/contexts/CartContext';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
@@ -18,10 +21,12 @@ export default function ProductDetailsPage() {
   const { t, formatCurrency, settings } = useSiteSettings();
   const { data: product, isLoading } = useProduct(slug || '');
   const { data: relatedProducts = [] } = useRelatedProducts(product);
+  const { data: variants = [] } = useProductVariants(product?.id || '');
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const isMobile = useIsMobile();
 
   // Track ViewContent when product loads
@@ -35,6 +40,26 @@ export default function ProductDetailsPage() {
       });
     }
   }, [product, settings.currency_code]);
+
+  // Auto-select first available variant
+  useEffect(() => {
+    if (variants.length > 0 && !selectedVariant) {
+      const availableVariant = variants.find(v => v.is_active && v.stock > 0);
+      if (availableVariant) setSelectedVariant(availableVariant);
+    }
+  }, [variants, selectedVariant]);
+
+  // Calculate effective price and stock based on selected variant
+  const effectivePrice = useMemo(() => {
+    if (selectedVariant) {
+      const basePrice = product?.sale_price || product?.price || 0;
+      return basePrice + (selectedVariant.price_adjustment || 0);
+    }
+    return product?.sale_price || product?.price || 0;
+  }, [product, selectedVariant]);
+
+  const effectiveStock = selectedVariant?.stock ?? product?.stock ?? 0;
+  const hasVariants = variants.length > 0;
 
   if (isLoading) {
     return (
@@ -69,26 +94,39 @@ export default function ProductDetailsPage() {
   const hasDiscount = product.sale_price && product.sale_price < product.price;
 
   const handleAddToCart = async () => {
+    if (hasVariants && !selectedVariant) {
+      toast.error('Please select size/color');
+      return;
+    }
+    
     setIsAddingToCart(true);
     
     // Brief delay for visual feedback
     await new Promise(resolve => setTimeout(resolve, 300));
     
     addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      salePrice: product.sale_price ?? undefined,
+      id: selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id,
+      name: selectedVariant
+        ? `${product.name} (${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')})`
+        : product.name,
+      price: product.price + (selectedVariant?.price_adjustment || 0),
+      salePrice: product.sale_price
+        ? product.sale_price + (selectedVariant?.price_adjustment || 0)
+        : undefined,
       image: product.images[0] || '/placeholder.svg',
       quantity,
-      stock: product.stock,
-    });
+      stock: effectiveStock,
+      variantId: selectedVariant?.id,
+      variantInfo: selectedVariant
+        ? { size: selectedVariant.size, color: selectedVariant.color }
+        : undefined,
+    } as any);
     
     // Track AddToCart event
     trackAddToCart({
       contentId: product.id,
       contentName: product.name,
-      value: (product.sale_price || product.price) * quantity,
+      value: effectivePrice * quantity,
       currency: settings.currency_code,
       quantity,
     });
@@ -101,23 +139,36 @@ export default function ProductDetailsPage() {
   };
 
   const handleBuyNow = async () => {
+    if (hasVariants && !selectedVariant) {
+      toast.error('Please select size/color');
+      return;
+    }
+    
     setIsBuyingNow(true);
     
     addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      salePrice: product.sale_price ?? undefined,
+      id: selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id,
+      name: selectedVariant
+        ? `${product.name} (${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')})`
+        : product.name,
+      price: product.price + (selectedVariant?.price_adjustment || 0),
+      salePrice: product.sale_price
+        ? product.sale_price + (selectedVariant?.price_adjustment || 0)
+        : undefined,
       image: product.images[0] || '/placeholder.svg',
       quantity,
-      stock: product.stock,
-    });
+      stock: effectiveStock,
+      variantId: selectedVariant?.id,
+      variantInfo: selectedVariant
+        ? { size: selectedVariant.size, color: selectedVariant.color }
+        : undefined,
+    } as any);
     
     // Track AddToCart event for buy now as well
     trackAddToCart({
       contentId: product.id,
       contentName: product.name,
-      value: (product.sale_price || product.price) * quantity,
+      value: effectivePrice * quantity,
       currency: settings.currency_code,
       quantity,
     });
@@ -183,22 +234,27 @@ export default function ProductDetailsPage() {
           {/* Details */}
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-muted-foreground mb-2">
-                {product.category?.name || t('product.uncategorized')}
-              </p>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                {product.name}
-              </h1>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {product.category?.name || t('product.uncategorized')}
+                  </p>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                    {product.name}
+                  </h1>
+                </div>
+                <WishlistButton productId={product.id} size="md" />
+              </div>
 
               {/* Price */}
               <div className="flex items-center gap-3">
                 {hasDiscount ? (
                   <>
                     <span className="text-3xl font-bold text-accent">
-                      {formatCurrency(product.sale_price!)}
+                      {formatCurrency(effectivePrice)}
                     </span>
                     <span className="text-xl text-muted-foreground line-through">
-                      {formatCurrency(product.price)}
+                      {formatCurrency(product.price + (selectedVariant?.price_adjustment || 0))}
                     </span>
                     <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
                       Save {formatCurrency(product.price - product.sale_price!)}
@@ -206,20 +262,29 @@ export default function ProductDetailsPage() {
                   </>
                 ) : (
                   <span className="text-3xl font-bold">
-                    {formatCurrency(product.price)}
+                    {formatCurrency(effectivePrice)}
                   </span>
                 )}
               </div>
             </div>
 
+            {/* Variant Selector */}
+            {hasVariants && (
+              <VariantSelector
+                variants={variants.filter(v => v.is_active)}
+                selectedVariant={selectedVariant}
+                onSelect={setSelectedVariant}
+              />
+            )}
+
             {/* Stock */}
             <div className="flex items-center gap-2">
-              {product.stock > 0 ? (
+              {effectiveStock > 0 ? (
                 <>
                   <Check className="h-4 w-4 text-success" />
                   <span className="text-success font-medium">{t('product.inStock')}</span>
                   <span className="text-muted-foreground">
-                    ({product.stock} available)
+                    ({effectiveStock} available)
                   </span>
                 </>
               ) : (
@@ -250,8 +315,8 @@ export default function ProductDetailsPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  disabled={quantity >= product.stock}
+                  onClick={() => setQuantity(Math.min(effectiveStock, quantity + 1))}
+                  disabled={quantity >= effectiveStock}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -265,7 +330,7 @@ export default function ProductDetailsPage() {
                 variant="outline"
                 className="flex-1"
                 onClick={handleAddToCart}
-                disabled={isAddingToCart || product.stock === 0}
+                disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               >
                 {isAddingToCart ? (
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -278,7 +343,7 @@ export default function ProductDetailsPage() {
                 size="lg"
                 className="btn-accent flex-1"
                 onClick={handleBuyNow}
-                disabled={isBuyingNow || product.stock === 0}
+                disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               >
                 {isBuyingNow ? (
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -327,7 +392,7 @@ export default function ProductDetailsPage() {
               variant="outline"
               className="flex-1 h-14 text-sm font-medium"
               onClick={handleAddToCart}
-              disabled={isAddingToCart || product.stock === 0}
+              disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.addToCart')}
             >
               {isAddingToCart ? (
@@ -340,7 +405,7 @@ export default function ProductDetailsPage() {
             <Button
               className="btn-accent flex-1 h-14 text-sm font-medium"
               onClick={handleBuyNow}
-              disabled={isBuyingNow || product.stock === 0}
+              disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.buyNow')}
             >
               {isBuyingNow ? (

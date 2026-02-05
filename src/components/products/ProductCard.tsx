@@ -5,6 +5,7 @@ import { Product, Category } from '@/hooks/useShopData';
 import { useCart } from '@/contexts/CartContext';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
+import { WishlistButton } from '@/components/products/WishlistButton';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
@@ -88,6 +89,11 @@ export function ProductCard({ product }: ProductCardProps) {
                 -{discountPercent}%
               </span>
             )}
+          </div>
+          
+          {/* Wishlist Button */}
+          <div className="absolute top-2 right-2 z-10">
+            <WishlistButton productId={product.id} size="sm" className="bg-background/80 backdrop-blur-sm" />
           </div>
         </div>
 
