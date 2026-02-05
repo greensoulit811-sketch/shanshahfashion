@@ -33,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { MultiImageUpload } from '@/components/admin/ImageUpload';
 
 const generateSlug = (name: string) => {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -60,7 +61,7 @@ export default function AdminProducts() {
     sku: '',
     short_description: '',
     description: '',
-    images: '',
+    images: [] as string[],
     is_new: false,
     is_best_seller: false,
     is_featured: false,
@@ -85,7 +86,7 @@ export default function AdminProducts() {
       sku: product.sku,
       short_description: product.short_description || '',
       description: product.description || '',
-      images: product.images.join('\n'),
+      images: product.images || [],
       is_new: product.is_new || false,
       is_best_seller: product.is_best_seller || false,
       is_featured: product.is_featured || false,
@@ -103,6 +104,11 @@ export default function AdminProducts() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (formData.images.length === 0) {
+      toast.error('Please add at least one image');
+      return;
+    }
+
     const productData = {
       name: formData.name,
       slug: formData.slug,
@@ -113,7 +119,7 @@ export default function AdminProducts() {
       sku: formData.sku,
       short_description: formData.short_description || null,
       description: formData.description || null,
-      images: formData.images.split('\n').filter(Boolean),
+      images: formData.images,
       is_new: formData.is_new,
       is_best_seller: formData.is_best_seller,
       is_featured: formData.is_featured,
@@ -144,7 +150,7 @@ export default function AdminProducts() {
       sku: '',
       short_description: '',
       description: '',
-      images: '',
+      images: [],
       is_new: false,
       is_best_seller: false,
       is_featured: false,
@@ -291,14 +297,13 @@ export default function AdminProducts() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Image URLs (one per line) *
+                  Product Images *
                 </label>
-                <textarea
-                  value={formData.images}
-                  onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                  className="input-shop min-h-[80px]"
-                  placeholder="https://example.com/image1.jpg"
-                  required
+                <MultiImageUpload
+                  values={formData.images}
+                  onChange={(urls) => setFormData({ ...formData, images: urls })}
+                  folder="products"
+                  maxImages={5}
                 />
               </div>
               <div className="flex flex-wrap gap-4">

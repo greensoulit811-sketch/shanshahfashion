@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ImageUpload } from '@/components/admin/ImageUpload';
 
 const generateSlug = (name: string) => {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -143,13 +144,11 @@ export default function AdminCategories() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Image URL *</label>
-                <input
-                  type="url"
+                <label className="block text-sm font-medium mb-2">Image *</label>
+                <ImageUpload
                   value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="input-shop"
-                  required
+                  onChange={(url) => setFormData({ ...formData, image: url })}
+                  folder="categories"
                 />
               </div>
               <div className="flex gap-3 pt-4">
