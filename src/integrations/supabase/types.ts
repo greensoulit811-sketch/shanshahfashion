@@ -462,6 +462,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shipping_methods: {
+        Row: {
+          base_rate: number
+          created_at: string
+          description: string | null
+          estimated_days: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          base_rate?: number
+          created_at?: string
+          description?: string | null
+          estimated_days?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          base_rate?: number
+          created_at?: string
+          description?: string | null
+          estimated_days?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           cookie_consent_enabled: boolean

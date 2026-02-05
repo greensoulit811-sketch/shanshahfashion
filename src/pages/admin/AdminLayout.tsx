@@ -41,6 +41,7 @@ export default function AdminLayout() {
     { name: t('admin.slider'), href: '/admin/slider', icon: Image },
     { name: 'Coupons', href: '/admin/coupons', icon: Tag },
     { name: 'Shipping Zones', href: '/admin/shipping', icon: MapPin },
+    { name: 'Shipping Methods', href: '/admin/shipping-methods', icon: Truck },
     { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
     { name: 'Courier', href: '/admin/courier', icon: Truck },
     { name: t('admin.settings'), href: '/admin/settings', icon: Settings },
