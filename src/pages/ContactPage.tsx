@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 
 export default function ContactPage() {
+  const { t } = useSiteSettings();
+  const { data: storeSettings, isLoading } = useStoreSettings();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -26,12 +31,20 @@ export default function ContactPage() {
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
+  const storePhone = storeSettings?.store_phone || '';
+  const storeEmail = storeSettings?.store_email || '';
+  const storeAddress = storeSettings?.store_address || '';
+  const storeCity = storeSettings?.store_city || '';
+  const whatsappNumber = storeSettings?.whatsapp_number || '';
+
+  const fullAddress = [storeAddress, storeCity].filter(Boolean).join(', ');
+
   return (
     <Layout>
       <div className="container-shop section-padding">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">Contact Us</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('nav.contact')}</h1>
             <p className="text-muted-foreground max-w-xl mx-auto">
               Have a question or need help? We're here for you. Reach out and
               we'll get back to you as soon as possible.
@@ -43,15 +56,27 @@ export default function ContactPage() {
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
                 <Phone className="h-5 w-5 text-accent" />
               </div>
-              <h3 className="font-semibold mb-2">Phone</h3>
-              <p className="text-muted-foreground">+880 1234 567890</p>
+              <h3 className="font-semibold mb-2">{t('checkout.phone')}</h3>
+              {storePhone ? (
+                <a href={`tel:${storePhone}`} className="text-muted-foreground hover:text-foreground">
+                  {storePhone}
+                </a>
+              ) : (
+                <p className="text-muted-foreground/50 italic">Not configured</p>
+              )}
             </div>
             <div className="bg-card rounded-xl border border-border p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
                 <Mail className="h-5 w-5 text-accent" />
               </div>
-              <h3 className="font-semibold mb-2">Email</h3>
-              <p className="text-muted-foreground">hello@store.com</p>
+              <h3 className="font-semibold mb-2">{t('checkout.email')}</h3>
+              {storeEmail ? (
+                <a href={`mailto:${storeEmail}`} className="text-muted-foreground hover:text-foreground">
+                  {storeEmail}
+                </a>
+              ) : (
+                <p className="text-muted-foreground/50 italic">Not configured</p>
+              )}
             </div>
             <div className="bg-card rounded-xl border border-border p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
@@ -62,13 +87,28 @@ export default function ContactPage() {
             </div>
           </div>
 
+          {/* WhatsApp CTA */}
+          {whatsappNumber && (
+            <div className="mb-8">
+              <a
+                href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-3 w-full py-4 px-6 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Chat with us on WhatsApp
+              </a>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Contact Form */}
             <div className="bg-card rounded-xl border border-border p-6">
               <h2 className="text-xl font-semibold mb-6">Send us a message</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <label className="block text-sm font-medium mb-2">{t('checkout.name')}</label>
                   <input
                     type="text"
                     name="name"
@@ -79,7 +119,7 @@ export default function ContactPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <label className="block text-sm font-medium mb-2">{t('checkout.email')}</label>
                   <input
                     type="email"
                     name="email"
@@ -139,11 +179,11 @@ export default function ContactPage() {
                   <MapPin className="h-5 w-5 text-accent mt-0.5" />
                   <div>
                     <h3 className="font-semibold mb-1">Our Location</h3>
-                    <p className="text-muted-foreground">
-                      123 Store Street, Gulshan-1
-                      <br />
-                      Dhaka 1212, Bangladesh
-                    </p>
+                    {fullAddress ? (
+                      <p className="text-muted-foreground">{fullAddress}</p>
+                    ) : (
+                      <p className="text-muted-foreground/50 italic">Address not configured</p>
+                    )}
                   </div>
                 </div>
               </div>

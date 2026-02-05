@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface StoreSettings {
   store_name: string;
@@ -35,9 +36,11 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   footer_text: '',
 };
 
+export const STORE_SETTINGS_QUERY_KEY = ['store-settings'];
+
 export function useStoreSettings() {
   return useQuery({
-    queryKey: ['store-settings'],
+    queryKey: STORE_SETTINGS_QUERY_KEY,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('store_settings')
@@ -55,7 +58,8 @@ export function useStoreSettings() {
 
       return settings;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds - much shorter for faster updates
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -82,7 +86,20 @@ export function useUpdateStoreSettings() {
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['store-settings'] });
+      // Immediately invalidate and refetch store settings
+      queryClient.invalidateQueries({ queryKey: STORE_SETTINGS_QUERY_KEY });
+      // Also refetch to ensure immediate update
+      queryClient.refetchQueries({ queryKey: STORE_SETTINGS_QUERY_KEY });
     },
   });
+}
+
+// Hook for manually refreshing store settings
+export function useRefreshStoreSettings() {
+  const queryClient = useQueryClient();
+  
+  return () => {
+    queryClient.invalidateQueries({ queryKey: STORE_SETTINGS_QUERY_KEY });
+    queryClient.refetchQueries({ queryKey: STORE_SETTINGS_QUERY_KEY });
+  };
 }
