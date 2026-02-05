@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Zap } from 'lucide-react';
 import { Product, Category } from '@/hooks/useShopData';
 import { useCart } from '@/contexts/CartContext';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -11,6 +12,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { t, formatCurrency } = useSiteSettings();
   const navigate = useNavigate();
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -25,7 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
       quantity: 1,
       stock: product.stock,
     });
-    toast.success('Added to cart', {
+    toast.success(t('product.addedToCart'), {
       description: product.name,
     });
   };
@@ -65,7 +67,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {product.is_new && (
               <span className="badge-new px-2 py-1 text-xs font-semibold rounded">
-                NEW
+                {t('product.new')}
               </span>
             )}
             {hasDiscount && (
@@ -84,7 +86,7 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={handleAddToCart}
             >
               <ShoppingBag className="h-3 w-3 mr-1" />
-              Add to Cart
+              {t('product.addToCart')}
             </Button>
             <Button
               size="sm"
@@ -92,7 +94,7 @@ export function ProductCard({ product }: ProductCardProps) {
               onClick={handleBuyNow}
             >
               <Zap className="h-3 w-3 mr-1" />
-              Buy Now
+              {t('product.buyNow')}
             </Button>
           </div>
         </div>
@@ -100,7 +102,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Content */}
         <div className="p-4">
           <p className="text-xs text-muted-foreground mb-1">
-            {product.category?.name || 'Uncategorized'}
+            {product.category?.name || t('product.uncategorized')}
           </p>
           <h3 className="font-medium text-sm md:text-base line-clamp-2 mb-2 group-hover:text-accent transition-colors">
             {product.name}
@@ -109,14 +111,14 @@ export function ProductCard({ product }: ProductCardProps) {
             {hasDiscount ? (
               <>
                 <span className="font-bold text-accent">
-                  ${product.sale_price?.toFixed(2)}
+                  {formatCurrency(product.sale_price!)}
                 </span>
                 <span className="text-sm text-muted-foreground line-through">
-                  ${product.price.toFixed(2)}
+                  {formatCurrency(product.price)}
                 </span>
               </>
             ) : (
-              <span className="font-bold">${product.price.toFixed(2)}</span>
+              <span className="font-bold">{formatCurrency(product.price)}</span>
             )}
           </div>
         </div>
@@ -131,7 +133,7 @@ export function ProductCard({ product }: ProductCardProps) {
           onClick={handleAddToCart}
         >
           <ShoppingBag className="h-3 w-3 mr-1" />
-          Cart
+          {t('common.cart')}
         </Button>
         <Button
           size="sm"
@@ -139,7 +141,7 @@ export function ProductCard({ product }: ProductCardProps) {
           onClick={handleBuyNow}
         >
           <Zap className="h-3 w-3 mr-1" />
-          Buy
+          {t('product.buyNow')}
         </Button>
       </div>
     </div>

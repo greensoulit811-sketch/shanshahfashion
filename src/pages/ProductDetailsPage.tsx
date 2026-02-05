@@ -5,6 +5,7 @@ import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { useProduct, useRelatedProducts } from '@/hooks/useShopData';
 import { useCart } from '@/contexts/CartContext';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -12,6 +13,7 @@ export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { t, formatCurrency } = useSiteSettings();
   const { data: product, isLoading } = useProduct(slug || '');
   const { data: relatedProducts = [] } = useRelatedProducts(product);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -38,9 +40,9 @@ export default function ProductDetailsPage() {
     return (
       <Layout>
         <div className="container-shop section-padding text-center">
-          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <h1 className="text-2xl font-bold mb-4">{t('common.noResults')}</h1>
           <Link to="/shop" className="text-accent hover:underline">
-            Return to Shop
+            {t('cart.continueShopping')}
           </Link>
         </div>
       </Layout>
@@ -59,7 +61,7 @@ export default function ProductDetailsPage() {
       quantity,
       stock: product.stock,
     });
-    toast.success('Added to cart', {
+    toast.success(t('product.addedToCart'), {
       description: `${quantity}x ${product.name}`,
     });
   };
@@ -82,9 +84,9 @@ export default function ProductDetailsPage() {
       <div className="container-shop section-padding">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-          <Link to="/" className="hover:text-foreground">Home</Link>
+          <Link to="/" className="hover:text-foreground">{t('nav.home')}</Link>
           <ChevronRight className="h-4 w-4" />
-          <Link to="/shop" className="hover:text-foreground">Shop</Link>
+          <Link to="/shop" className="hover:text-foreground">{t('nav.shop')}</Link>
           <ChevronRight className="h-4 w-4" />
           {product.category && (
             <>
@@ -136,7 +138,7 @@ export default function ProductDetailsPage() {
           <div className="space-y-6">
             <div>
               <p className="text-sm text-muted-foreground mb-2">
-                {product.category?.name || 'Uncategorized'}
+                {product.category?.name || t('product.uncategorized')}
               </p>
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 {product.name}
@@ -147,18 +149,18 @@ export default function ProductDetailsPage() {
                 {hasDiscount ? (
                   <>
                     <span className="text-3xl font-bold text-accent">
-                      ${product.sale_price?.toFixed(2)}
+                      {formatCurrency(product.sale_price!)}
                     </span>
                     <span className="text-xl text-muted-foreground line-through">
-                      ${product.price.toFixed(2)}
+                      {formatCurrency(product.price)}
                     </span>
                     <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
-                      Save ${(product.price - product.sale_price!).toFixed(2)}
+                      Save {formatCurrency(product.price - product.sale_price!)}
                     </span>
                   </>
                 ) : (
                   <span className="text-3xl font-bold">
-                    ${product.price.toFixed(2)}
+                    {formatCurrency(product.price)}
                   </span>
                 )}
               </div>
@@ -169,13 +171,13 @@ export default function ProductDetailsPage() {
               {product.stock > 0 ? (
                 <>
                   <Check className="h-4 w-4 text-success" />
-                  <span className="text-success font-medium">In Stock</span>
+                  <span className="text-success font-medium">{t('product.inStock')}</span>
                   <span className="text-muted-foreground">
                     ({product.stock} available)
                   </span>
                 </>
               ) : (
-                <span className="text-destructive font-medium">Out of Stock</span>
+                <span className="text-destructive font-medium">{t('product.outOfStock')}</span>
               )}
             </div>
 
@@ -186,7 +188,7 @@ export default function ProductDetailsPage() {
 
             {/* Quantity */}
             <div>
-              <label className="text-sm font-medium mb-2 block">Quantity</label>
+              <label className="text-sm font-medium mb-2 block">{t('product.quantity')}</label>
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
@@ -220,7 +222,7 @@ export default function ProductDetailsPage() {
                 disabled={product.stock === 0}
               >
                 <ShoppingBag className="h-5 w-5 mr-2" />
-                Add to Cart
+                {t('product.addToCart')}
               </Button>
               <Button
                 size="lg"
@@ -229,19 +231,19 @@ export default function ProductDetailsPage() {
                 disabled={product.stock === 0}
               >
                 <Zap className="h-5 w-5 mr-2" />
-                Buy Now
+                {t('product.buyNow')}
               </Button>
             </div>
 
             {/* SKU */}
             <p className="text-sm text-muted-foreground">
-              SKU: {product.sku}
+              {t('product.sku')}: {product.sku}
             </p>
 
             {/* Description */}
             {product.description && (
               <div className="pt-6 border-t border-border">
-                <h3 className="font-semibold mb-3">Description</h3>
+                <h3 className="font-semibold mb-3">{t('product.description')}</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {product.description}
                 </p>
@@ -253,7 +255,7 @@ export default function ProductDetailsPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <section className="mt-16 pt-12 border-t border-border">
-            <h2 className="text-2xl font-bold mb-8">Related Products</h2>
+            <h2 className="text-2xl font-bold mb-8">{t('product.relatedProducts')}</h2>
             <div className="product-grid">
               {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />

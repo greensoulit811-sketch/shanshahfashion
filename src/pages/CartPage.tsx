@@ -2,23 +2,25 @@ import { Link } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
+  const { t, formatCurrency } = useSiteSettings();
 
   if (items.length === 0) {
     return (
       <Layout>
         <div className="container-shop section-padding text-center">
           <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('cart.emptyCart')}</h1>
           <p className="text-muted-foreground mb-8">
-            Looks like you haven't added anything to your cart yet
+            {t('cart.emptyCart')}
           </p>
           <Link to="/shop">
             <Button className="btn-accent">
-              Continue Shopping
+              {t('cart.continueShopping')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>
@@ -30,7 +32,7 @@ export default function CartPage() {
   return (
     <Layout>
       <div className="container-shop section-padding">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-8">{t('cart.title')}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
@@ -64,10 +66,10 @@ export default function CartPage() {
                     </Link>
 
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="font-bold">${price.toFixed(2)}</span>
+                      <span className="font-bold">{formatCurrency(price)}</span>
                       {item.salePrice && (
                         <span className="text-sm text-muted-foreground line-through">
-                          ${item.price.toFixed(2)}
+                          {formatCurrency(item.price)}
                         </span>
                       )}
                     </div>
@@ -107,7 +109,7 @@ export default function CartPage() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                     <span className="font-bold">
-                      ${(price * item.quantity).toFixed(2)}
+                      {formatCurrency(price * item.quantity)}
                     </span>
                   </div>
                 </div>
@@ -115,22 +117,22 @@ export default function CartPage() {
             })}
 
             <Button variant="outline" onClick={clearCart} className="mt-4">
-              Clear Cart
+              {t('common.clear')} {t('common.cart')}
             </Button>
           </div>
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-card rounded-xl border border-border p-6 sticky top-24">
-              <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+              <h2 className="text-lg font-semibold mb-4">{t('checkout.orderSummary')}</h2>
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-muted-foreground">{t('cart.subtotal')}</span>
+                  <span className="font-medium">{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
+                  <span className="text-muted-foreground">{t('cart.shipping')}</span>
                   <span className="font-medium">Calculated at checkout</span>
                 </div>
               </div>
@@ -152,20 +154,20 @@ export default function CartPage() {
               <hr className="border-border mb-4" />
 
               <div className="flex justify-between mb-6">
-                <span className="font-semibold">Total</span>
-                <span className="text-xl font-bold">${subtotal.toFixed(2)}</span>
+                <span className="font-semibold">{t('cart.total')}</span>
+                <span className="text-xl font-bold">{formatCurrency(subtotal)}</span>
               </div>
 
               <Link to="/checkout">
                 <Button size="lg" className="btn-accent w-full">
-                  Proceed to Checkout
+                  {t('cart.proceedToCheckout')}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
 
               <Link to="/shop">
                 <Button variant="link" className="w-full mt-4">
-                  Continue Shopping
+                  {t('cart.continueShopping')}
                 </Button>
               </Link>
             </div>

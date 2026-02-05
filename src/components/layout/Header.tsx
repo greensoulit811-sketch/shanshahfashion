@@ -1,22 +1,36 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, User } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, User, Globe } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-
-const navigation = [
-  { name: 'Home', href: '/' },
-  { name: 'Shop', href: '/shop' },
-  { name: 'Categories', href: '/categories' },
-  { name: 'About', href: '/about' },
-  { name: 'Contact', href: '/contact' },
-];
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function Header() {
-  const { totalItems, toggleCart } = useCart();
+  const { totalItems } = useCart();
+  const { t, activeLanguage, setUserLanguagePreference } = useSiteSettings();
   const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const navigation = [
+    { name: t('nav.home'), href: '/' },
+    { name: t('nav.shop'), href: '/shop' },
+    { name: t('nav.categories'), href: '/categories' },
+    { name: t('nav.about'), href: '/about' },
+    { name: t('nav.contact'), href: '/contact' },
+  ];
+
+  const languageOptions = [
+    { code: 'en', label: 'English' },
+    { code: 'hi', label: 'हिन्दी' },
+    { code: 'bn', label: 'বাংলা' },
+  ];
 
   return (
     <header className="header-sticky">
@@ -27,14 +41,14 @@ export function Header() {
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon" className="shrink-0">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('nav.openMenu')}</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80">
               <nav className="flex flex-col gap-4 mt-8">
                 {navigation.map((item) => (
                   <Link
-                    key={item.name}
+                    key={item.href}
                     to={item.href}
                     className={`text-lg font-medium transition-colors hover:text-accent ${
                       location.pathname === item.href
@@ -50,7 +64,7 @@ export function Header() {
                   to="/admin"
                   className="text-lg font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Admin Panel
+                  {t('nav.adminPanel')}
                 </Link>
               </nav>
             </SheetContent>
@@ -67,7 +81,7 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-8">
             {navigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 to={item.href}
                 className={`text-sm font-medium transition-colors hover:text-accent ${
                   location.pathname === item.href
@@ -89,13 +103,34 @@ export function Header() {
               className="hidden sm:flex"
             >
               <Search className="h-5 w-5" />
-              <span className="sr-only">Search</span>
+              <span className="sr-only">{t('common.search')}</span>
             </Button>
+
+            {/* Language Switcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="hidden sm:flex">
+                  <Globe className="h-5 w-5" />
+                  <span className="sr-only">{t('common.language')}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-popover z-50">
+                {languageOptions.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => setUserLanguagePreference(lang.code)}
+                    className={activeLanguage === lang.code ? 'bg-accent/10' : ''}
+                  >
+                    {lang.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <Link to="/admin">
               <Button variant="ghost" size="icon" className="hidden sm:flex">
                 <User className="h-5 w-5" />
-                <span className="sr-only">Admin</span>
+                <span className="sr-only">{t('common.admin')}</span>
               </Button>
             </Link>
 
@@ -105,7 +140,7 @@ export function Header() {
                 {totalItems > 0 && (
                   <span className="cart-badge">{totalItems}</span>
                 )}
-                <span className="sr-only">Cart</span>
+                <span className="sr-only">{t('common.cart')}</span>
               </Button>
             </Link>
           </div>
@@ -118,7 +153,7 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="search"
-                placeholder="Search products..."
+                placeholder={t('nav.searchProducts')}
                 className="input-shop pl-10"
                 autoFocus
               />

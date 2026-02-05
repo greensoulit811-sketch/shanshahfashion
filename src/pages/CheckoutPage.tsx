@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { items, subtotal, clearCart } = useCart();
   const { user } = useAuth();
+  const { t, formatCurrency, settings } = useSiteSettings();
   const createOrder = useCreateOrder();
 
   const [formData, setFormData] = useState({
@@ -19,6 +21,7 @@ export default function CheckoutPage() {
     email: '',
     address: '',
     city: '',
+    country: settings.default_country_name,
     notes: '',
     shippingMethod: 'inside-dhaka',
     paymentMethod: 'cod',
@@ -42,12 +45,12 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (!formData.fullName || !formData.phone || !formData.address || !formData.city) {
-      toast.error('Please fill in all required fields');
+      toast.error(t('validation.fillRequired'));
       return;
     }
 
     if (items.length === 0) {
-      toast.error('Your cart is empty');
+      toast.error(t('validation.cartEmpty'));
       return;
     }
 
@@ -91,9 +94,9 @@ export default function CheckoutPage() {
     return (
       <Layout>
         <div className="container-shop section-padding text-center">
-          <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
+          <h1 className="text-2xl font-bold mb-4">{t('cart.emptyCart')}</h1>
           <Button onClick={() => navigate('/shop')} className="btn-accent">
-            Continue Shopping
+            {t('cart.continueShopping')}
           </Button>
         </div>
       </Layout>
@@ -103,7 +106,7 @@ export default function CheckoutPage() {
   return (
     <Layout>
       <div className="container-shop section-padding">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-8">{t('checkout.title')}</h1>
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -111,11 +114,11 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2 space-y-6">
               {/* Contact Information */}
               <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
+                <h2 className="text-lg font-semibold mb-4">{t('checkout.contactInfo')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium mb-2">
-                      Full Name <span className="text-destructive">*</span>
+                      {t('checkout.fullName')} <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
@@ -128,7 +131,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Phone Number <span className="text-destructive">*</span>
+                      {t('checkout.phone')} <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="tel"
@@ -141,7 +144,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Email (Optional)
+                      {t('checkout.emailOptional')}
                     </label>
                     <input
                       type="email"
@@ -156,11 +159,23 @@ export default function CheckoutPage() {
 
               {/* Shipping Address */}
               <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="text-lg font-semibold mb-4">Shipping Address</h2>
+                <h2 className="text-lg font-semibold mb-4">{t('checkout.shippingAddress')}</h2>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Address <span className="text-destructive">*</span>
+                      {t('checkout.country')}
+                    </label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={formData.country}
+                      readOnly
+                      className="input-shop bg-muted cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {t('checkout.address')} <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
@@ -168,13 +183,13 @@ export default function CheckoutPage() {
                       value={formData.address}
                       onChange={handleChange}
                       className="input-shop"
-                      placeholder="House number, street, area"
+                      placeholder={t('checkout.addressPlaceholder')}
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      City <span className="text-destructive">*</span>
+                      {t('checkout.city')} <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
@@ -187,14 +202,14 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Order Notes (Optional)
+                      {t('checkout.orderNotes')}
                     </label>
                     <textarea
                       name="notes"
                       value={formData.notes}
                       onChange={handleChange}
                       className="input-shop min-h-[100px]"
-                      placeholder="Any special instructions for delivery..."
+                      placeholder={t('checkout.orderNotesPlaceholder')}
                     />
                   </div>
                 </div>
@@ -202,7 +217,7 @@ export default function CheckoutPage() {
 
               {/* Shipping Method */}
               <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="text-lg font-semibold mb-4">Shipping Method</h2>
+                <h2 className="text-lg font-semibold mb-4">{t('checkout.shippingMethod')}</h2>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
                     <input
@@ -214,10 +229,10 @@ export default function CheckoutPage() {
                       className="w-4 h-4 text-accent"
                     />
                     <div className="flex-1">
-                      <p className="font-medium">Inside Dhaka</p>
-                      <p className="text-sm text-muted-foreground">2-3 business days</p>
+                      <p className="font-medium">{t('checkout.insideDhaka')}</p>
+                      <p className="text-sm text-muted-foreground">2-3 {t('checkout.businessDays')}</p>
                     </div>
-                    <span className="font-semibold">৳60</span>
+                    <span className="font-semibold">{formatCurrency(60)}</span>
                   </label>
                   <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
                     <input
@@ -229,17 +244,17 @@ export default function CheckoutPage() {
                       className="w-4 h-4 text-accent"
                     />
                     <div className="flex-1">
-                      <p className="font-medium">Outside Dhaka</p>
-                      <p className="text-sm text-muted-foreground">5-7 business days</p>
+                      <p className="font-medium">{t('checkout.outsideDhaka')}</p>
+                      <p className="text-sm text-muted-foreground">5-7 {t('checkout.businessDays')}</p>
                     </div>
-                    <span className="font-semibold">৳120</span>
+                    <span className="font-semibold">{formatCurrency(120)}</span>
                   </label>
                 </div>
               </div>
 
               {/* Payment Method */}
               <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
+                <h2 className="text-lg font-semibold mb-4">{t('checkout.paymentMethod')}</h2>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
                     <input
@@ -251,9 +266,9 @@ export default function CheckoutPage() {
                       className="w-4 h-4 text-accent"
                     />
                     <div className="flex-1">
-                      <p className="font-medium">Cash on Delivery</p>
+                      <p className="font-medium">{t('checkout.cashOnDelivery')}</p>
                       <p className="text-sm text-muted-foreground">
-                        Pay when you receive your order
+                        {t('checkout.codDescription')}
                       </p>
                     </div>
                   </label>
@@ -266,8 +281,8 @@ export default function CheckoutPage() {
                       className="w-4 h-4 text-accent"
                     />
                     <div className="flex-1">
-                      <p className="font-medium">Card Payment</p>
-                      <p className="text-sm text-muted-foreground">Coming soon</p>
+                      <p className="font-medium">{t('checkout.cardPayment')}</p>
+                      <p className="text-sm text-muted-foreground">{t('checkout.comingSoon')}</p>
                     </div>
                   </label>
                 </div>
@@ -277,7 +292,7 @@ export default function CheckoutPage() {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-card rounded-xl border border-border p-6 sticky top-24">
-                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+                <h2 className="text-lg font-semibold mb-4">{t('checkout.orderSummary')}</h2>
 
                 {/* Items */}
                 <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
@@ -295,11 +310,11 @@ export default function CheckoutPage() {
                             {item.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Qty: {item.quantity}
+                            {t('product.quantity')}: {item.quantity}
                           </p>
                         </div>
                         <span className="text-sm font-medium">
-                          ${(price * item.quantity).toFixed(2)}
+                          {formatCurrency(price * item.quantity)}
                         </span>
                       </div>
                     );
@@ -310,21 +325,21 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="text-muted-foreground">{t('cart.subtotal')}</span>
+                    <span className="font-medium">{formatCurrency(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">৳{shippingCost}</span>
+                    <span className="text-muted-foreground">{t('cart.shipping')}</span>
+                    <span className="font-medium">{formatCurrency(shippingCost)}</span>
                   </div>
                 </div>
 
                 <hr className="border-border mb-4" />
 
                 <div className="flex justify-between mb-6">
-                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold">{t('cart.total')}</span>
                   <span className="text-xl font-bold">
-                    ${subtotal.toFixed(2)} + ৳{shippingCost}
+                    {formatCurrency(total)}
                   </span>
                 </div>
 
@@ -334,7 +349,7 @@ export default function CheckoutPage() {
                   className="btn-accent w-full"
                   disabled={createOrder.isPending}
                 >
-                  {createOrder.isPending ? 'Processing...' : 'Place Order'}
+                  {createOrder.isPending ? t('checkout.processing') : t('checkout.placeOrder')}
                 </Button>
               </div>
             </div>
