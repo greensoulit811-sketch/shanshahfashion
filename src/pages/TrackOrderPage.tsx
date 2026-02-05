@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, Package, Truck, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
+import { OrderTimeline } from '@/components/tracking/OrderTimeline';
 import { useOrderTracking } from '@/hooks/useOrderTracking';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 
@@ -90,18 +91,41 @@ export default function TrackOrderPage() {
 
               {/* Order Details */}
               <div className="p-6 space-y-6">
+                {/* Order Timeline */}
+                <div>
+                  <h3 className="font-semibold mb-4">Order Progress</h3>
+                  <OrderTimeline
+                    currentStatus={status}
+                    courierStatus={order.courier_status}
+                    createdAt={order.created_at}
+                    updatedAt={order.updated_at}
+                    courierCreatedAt={order.courier_created_at}
+                    courierUpdatedAt={order.courier_updated_at}
+                  />
+                </div>
+
                 {/* Courier Info */}
                 {order.courier_tracking_id && (
                   <div className="bg-accent/10 rounded-lg p-4">
                     <h3 className="font-semibold mb-2">Courier Tracking</h3>
                     <p className="text-sm">
+                      <span className="text-muted-foreground">Provider:</span>{' '}
+                      <span className="font-medium capitalize">{order.courier_provider || 'Courier'}</span>
+                    </p>
+                    <p className="text-sm">
                       <span className="text-muted-foreground">Tracking ID:</span>{' '}
                       <span className="font-mono font-bold">{order.courier_tracking_id}</span>
                     </p>
-                    {order.courier_status && (
+                    {order.courier_consignment_id && (
                       <p className="text-sm">
-                        <span className="text-muted-foreground">Courier Status:</span>{' '}
-                        {order.courier_status}
+                        <span className="text-muted-foreground">Consignment:</span>{' '}
+                        <span className="font-mono">{order.courier_consignment_id}</span>
+                      </p>
+                    )}
+                    {order.courier_status && (
+                      <p className="text-sm mt-2">
+                        <span className="text-muted-foreground">Status:</span>{' '}
+                        <span className="font-medium text-accent">{order.courier_status}</span>
                       </p>
                     )}
                   </div>

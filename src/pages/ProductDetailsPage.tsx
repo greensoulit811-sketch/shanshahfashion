@@ -5,8 +5,11 @@ import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { VariantSelector } from '@/components/products/VariantSelector';
 import { WishlistButton } from '@/components/products/WishlistButton';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
+import { ReviewList } from '@/components/reviews/ReviewList';
 import { useProduct, useRelatedProducts } from '@/hooks/useShopData';
 import { useProductVariants, ProductVariant } from '@/hooks/useVariants';
+import { useProductReviews } from '@/hooks/useProductReviews';
 import { useCart } from '@/contexts/CartContext';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
@@ -22,11 +25,13 @@ export default function ProductDetailsPage() {
   const { data: product, isLoading } = useProduct(slug || '');
   const { data: relatedProducts = [] } = useRelatedProducts(product);
   const { data: variants = [] } = useProductVariants(product?.id || '');
+  const { data: reviews = [] } = useProductReviews(product?.id || '', true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const isMobile = useIsMobile();
 
   // Track ViewContent when product loads
@@ -382,6 +387,31 @@ export default function ProductDetailsPage() {
             </div>
           </section>
         )}
+
+        {/* Customer Reviews Section */}
+        <section className="mt-16 pt-12 border-t border-border">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold">Customer Reviews</h2>
+            <Button
+              variant="outline"
+              onClick={() => setShowReviewForm(!showReviewForm)}
+            >
+              {showReviewForm ? 'Cancel' : 'Write a Review'}
+            </Button>
+          </div>
+
+          {showReviewForm && (
+            <div className="bg-card rounded-xl border border-border p-6 mb-8">
+              <ReviewForm
+                productId={product.id}
+                productName={product.name}
+                onSuccess={() => setShowReviewForm(false)}
+              />
+            </div>
+          )}
+
+          <ReviewList reviews={reviews} />
+        </section>
       </div>
 
       {/* Mobile Sticky Action Bar */}
