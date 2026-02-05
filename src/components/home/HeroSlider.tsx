@@ -5,8 +5,16 @@ import { useSliderSlides } from '@/hooks/useShopData';
 import { Button } from '@/components/ui/button';
 
 export function HeroSlider() {
-  const { data: slides = [], isLoading } = useSliderSlides();
+  const {
+    data: slides = [],
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useSliderSlides();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isStuck, setIsStuck] = useState(false);
 
   const nextSlide = useCallback(() => {
     if (slides.length === 0) return;
@@ -19,16 +27,46 @@ export function HeroSlider() {
   };
 
   useEffect(() => {
+    if (!(isLoading || isFetching)) {
+      setIsStuck(false);
+      return;
+    }
+
+    const t = window.setTimeout(() => setIsStuck(true), 10000);
+    return () => window.clearTimeout(t);
+  }, [isLoading, isFetching]);
+
+  useEffect(() => {
     if (slides.length === 0) return;
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
   }, [nextSlide, slides.length]);
 
-  if (isLoading) {
+  if (isError) {
     return (
       <section className="relative overflow-hidden bg-secondary h-[60vh] md:h-[70vh] lg:h-[80vh]">
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
+          <p className="text-muted-foreground">
+            Couldn’t load the slider. {error instanceof Error ? error.message : ''}
+          </p>
+          <Button className="btn-accent" onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
+  if (isLoading || isFetching) {
+    return (
+      <section className="relative overflow-hidden bg-secondary h-[60vh] md:h-[70vh] lg:h-[80vh]">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
+          {isStuck && (
+            <Button className="btn-accent" onClick={() => refetch()}>
+              Loading too long — Retry
+            </Button>
+          )}
         </div>
       </section>
     );
