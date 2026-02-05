@@ -37,6 +37,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCourierSettings from "./pages/admin/AdminCourierSettings";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminShipping from "./pages/admin/AdminShipping";
+import AdminReviews from "./pages/admin/AdminReviews";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 
@@ -92,6 +93,7 @@ const App = () => (
                         <Route path="courier" element={<AdminCourierSettings />} />
                         <Route path="coupons" element={<AdminCoupons />} />
                         <Route path="shipping" element={<AdminShipping />} />
+                        <Route path="reviews" element={<AdminReviews />} />
                       </Route>
                     </Route>
 
