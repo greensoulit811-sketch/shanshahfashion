@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, Search, User, Globe } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
@@ -15,8 +16,12 @@ import {
 export function Header() {
   const { totalItems } = useCart();
   const { t, activeLanguage, setUserLanguagePreference } = useSiteSettings();
+  const { data: storeSettings } = useStoreSettings();
   const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const storeName = storeSettings?.store_name || 'STORE';
+  const storeLogo = storeSettings?.store_logo || '';
 
   const navigation = [
     { name: t('nav.home'), href: '/' },
@@ -72,9 +77,17 @@ export function Header() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <span className="text-xl md:text-2xl font-bold tracking-tight">
-              STORE
-            </span>
+            {storeLogo ? (
+              <img 
+                src={storeLogo} 
+                alt={storeName} 
+                className="h-8 md:h-10 w-auto object-contain"
+              />
+            ) : (
+              <span className="text-xl md:text-2xl font-bold tracking-tight">
+                {storeName}
+              </span>
+            )}
           </Link>
 
           {/* Desktop navigation */}
