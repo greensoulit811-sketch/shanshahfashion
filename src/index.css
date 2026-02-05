@@ -198,6 +198,17 @@
     @apply py-12 md:py-16 lg:py-20;
   }
 
+  /* Mobile sticky action bar spacing - add bottom padding on product pages */
+  .has-sticky-bar {
+    @apply pb-24 md:pb-0;
+  }
+
+  /* Sticky action bar */
+  .sticky-action-bar {
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border;
+    padding-bottom: env(safe-area-inset-bottom, 0.75rem);
+  }
+
   /* Admin sidebar */
   .admin-sidebar {
     @apply w-64 bg-card border-r border-border min-h-screen;

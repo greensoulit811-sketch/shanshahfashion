@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check } from 'lucide-react';
+import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check, Loader2 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { useProduct, useRelatedProducts } from '@/hooks/useShopData';
@@ -9,6 +9,7 @@ import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { trackViewContent, trackAddToCart } from '@/lib/facebook-pixel';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -19,6 +20,9 @@ export default function ProductDetailsPage() {
   const { data: relatedProducts = [] } = useRelatedProducts(product);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const isMobile = useIsMobile();
 
   // Track ViewContent when product loads
   useEffect(() => {
@@ -64,7 +68,12 @@ export default function ProductDetailsPage() {
 
   const hasDiscount = product.sale_price && product.sale_price < product.price;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true);
+    
+    // Brief delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
     addItem({
       id: product.id,
       name: product.name,
@@ -87,9 +96,13 @@ export default function ProductDetailsPage() {
     toast.success(t('product.addedToCart'), {
       description: `${quantity}x ${product.name}`,
     });
+    
+    setIsAddingToCart(false);
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
+    setIsBuyingNow(true);
+    
     addItem({
       id: product.id,
       name: product.name,
@@ -114,7 +127,7 @@ export default function ProductDetailsPage() {
 
   return (
     <Layout>
-      <div className="container-shop section-padding">
+      <div className={`container-shop section-padding ${isMobile ? 'pb-24' : ''}`}>
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
           <Link to="/" className="hover:text-foreground">{t('nav.home')}</Link>
@@ -245,25 +258,33 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* Actions - Hidden on mobile since we use sticky bar */}
+            <div className="hidden md:flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 variant="outline"
                 className="flex-1"
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={isAddingToCart || product.stock === 0}
               >
-                <ShoppingBag className="h-5 w-5 mr-2" />
+                {isAddingToCart ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <ShoppingBag className="h-5 w-5 mr-2" />
+                )}
                 {t('product.addToCart')}
               </Button>
               <Button
                 size="lg"
                 className="btn-accent flex-1"
                 onClick={handleBuyNow}
-                disabled={product.stock === 0}
+                disabled={isBuyingNow || product.stock === 0}
               >
-                <Zap className="h-5 w-5 mr-2" />
+                {isBuyingNow ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <Zap className="h-5 w-5 mr-2" />
+                )}
                 {t('product.buyNow')}
               </Button>
             </div>
@@ -297,6 +318,41 @@ export default function ProductDetailsPage() {
           </section>
         )}
       </div>
+
+      {/* Mobile Sticky Action Bar */}
+      {isMobile && product && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden">
+          <div className="flex gap-3 max-w-7xl mx-auto">
+            <Button
+              variant="outline"
+              className="flex-1 h-14 text-sm font-medium"
+              onClick={handleAddToCart}
+              disabled={isAddingToCart || product.stock === 0}
+              aria-label={t('product.addToCart')}
+            >
+              {isAddingToCart ? (
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <ShoppingBag className="h-5 w-5 mr-2" />
+              )}
+              {t('product.addToCart')}
+            </Button>
+            <Button
+              className="btn-accent flex-1 h-14 text-sm font-medium"
+              onClick={handleBuyNow}
+              disabled={isBuyingNow || product.stock === 0}
+              aria-label={t('product.buyNow')}
+            >
+              {isBuyingNow ? (
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <Zap className="h-5 w-5 mr-2" />
+              )}
+              {t('product.buyNow')}
+            </Button>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
