@@ -5,6 +5,8 @@ import { useCart } from '@/contexts/CartContext';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateOrder } from '@/hooks/useOrders';
+import { useIncrementCouponUsage, Coupon } from '@/hooks/useCoupons';
+import { CouponInput } from '@/components/checkout/CouponInput';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { trackInitiateCheckout } from '@/lib/facebook-pixel';
@@ -15,6 +17,11 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const { t, formatCurrency, settings } = useSiteSettings();
   const createOrder = useCreateOrder();
+  const incrementCouponUsage = useIncrementCouponUsage();
+
+  // Coupon state
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -34,7 +41,17 @@ export default function CheckoutPage() {
   };
 
   const shippingCost = shippingCosts[formData.shippingMethod] || 60;
-  const total = subtotal + shippingCost;
+  const total = subtotal - discountAmount + shippingCost;
+
+  const handleApplyCoupon = (coupon: Coupon, discount: number) => {
+    setAppliedCoupon(coupon);
+    setDiscountAmount(discount);
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountAmount(0);
+  };
 
   // Track InitiateCheckout when page loads
   useEffect(() => {
@@ -94,6 +111,11 @@ export default function CheckoutPage() {
           price: item.salePrice ?? item.price,
         })),
       });
+
+      // Increment coupon usage if one was applied
+      if (appliedCoupon) {
+        incrementCouponUsage.mutate(appliedCoupon.id);
+      }
 
       clearCart();
       // Pass order data to success page for Purchase tracking
@@ -347,11 +369,30 @@ export default function CheckoutPage() {
 
                 <hr className="border-border mb-4" />
 
+                {/* Coupon Input */}
+                <div className="mb-4">
+                  <CouponInput
+                    subtotal={subtotal}
+                    onApply={handleApplyCoupon}
+                    onRemove={handleRemoveCoupon}
+                    appliedCoupon={appliedCoupon}
+                    discountAmount={discountAmount}
+                  />
+                </div>
+
+                <hr className="border-border mb-4" />
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t('cart.subtotal')}</span>
                     <span className="font-medium">{formatCurrency(subtotal)}</span>
                   </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-accent">
+                      <span>{t('checkout.discount') || 'Discount'}</span>
+                      <span>-{formatCurrency(discountAmount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t('cart.shipping')}</span>
                     <span className="font-medium">{formatCurrency(shippingCost)}</span>
