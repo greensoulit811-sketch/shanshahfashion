@@ -23,7 +23,6 @@ export function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
     setIsAddingToCart(true);
     
-    // Simulate brief loading state for feedback
     await new Promise(resolve => setTimeout(resolve, 300));
     
     addItem({
@@ -67,10 +66,10 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="product-card group bg-card rounded-xl overflow-visible border border-border flex flex-col">
-      <Link to={`/product/${product.slug}`} className="block">
+    <div className="product-card group bg-card rounded-xl border border-border flex flex-col h-full">
+      <Link to={`/product/${product.slug}`} className="block flex-1">
         {/* Image */}
-        <div className="relative aspect-product overflow-hidden bg-secondary rounded-t-xl">
+        <div className="relative aspect-square overflow-hidden bg-secondary rounded-t-xl">
           <img
             src={product.images[0] || '/placeholder.svg'}
             alt={product.name}
@@ -78,14 +77,14 @@ export function ProductCard({ product }: ProductCardProps) {
           />
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+          <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
             {product.is_new && (
-              <span className="badge-new px-2 py-1 text-xs font-semibold rounded">
+              <span className="badge-new px-2 py-0.5 text-[10px] font-semibold rounded">
                 {t('product.new')}
               </span>
             )}
             {hasDiscount && (
-              <span className="badge-sale px-2 py-1 text-xs font-semibold rounded">
+              <span className="badge-sale px-2 py-0.5 text-[10px] font-semibold rounded">
                 -{discountPercent}%
               </span>
             )}
@@ -93,95 +92,61 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-3 md:p-4">
-          <p className="text-xs text-muted-foreground mb-1">
+        <div className="p-3">
+          <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-wide">
             {product.category?.name || t('product.uncategorized')}
           </p>
-          <h3 className="font-medium text-sm md:text-base line-clamp-2 mb-2 group-hover:text-accent transition-colors min-h-[2.5rem]">
+          <h3 className="font-medium text-sm line-clamp-2 mb-1.5 group-hover:text-accent transition-colors leading-tight">
             {product.name}
           </h3>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {hasDiscount ? (
               <>
-                <span className="font-bold text-accent text-base md:text-lg">
+                <span className="font-bold text-accent text-sm">
                   {formatCurrency(product.sale_price!)}
                 </span>
-                <span className="text-xs md:text-sm text-muted-foreground line-through">
+                <span className="text-[10px] text-muted-foreground line-through">
                   {formatCurrency(product.price)}
                 </span>
               </>
             ) : (
-              <span className="font-bold text-base md:text-lg">{formatCurrency(product.price)}</span>
+              <span className="font-bold text-sm">{formatCurrency(product.price)}</span>
             )}
           </div>
         </div>
       </Link>
 
       {/* Action Buttons - Always visible */}
-      <div className="p-3 md:p-4 pt-0 mt-auto">
-        {/* Mobile: Stacked full-width buttons */}
-        <div className="flex flex-col gap-2 md:hidden">
-          <Button
-            variant="outline"
-            className="w-full h-11 text-sm font-medium"
-            onClick={handleAddToCart}
-            disabled={isAddingToCart || product.stock === 0}
-            aria-label={t('product.addToCart')}
-          >
-            {isAddingToCart ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <ShoppingBag className="h-4 w-4 mr-2" />
-            )}
-            {t('product.addToCart')}
-          </Button>
-          <Button
-            className="btn-accent w-full h-11 text-sm font-medium"
-            onClick={handleBuyNow}
-            disabled={isBuyingNow || product.stock === 0}
-            aria-label={t('product.buyNow')}
-          >
-            {isBuyingNow ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Zap className="h-4 w-4 mr-2" />
-            )}
-            {t('product.buyNow')}
-          </Button>
-        </div>
-        
-        {/* Desktop: Side-by-side buttons */}
-        <div className="hidden md:flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 text-xs"
-            onClick={handleAddToCart}
-            disabled={isAddingToCart || product.stock === 0}
-            aria-label={t('product.addToCart')}
-          >
-            {isAddingToCart ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <ShoppingBag className="h-3 w-3 mr-1" />
-            )}
-            {t('product.addToCart')}
-          </Button>
-          <Button
-            size="sm"
-            className="btn-accent flex-1 text-xs"
-            onClick={handleBuyNow}
-            disabled={isBuyingNow || product.stock === 0}
-            aria-label={t('product.buyNow')}
-          >
-            {isBuyingNow ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <Zap className="h-3 w-3 mr-1" />
-            )}
-            {t('product.buyNow')}
-          </Button>
-        </div>
+      <div className="p-3 pt-0 mt-auto space-y-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full h-9 text-xs font-medium"
+          onClick={handleAddToCart}
+          disabled={isAddingToCart || product.stock === 0}
+          aria-label={t('product.addToCart')}
+        >
+          {isAddingToCart ? (
+            <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+          ) : (
+            <ShoppingBag className="h-3.5 w-3.5 mr-1.5" />
+          )}
+          {t('product.addToCart')}
+        </Button>
+        <Button
+          size="sm"
+          className="btn-accent w-full h-9 text-xs font-medium"
+          onClick={handleBuyNow}
+          disabled={isBuyingNow || product.stock === 0}
+          aria-label={t('product.buyNow')}
+        >
+          {isBuyingNow ? (
+            <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+          ) : (
+            <Zap className="h-3.5 w-3.5 mr-1.5" />
+          )}
+          {t('product.buyNow')}
+        </Button>
       </div>
     </div>
   );
