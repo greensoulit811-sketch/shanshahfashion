@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Eye, MoreHorizontal, RefreshCw, Printer, FileText } from 'lucide-react';
+import { Search, Eye, MoreHorizontal, RefreshCw, Printer, FileText, Truck, Tag } from 'lucide-react';
 import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { PrintModal } from '@/components/admin/PrintModal';
+import { OrderCourierSection } from '@/components/admin/OrderCourierSection';
 
 const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
 
@@ -38,7 +39,7 @@ export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [printModal, setPrintModal] = useState<{ open: boolean; type: 'invoice' | 'courier-slip'; order: any | null }>({
+  const [printModal, setPrintModal] = useState<{ open: boolean; type: 'invoice' | 'courier-slip' | 'courier-label'; order: any | null }>({
     open: false,
     type: 'invoice',
     order: null,
@@ -269,6 +270,15 @@ export default function AdminOrders() {
                   <p className="text-sm text-muted-foreground">{selectedOrder.notes}</p>
                 </div>
               )}
+
+              {/* Courier Section */}
+              <OrderCourierSection 
+                order={selectedOrder}
+                onPrintLabel={() => {
+                  setSelectedOrder(null);
+                  setPrintModal({ open: true, type: 'courier-label', order: selectedOrder });
+                }}
+              />
 
               {/* Print Actions */}
               <div className="flex gap-3 pt-4 border-t border-border">

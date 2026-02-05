@@ -11,11 +11,12 @@ import { Order, OrderItem } from '@/hooks/useOrders';
 import { StoreSettings } from '@/hooks/useStoreSettings';
 import { OrderInvoice } from './OrderInvoice';
 import { CourierSlip } from './CourierSlip';
+import { CourierLabel } from './CourierLabel';
 
 interface PrintModalProps {
   open: boolean;
   onClose: () => void;
-  type: 'invoice' | 'courier-slip';
+  type: 'invoice' | 'courier-slip' | 'courier-label';
   order: (Order & { order_items: OrderItem[] }) | null;
   storeSettings: StoreSettings;
   formatCurrency: (amount: number) => string;
@@ -58,7 +59,7 @@ export function PrintModal({
           size: ${type === 'invoice' ? 'A4' : '4in 6in'};
           margin: ${type === 'invoice' ? '10mm' : '5mm'};
         }
-        .invoice-print, .courier-slip-print {
+        .invoice-print, .courier-slip-print, .courier-label-print {
           background: white !important;
           color: black !important;
         }
@@ -69,11 +70,13 @@ export function PrintModal({
         .bg-red-100 { background-color: #fee2e2 !important; }
         .bg-red-50 { background-color: #fef2f2 !important; }
         .bg-yellow-100 { background-color: #fef3c7 !important; }
+        .bg-orange-100 { background-color: #ffedd5 !important; }
         .text-green-600 { color: #16a34a !important; }
         .text-green-800 { color: #166534 !important; }
         .text-red-600 { color: #dc2626 !important; }
         .text-red-800 { color: #991b1b !important; }
         .text-yellow-800 { color: #854d0e !important; }
+        .text-orange-600 { color: #ea580c !important; }
         .text-gray-600 { color: #4b5563 !important; }
         .text-gray-500 { color: #6b7280 !important; }
         .text-gray-800 { color: #1f2937 !important; }
@@ -82,6 +85,7 @@ export function PrintModal({
         .border-gray-400 { border-color: #9ca3af !important; }
         .border-green-500 { border-color: #22c55e !important; }
         .border-red-500 { border-color: #ef4444 !important; }
+        .border-orange-500 { border-color: #f97316 !important; }
         table { border-collapse: collapse; width: 100%; }
         img { max-width: 100%; height: auto; }
       </style>
@@ -118,7 +122,9 @@ export function PrintModal({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>{type === 'invoice' ? 'Order Invoice' : 'Courier Slip'} - {order.order_number}</span>
+            <span>
+              {type === 'invoice' ? 'Order Invoice' : type === 'courier-slip' ? 'Courier Slip' : 'Courier Label'} - {order.order_number}
+            </span>
           </DialogTitle>
         </DialogHeader>
 
@@ -126,7 +132,7 @@ export function PrintModal({
         <div className="flex gap-3 mb-4 print:hidden">
           <Button onClick={handlePrint} className="btn-accent">
             <Printer className="h-4 w-4 mr-2" />
-            Print {type === 'invoice' ? 'Invoice' : 'Slip'}
+            Print {type === 'invoice' ? 'Invoice' : type === 'courier-slip' ? 'Slip' : 'Label'}
           </Button>
         </div>
 
@@ -142,8 +148,14 @@ export function PrintModal({
                 storeSettings={storeSettings}
                 formatCurrency={formatCurrency}
               />
-            ) : (
+            ) : type === 'courier-slip' ? (
               <CourierSlip
+                order={order}
+                storeSettings={storeSettings}
+                formatCurrency={formatCurrency}
+              />
+            ) : (
+              <CourierLabel
                 order={order}
                 storeSettings={storeSettings}
                 formatCurrency={formatCurrency}

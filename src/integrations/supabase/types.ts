@@ -44,6 +44,101 @@ export type Database = {
         }
         Relationships: []
       }
+      courier_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          message: string | null
+          order_id: string | null
+          provider: string
+          request_payload: Json | null
+          response_payload: Json | null
+          status: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          order_id?: string | null
+          provider: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          order_id?: string | null
+          provider?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_settings: {
+        Row: {
+          api_base_url: string | null
+          api_key: string | null
+          api_secret: string | null
+          cod_enabled: boolean | null
+          created_at: string | null
+          default_weight: number | null
+          enabled: boolean | null
+          id: string
+          merchant_id: string | null
+          pickup_address: string | null
+          pickup_phone: string | null
+          provider: string
+          show_tracking_to_customer: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_base_url?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          cod_enabled?: boolean | null
+          created_at?: string | null
+          default_weight?: number | null
+          enabled?: boolean | null
+          id?: string
+          merchant_id?: string | null
+          pickup_address?: string | null
+          pickup_phone?: string | null
+          provider: string
+          show_tracking_to_customer?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_base_url?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          cod_enabled?: boolean | null
+          created_at?: string | null
+          default_weight?: number | null
+          enabled?: boolean | null
+          id?: string
+          merchant_id?: string | null
+          pickup_address?: string | null
+          pickup_phone?: string | null
+          provider?: string
+          show_tracking_to_customer?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -97,6 +192,15 @@ export type Database = {
       }
       orders: {
         Row: {
+          courier_consignment_id: string | null
+          courier_created_at: string | null
+          courier_payload: Json | null
+          courier_provider: string | null
+          courier_reference: string | null
+          courier_response: Json | null
+          courier_status: string | null
+          courier_tracking_id: string | null
+          courier_updated_at: string | null
           created_at: string
           customer_email: string | null
           customer_name: string
@@ -116,6 +220,15 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          courier_consignment_id?: string | null
+          courier_created_at?: string | null
+          courier_payload?: Json | null
+          courier_provider?: string | null
+          courier_reference?: string | null
+          courier_response?: Json | null
+          courier_status?: string | null
+          courier_tracking_id?: string | null
+          courier_updated_at?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name: string
@@ -135,6 +248,15 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          courier_consignment_id?: string | null
+          courier_created_at?: string | null
+          courier_payload?: Json | null
+          courier_provider?: string | null
+          courier_reference?: string | null
+          courier_response?: Json | null
+          courier_status?: string | null
+          courier_tracking_id?: string | null
+          courier_updated_at?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string

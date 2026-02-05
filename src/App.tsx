@@ -34,6 +34,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminSlider from "./pages/admin/AdminSlider";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminCourierSettings from "./pages/admin/AdminCourierSettings";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 
 const queryClient = new QueryClient({
@@ -84,6 +85,7 @@ const App = () => (
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="slider" element={<AdminSlider />} />
                         <Route path="settings" element={<AdminSettings />} />
+                        <Route path="courier" element={<AdminCourierSettings />} />
                       </Route>
                     </Route>
 

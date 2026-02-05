@@ -11,6 +11,7 @@ import {
   Menu,
   ChevronRight,
   Store,
+  Truck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -35,6 +36,7 @@ export default function AdminLayout() {
     { name: t('admin.categories'), href: '/admin/categories', icon: FolderOpen },
     { name: t('admin.orders'), href: '/admin/orders', icon: ShoppingCart },
     { name: t('admin.slider'), href: '/admin/slider', icon: Image },
+    { name: 'Courier', href: '/admin/courier', icon: Truck },
     { name: t('admin.settings'), href: '/admin/settings', icon: Settings },
   ];
 
