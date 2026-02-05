@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
@@ -8,16 +8,29 @@ import { useCart } from '@/contexts/CartContext';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { trackViewContent, trackAddToCart } from '@/lib/facebook-pixel';
 
 export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addItem } = useCart();
-  const { t, formatCurrency } = useSiteSettings();
+  const { t, formatCurrency, settings } = useSiteSettings();
   const { data: product, isLoading } = useProduct(slug || '');
   const { data: relatedProducts = [] } = useRelatedProducts(product);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+
+  // Track ViewContent when product loads
+  useEffect(() => {
+    if (product) {
+      trackViewContent({
+        contentId: product.id,
+        contentName: product.name,
+        value: product.sale_price || product.price,
+        currency: settings.currency_code,
+      });
+    }
+  }, [product, settings.currency_code]);
 
   if (isLoading) {
     return (
@@ -61,6 +74,16 @@ export default function ProductDetailsPage() {
       quantity,
       stock: product.stock,
     });
+    
+    // Track AddToCart event
+    trackAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: (product.sale_price || product.price) * quantity,
+      currency: settings.currency_code,
+      quantity,
+    });
+    
     toast.success(t('product.addedToCart'), {
       description: `${quantity}x ${product.name}`,
     });
@@ -76,6 +99,16 @@ export default function ProductDetailsPage() {
       quantity,
       stock: product.stock,
     });
+    
+    // Track AddToCart event for buy now as well
+    trackAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: (product.sale_price || product.price) * quantity,
+      currency: settings.currency_code,
+      quantity,
+    });
+    
     navigate('/checkout?mode=buynow');
   };
 
