@@ -280,6 +280,39 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          currency_code: string
+          currency_locale: string
+          currency_symbol: string
+          default_country_code: string
+          default_country_name: string
+          id: string
+          language: string
+          updated_at: string
+        }
+        Insert: {
+          currency_code?: string
+          currency_locale?: string
+          currency_symbol?: string
+          default_country_code?: string
+          default_country_name?: string
+          id?: string
+          language?: string
+          updated_at?: string
+        }
+        Update: {
+          currency_code?: string
+          currency_locale?: string
+          currency_symbol?: string
+          default_country_code?: string
+          default_country_name?: string
+          id?: string
+          language?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       slider_slides: {
         Row: {
           created_at: string

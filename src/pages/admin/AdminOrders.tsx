@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, Eye, MoreHorizontal, RefreshCw } from 'lucide-react';
 import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,11 +24,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 
-const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
 
 export default function AdminOrders() {
   const { data: orders = [], isLoading, error, refetch } = useOrders();
   const updateStatus = useUpdateOrderStatus();
+  const { t, formatCurrency } = useSiteSettings();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -57,6 +59,10 @@ export default function AdminOrders() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    return t(`order.status.${status}`);
+  };
+
   if (error) {
     return (
       <div className="p-8 text-center">
@@ -72,7 +78,7 @@ export default function AdminOrders() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Orders</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">{t('admin.orders')}</h1>
         <Button variant="outline" size="sm" onClick={() => refetch()}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
@@ -95,11 +101,11 @@ export default function AdminOrders() {
           <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-popover z-50">
             <SelectItem value="all">All Status</SelectItem>
             {statusOptions.map((status) => (
               <SelectItem key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {getStatusLabel(status)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -117,10 +123,10 @@ export default function AdminOrders() {
             <table className="w-full">
               <thead className="bg-secondary/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Order ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">{t('order.orderNumber')}</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Customer</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Phone</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Total</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">{t('checkout.phone')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">{t('cart.total')}</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Date</th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">Actions</th>
@@ -130,7 +136,7 @@ export default function AdminOrders() {
                 {filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
-                      No orders found
+                      {t('common.noResults')}
                     </td>
                   </tr>
                 ) : (
@@ -139,7 +145,7 @@ export default function AdminOrders() {
                       <td className="px-6 py-4 font-medium">{order.order_number}</td>
                       <td className="px-6 py-4">{order.customer_name}</td>
                       <td className="px-6 py-4 text-muted-foreground">{order.customer_phone}</td>
-                      <td className="px-6 py-4 font-medium">${order.total}</td>
+                      <td className="px-6 py-4 font-medium">{formatCurrency(order.total)}</td>
                       <td className="px-6 py-4">
                         <Select
                           value={order.status}
@@ -148,10 +154,10 @@ export default function AdminOrders() {
                           <SelectTrigger className={`w-32 ${getStatusColor(order.status)}`}>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-popover z-50">
                             {statusOptions.map((status) => (
                               <SelectItem key={status} value={status}>
-                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                                {getStatusLabel(status)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -167,10 +173,10 @@ export default function AdminOrders() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="bg-popover z-50">
                             <DropdownMenuItem onClick={() => setSelectedOrder(order)}>
                               <Eye className="h-4 w-4 mr-2" />
-                              View Details
+                              {t('common.view')} Details
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -195,13 +201,13 @@ export default function AdminOrders() {
               {/* Customer Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Customer Information</h4>
+                  <h4 className="font-semibold mb-2">{t('checkout.contactInfo')}</h4>
                   <p className="text-sm">{selectedOrder.customer_name}</p>
                   <p className="text-sm text-muted-foreground">{selectedOrder.customer_phone}</p>
                   <p className="text-sm text-muted-foreground">{selectedOrder.customer_email || 'N/A'}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Shipping Address</h4>
+                  <h4 className="font-semibold mb-2">{t('checkout.shippingAddress')}</h4>
                   <p className="text-sm">{selectedOrder.shipping_address}</p>
                   <p className="text-sm text-muted-foreground">{selectedOrder.shipping_city}</p>
                 </div>
@@ -216,7 +222,7 @@ export default function AdminOrders() {
                       <span>
                         {item.product_name} x {item.quantity}
                       </span>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      <span>{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -225,23 +231,23 @@ export default function AdminOrders() {
               {/* Order Summary */}
               <div className="border-t border-border pt-4">
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Subtotal</span>
-                  <span>${selectedOrder.subtotal}</span>
+                  <span>{t('cart.subtotal')}</span>
+                  <span>{formatCurrency(selectedOrder.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Shipping</span>
-                  <span>৳{selectedOrder.shipping_cost}</span>
+                  <span>{t('cart.shipping')}</span>
+                  <span>{formatCurrency(selectedOrder.shipping_cost)}</span>
                 </div>
                 <div className="flex justify-between font-semibold mt-2 pt-2 border-t border-border">
-                  <span>Total</span>
-                  <span>${selectedOrder.total}</span>
+                  <span>{t('cart.total')}</span>
+                  <span>{formatCurrency(selectedOrder.total)}</span>
                 </div>
               </div>
 
               {/* Notes */}
               {selectedOrder.notes && (
                 <div>
-                  <h4 className="font-semibold mb-2">Order Notes</h4>
+                  <h4 className="font-semibold mb-2">{t('checkout.orderNotes')}</h4>
                   <p className="text-sm text-muted-foreground">{selectedOrder.notes}</p>
                 </div>
               )}

@@ -1,11 +1,13 @@
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, Package, ArrowRight } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
 
 export default function OrderSuccessPage() {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('orderId') || 'N/A';
+  const { t } = useSiteSettings();
 
   return (
     <Layout>
@@ -16,17 +18,16 @@ export default function OrderSuccessPage() {
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            Order Confirmed!
+            {t('order.success')}
           </h1>
           <p className="text-muted-foreground mb-8">
-            Thank you for your purchase. Your order has been received and is
-            being processed.
+            {t('order.orderConfirmation')}
           </p>
 
           <div className="bg-card rounded-xl border border-border p-6 mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
               <Package className="h-6 w-6 text-accent" />
-              <span className="font-semibold">Order ID</span>
+              <span className="font-semibold">{t('order.orderNumber')}</span>
             </div>
             <p className="text-2xl font-bold text-accent">{orderId}</p>
             <p className="text-sm text-muted-foreground mt-2">
@@ -55,12 +56,12 @@ export default function OrderSuccessPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/shop">
               <Button className="btn-accent">
-                Continue Shopping
+                {t('cart.continueShopping')}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </Link>
             <Link to="/">
-              <Button variant="outline">Back to Home</Button>
+              <Button variant="outline">{t('common.back')} {t('nav.home')}</Button>
             </Link>
           </div>
         </div>

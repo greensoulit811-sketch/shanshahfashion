@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -9,25 +9,25 @@ import {
   Settings,
   LogOut,
   Menu,
-  X,
   ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-
-const sidebarItems = [
-  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Products', href: '/admin/products', icon: Package },
-  { name: 'Categories', href: '/admin/categories', icon: FolderOpen },
-  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-  { name: 'Slider', href: '/admin/slider', icon: Image },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
-];
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 
 export default function AdminLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { t } = useSiteSettings();
+
+  const sidebarItems = [
+    { name: t('admin.dashboard'), href: '/admin', icon: LayoutDashboard },
+    { name: t('admin.products'), href: '/admin/products', icon: Package },
+    { name: t('admin.categories'), href: '/admin/categories', icon: FolderOpen },
+    { name: t('admin.orders'), href: '/admin/orders', icon: ShoppingCart },
+    { name: t('admin.slider'), href: '/admin/slider', icon: Image },
+    { name: t('admin.settings'), href: '/admin/settings', icon: Settings },
+  ];
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -36,7 +36,7 @@ export default function AdminLayout() {
         <Link to="/admin" className="flex items-center gap-2">
           <span className="text-xl font-bold">STORE</span>
           <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded">
-            Admin
+            {t('common.admin')}
           </span>
         </Link>
       </div>
@@ -47,7 +47,7 @@ export default function AdminLayout() {
           const isActive = location.pathname === item.href;
           return (
             <Link
-              key={item.name}
+              key={item.href}
               to={item.href}
               onClick={() => setIsMobileOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
@@ -91,7 +91,7 @@ export default function AdminLayout() {
             <Link to="/admin" className="flex items-center gap-2">
               <span className="text-xl font-bold">STORE</span>
               <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded">
-                Admin
+                {t('common.admin')}
               </span>
             </Link>
 
