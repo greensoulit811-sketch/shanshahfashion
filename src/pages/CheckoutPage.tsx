@@ -6,8 +6,10 @@ import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { useIncrementCouponUsage, Coupon } from '@/hooks/useCoupons';
+import { useShippingMethods } from '@/hooks/useShippingMethods';
 import { CouponInput } from '@/components/checkout/CouponInput';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { trackInitiateCheckout } from '@/lib/facebook-pixel';
 
@@ -18,6 +20,7 @@ export default function CheckoutPage() {
   const { t, formatCurrency, settings } = useSiteSettings();
   const createOrder = useCreateOrder();
   const incrementCouponUsage = useIncrementCouponUsage();
+  const { data: shippingMethods = [], isLoading: isLoadingMethods } = useShippingMethods(true);
 
   // Coupon state
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -31,16 +34,19 @@ export default function CheckoutPage() {
     city: '',
     country: settings.default_country_name,
     notes: '',
-    shippingMethod: 'inside-dhaka',
+    shippingMethodId: '',
     paymentMethod: 'cod',
   });
 
-  const shippingCosts: Record<string, number> = {
-    'inside-dhaka': 60,
-    'outside-dhaka': 120,
-  };
+  // Set default shipping method when methods load
+  useEffect(() => {
+    if (shippingMethods.length > 0 && !formData.shippingMethodId) {
+      setFormData(prev => ({ ...prev, shippingMethodId: shippingMethods[0].id }));
+    }
+  }, [shippingMethods]);
 
-  const shippingCost = shippingCosts[formData.shippingMethod] || 60;
+  const selectedMethod = shippingMethods.find(m => m.id === formData.shippingMethodId);
+  const shippingCost = selectedMethod?.base_rate || 0;
   const total = subtotal - discountAmount + shippingCost;
 
   const handleApplyCoupon = (coupon: Coupon, discount: number) => {
@@ -95,7 +101,7 @@ export default function CheckoutPage() {
           customer_email: formData.email || null,
           shipping_address: formData.address,
           shipping_city: formData.city,
-          shipping_method: formData.shippingMethod,
+          shipping_method: selectedMethod?.name || 'Standard',
           shipping_cost: shippingCost,
           payment_method: formData.paymentMethod,
           subtotal,
@@ -264,38 +270,42 @@ export default function CheckoutPage() {
               {/* Shipping Method */}
               <div className="bg-card rounded-xl border border-border p-6">
                 <h2 className="text-lg font-semibold mb-4">{t('checkout.shippingMethod')}</h2>
-                <div className="space-y-3">
-                  <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
-                    <input
-                      type="radio"
-                      name="shippingMethod"
-                      value="inside-dhaka"
-                      checked={formData.shippingMethod === 'inside-dhaka'}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-accent"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{t('checkout.insideDhaka')}</p>
-                      <p className="text-sm text-muted-foreground">2-3 {t('checkout.businessDays')}</p>
-                    </div>
-                    <span className="font-semibold">{formatCurrency(60)}</span>
-                  </label>
-                  <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
-                    <input
-                      type="radio"
-                      name="shippingMethod"
-                      value="outside-dhaka"
-                      checked={formData.shippingMethod === 'outside-dhaka'}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-accent"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{t('checkout.outsideDhaka')}</p>
-                      <p className="text-sm text-muted-foreground">5-7 {t('checkout.businessDays')}</p>
-                    </div>
-                    <span className="font-semibold">{formatCurrency(120)}</span>
-                  </label>
-                </div>
+                {isLoadingMethods ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                ) : shippingMethods.length === 0 ? (
+                  <p className="text-muted-foreground">No shipping methods available</p>
+                ) : (
+                  <div className="space-y-3">
+                    {shippingMethods.map((method) => (
+                      <label
+                        key={method.id}
+                        className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors"
+                      >
+                        <input
+                          type="radio"
+                          name="shippingMethodId"
+                          value={method.id}
+                          checked={formData.shippingMethodId === method.id}
+                          onChange={handleChange}
+                          className="w-4 h-4 text-accent"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{method.name}</p>
+                          {method.estimated_days && (
+                            <p className="text-sm text-muted-foreground">{method.estimated_days}</p>
+                          )}
+                          {method.description && (
+                            <p className="text-xs text-muted-foreground mt-1">{method.description}</p>
+                          )}
+                        </div>
+                        <span className="font-semibold">{formatCurrency(method.base_rate)}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Payment Method */}
