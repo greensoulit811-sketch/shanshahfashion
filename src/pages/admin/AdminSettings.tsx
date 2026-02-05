@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useSiteSettings, useUpdateSiteSettings } from '@/contexts/SiteSettingsContext';
@@ -39,6 +39,7 @@ export default function AdminSettings() {
     currencySymbol: settings.currency_symbol,
     currencyLocale: settings.currency_locale,
     language: settings.language,
+    themeAccentColor: settings.theme_accent_color || '#e85a4f',
   });
 
   const [storeData, setStoreData] = useState({
@@ -79,6 +80,7 @@ export default function AdminSettings() {
         currencySymbol: settings.currency_symbol,
         currencyLocale: settings.currency_locale,
         language: settings.language,
+        themeAccentColor: settings.theme_accent_color || '#e85a4f',
       });
       setPixelData({
         fb_pixel_enabled: settings.fb_pixel_enabled,
@@ -124,6 +126,7 @@ export default function AdminSettings() {
       currencySymbol: defaultCountry.currencySymbol,
       currencyLocale: defaultCountry.currencyLocale,
       language: 'en',
+      themeAccentColor: '#e85a4f',
     });
   };
 
@@ -143,6 +146,7 @@ export default function AdminSettings() {
         currency_symbol: formData.currencySymbol,
         currency_locale: formData.currencyLocale,
         language: formData.language,
+        theme_accent_color: formData.themeAccentColor,
       });
       toast.success(t('admin.settingsSaved'));
     } catch (error) {
@@ -577,6 +581,75 @@ export default function AdminSettings() {
                   <p className="text-xs text-muted-foreground mt-2">
                     Currency is auto-filled based on the selected country
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Theme Color Settings */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Palette className="h-5 w-5 text-accent" />
+                <h2 className="text-lg font-semibold">Theme Color</h2>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Accent Color
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="color"
+                      value={formData.themeAccentColor}
+                      onChange={(e) => setFormData({ ...formData, themeAccentColor: e.target.value })}
+                      className="w-16 h-10 rounded-lg border border-border cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={formData.themeAccentColor}
+                      onChange={(e) => setFormData({ ...formData, themeAccentColor: e.target.value })}
+                      className="input-shop w-32"
+                      placeholder="#e85a4f"
+                    />
+                    <div 
+                      className="w-10 h-10 rounded-lg border border-border"
+                      style={{ backgroundColor: formData.themeAccentColor }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This color will be used for buttons, links, and accent elements throughout the website
+                  </p>
+                </div>
+
+                {/* Preset Colors */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Quick Presets</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { color: '#e85a4f', name: 'Coral' },
+                      { color: '#3b82f6', name: 'Blue' },
+                      { color: '#10b981', name: 'Emerald' },
+                      { color: '#8b5cf6', name: 'Violet' },
+                      { color: '#f59e0b', name: 'Amber' },
+                      { color: '#ec4899', name: 'Pink' },
+                      { color: '#06b6d4', name: 'Cyan' },
+                      { color: '#ef4444', name: 'Red' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.color}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, themeAccentColor: preset.color })}
+                        className={cn(
+                          'w-10 h-10 rounded-lg border-2 transition-all hover:scale-110',
+                          formData.themeAccentColor === preset.color
+                            ? 'border-foreground ring-2 ring-offset-2 ring-foreground'
+                            : 'border-transparent'
+                        )}
+                        style={{ backgroundColor: preset.color }}
+                        title={preset.name}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

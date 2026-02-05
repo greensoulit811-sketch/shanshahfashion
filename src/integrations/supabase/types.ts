@@ -293,6 +293,7 @@ export type Database = {
           fb_pixel_test_event_code: string | null
           id: string
           language: string
+          theme_accent_color: string | null
           updated_at: string
         }
         Insert: {
@@ -307,6 +308,7 @@ export type Database = {
           fb_pixel_test_event_code?: string | null
           id?: string
           language?: string
+          theme_accent_color?: string | null
           updated_at?: string
         }
         Update: {
@@ -321,6 +323,7 @@ export type Database = {
           fb_pixel_test_event_code?: string | null
           id?: string
           language?: string
+          theme_accent_color?: string | null
           updated_at?: string
         }
         Relationships: []
