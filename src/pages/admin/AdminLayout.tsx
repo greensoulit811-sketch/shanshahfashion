@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -10,15 +10,24 @@ import {
   LogOut,
   Menu,
   ChevronRight,
+  Store,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { t } = useSiteSettings();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/admin/login');
+  };
 
   const sidebarItems = [
     { name: t('admin.dashboard'), href: '/admin', icon: LayoutDashboard },
@@ -65,11 +74,26 @@ export default function AdminLayout() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-border">
-        <Link to="/" className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground transition-colors">
-          <LogOut className="h-5 w-5" />
+      <div className="p-4 border-t border-border space-y-1">
+        {user && (
+          <div className="px-4 py-2 text-xs text-muted-foreground truncate">
+            {user.email}
+          </div>
+        )}
+        <Link 
+          to="/" 
+          className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+        >
+          <Store className="h-5 w-5" />
           <span className="font-medium">Back to Store</span>
         </Link>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="font-medium">Logout</span>
+        </button>
       </div>
     </div>
   );
