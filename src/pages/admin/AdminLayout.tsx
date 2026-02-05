@@ -15,6 +15,7 @@ import {
   Tag,
   MapPin,
   MessageSquare,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -38,6 +39,7 @@ export default function AdminLayout() {
     { name: t('admin.products'), href: '/admin/products', icon: Package },
     { name: t('admin.categories'), href: '/admin/categories', icon: FolderOpen },
     { name: t('admin.orders'), href: '/admin/orders', icon: ShoppingCart },
+    { name: 'Checkout Leads', href: '/admin/leads', icon: Users },
     { name: t('admin.slider'), href: '/admin/slider', icon: Image },
     { name: 'Coupons', href: '/admin/coupons', icon: Tag },
     { name: 'Shipping Zones', href: '/admin/shipping', icon: MapPin },

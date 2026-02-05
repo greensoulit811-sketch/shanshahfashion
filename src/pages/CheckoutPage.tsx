@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { useIncrementCouponUsage, Coupon } from '@/hooks/useCoupons';
 import { useShippingMethods } from '@/hooks/useShippingMethods';
+import { useCheckoutLeadCapture, useConvertLead } from '@/hooks/useCheckoutLeads';
 import { CouponInput } from '@/components/checkout/CouponInput';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,6 +22,8 @@ export default function CheckoutPage() {
   const createOrder = useCreateOrder();
   const incrementCouponUsage = useIncrementCouponUsage();
   const { data: shippingMethods = [], isLoading: isLoadingMethods } = useShippingMethods(true);
+  const { debouncedSave, saveImmediately, clearLeadStorage } = useCheckoutLeadCapture();
+  const convertLead = useConvertLead();
 
   // Coupon state
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -48,6 +51,47 @@ export default function CheckoutPage() {
   const selectedMethod = shippingMethods.find(m => m.id === formData.shippingMethodId);
   const shippingCost = selectedMethod?.base_rate || 0;
   const total = subtotal - discountAmount + shippingCost;
+
+  // Build lead data for capture
+  const buildLeadData = useCallback(() => ({
+    customer_name: formData.fullName,
+    phone: formData.phone,
+    email: formData.email,
+    address: formData.address,
+    city: formData.city,
+    country: formData.country,
+    notes: formData.notes,
+    items: items.map((item) => ({
+      product_id: item.id,
+      product_name: item.name,
+      unit_price: item.salePrice ?? item.price,
+      quantity: item.quantity,
+      line_total: (item.salePrice ?? item.price) * item.quantity,
+    })),
+    subtotal,
+    shipping_fee: shippingCost,
+    total,
+    currency_code: settings.currency_code,
+  }), [formData, items, subtotal, shippingCost, total, settings.currency_code]);
+
+  // Save lead when form data or cart changes (debounced)
+  useEffect(() => {
+    if (formData.phone && formData.phone.trim().length >= 5 && items.length > 0) {
+      debouncedSave(buildLeadData());
+    }
+  }, [formData, items, shippingCost, debouncedSave, buildLeadData]);
+
+  // Save lead on beforeunload (user leaving page)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (formData.phone && formData.phone.trim().length >= 5 && items.length > 0) {
+        saveImmediately();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [formData.phone, items.length, saveImmediately]);
 
   const handleApplyCoupon = (coupon: Coupon, discount: number) => {
     setAppliedCoupon(coupon);
@@ -92,7 +136,7 @@ export default function CheckoutPage() {
     const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
 
     try {
-      await createOrder.mutateAsync({
+      const orderResult = await createOrder.mutateAsync({
         order: {
           order_number: orderNumber,
           user_id: user?.id || null,
@@ -117,6 +161,12 @@ export default function CheckoutPage() {
           price: item.salePrice ?? item.price,
         })),
       });
+
+      // Mark lead as converted and clear storage
+      if (orderResult?.id) {
+        convertLead.mutate(orderResult.id);
+      }
+      clearLeadStorage();
 
       // Increment coupon usage if one was applied
       if (appliedCoupon) {

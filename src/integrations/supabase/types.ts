@@ -44,6 +44,101 @@ export type Database = {
         }
         Relationships: []
       }
+      checkout_leads: {
+        Row: {
+          address: string | null
+          city: string | null
+          converted_order_id: string | null
+          country: string | null
+          created_at: string
+          currency_code: string
+          customer_name: string | null
+          email: string | null
+          id: string
+          items: Json
+          last_activity_at: string
+          lead_no: string
+          lead_token: string
+          notes: string | null
+          page_url: string | null
+          phone: string
+          shipping_fee: number
+          source: string
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          converted_order_id?: string | null
+          country?: string | null
+          created_at?: string
+          currency_code?: string
+          customer_name?: string | null
+          email?: string | null
+          id?: string
+          items?: Json
+          last_activity_at?: string
+          lead_no: string
+          lead_token?: string
+          notes?: string | null
+          page_url?: string | null
+          phone: string
+          shipping_fee?: number
+          source?: string
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          converted_order_id?: string | null
+          country?: string | null
+          created_at?: string
+          currency_code?: string
+          customer_name?: string | null
+          email?: string | null
+          id?: string
+          items?: Json
+          last_activity_at?: string
+          lead_no?: string
+          lead_token?: string
+          notes?: string | null
+          page_url?: string | null
+          phone?: string
+          shipping_fee?: number
+          source?: string
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_leads_converted_order_id_fkey"
+            columns: ["converted_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courier_logs: {
         Row: {
           action: string
