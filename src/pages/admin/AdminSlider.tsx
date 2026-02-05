@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Edit, Trash2, MoreHorizontal, GripVertical } from 'lucide-react';
 import { useSliderSlides, useCreateSlide, useUpdateSlide, useDeleteSlide, SliderSlide } from '@/hooks/useShopData';
 import { Button } from '@/components/ui/button';
+import { ImageUpload } from '@/components/admin/ImageUpload';
 import {
   Dialog,
   DialogContent,
@@ -141,14 +142,11 @@ export default function AdminSlider() {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Image URL *</label>
-                <input
-                  type="url"
+                <label className="block text-sm font-medium mb-2">Slide Image *</label>
+                <ImageUpload
                   value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="input-shop"
-                  placeholder="https://..."
-                  required
+                  onChange={(url) => setFormData({ ...formData, image: url })}
+                  folder="slider"
                 />
               </div>
               <div>
