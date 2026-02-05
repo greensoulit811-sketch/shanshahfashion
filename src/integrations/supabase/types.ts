@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           id: string
           image: string
+          is_active: boolean
           name: string
           slug: string
           updated_at: string
@@ -27,6 +28,7 @@ export type Database = {
           created_at?: string
           id?: string
           image: string
+          is_active?: boolean
           name: string
           slug: string
           updated_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           created_at?: string
           id?: string
           image?: string
+          is_active?: boolean
           name?: string
           slug?: string
           updated_at?: string
@@ -45,6 +48,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          line_total: number | null
           order_id: string
           price: number
           product_id: string | null
@@ -55,6 +59,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          line_total?: number | null
           order_id: string
           price: number
           product_id?: string | null
@@ -65,6 +70,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          line_total?: number | null
           order_id?: string
           price?: number
           product_id?: string | null
@@ -156,6 +162,7 @@ export type Database = {
           description: string | null
           id: string
           images: string[]
+          is_active: boolean
           is_best_seller: boolean | null
           is_featured: boolean | null
           is_new: boolean | null
@@ -174,6 +181,7 @@ export type Database = {
           description?: string | null
           id?: string
           images?: string[]
+          is_active?: boolean
           is_best_seller?: boolean | null
           is_featured?: boolean | null
           is_new?: boolean | null
@@ -192,6 +200,7 @@ export type Database = {
           description?: string | null
           id?: string
           images?: string[]
+          is_active?: boolean
           is_best_seller?: boolean | null
           is_featured?: boolean | null
           is_new?: boolean | null

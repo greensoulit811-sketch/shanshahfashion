@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, MoreHorizontal } from 'lucide-react';
-import { products as initialProducts, Product } from '@/data/products';
+import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct, Product, Category } from '@/hooks/useShopData';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,29 +15,56 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+const generateSlug = (name: string) => {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+};
 
 export default function AdminProducts() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const { data: products = [], isLoading, error } = useProducts();
+  const { data: categories = [] } = useCategories();
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
     price: '',
-    salePrice: '',
-    category: '',
-    categorySlug: '',
-    stock: '',
+    sale_price: '',
+    category_id: '',
+    stock: '0',
     sku: '',
-    shortDescription: '',
+    short_description: '',
     description: '',
     images: '',
-    isNew: false,
-    isBestSeller: false,
-    isFeatured: false,
+    is_new: false,
+    is_best_seller: false,
+    is_featured: false,
+    is_active: true,
   });
 
   const filteredProducts = products.filter(
@@ -52,58 +79,58 @@ export default function AdminProducts() {
       name: product.name,
       slug: product.slug,
       price: product.price.toString(),
-      salePrice: product.salePrice?.toString() || '',
-      category: product.category,
-      categorySlug: product.categorySlug,
+      sale_price: product.sale_price?.toString() || '',
+      category_id: product.category_id || '',
       stock: product.stock.toString(),
       sku: product.sku,
-      shortDescription: product.shortDescription,
-      description: product.description,
+      short_description: product.short_description || '',
+      description: product.description || '',
       images: product.images.join('\n'),
-      isNew: product.isNew || false,
-      isBestSeller: product.isBestSeller || false,
-      isFeatured: product.isFeatured || false,
+      is_new: product.is_new || false,
+      is_best_seller: product.is_best_seller || false,
+      is_featured: product.is_featured || false,
+      is_active: (product as any).is_active ?? true,
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setProducts(products.filter((p) => p.id !== id));
-    toast.success('Product deleted');
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    await deleteProduct.mutateAsync(deleteId);
+    setDeleteId(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const productData: Product = {
-      id: editingProduct?.id || Date.now().toString(),
+    const productData = {
       name: formData.name,
       slug: formData.slug,
       price: parseFloat(formData.price),
-      salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
-      category: formData.category,
-      categorySlug: formData.categorySlug,
+      sale_price: formData.sale_price ? parseFloat(formData.sale_price) : null,
+      category_id: formData.category_id || null,
       stock: parseInt(formData.stock),
       sku: formData.sku,
-      shortDescription: formData.shortDescription,
-      description: formData.description,
+      short_description: formData.short_description || null,
+      description: formData.description || null,
       images: formData.images.split('\n').filter(Boolean),
-      isNew: formData.isNew,
-      isBestSeller: formData.isBestSeller,
-      isFeatured: formData.isFeatured,
+      is_new: formData.is_new,
+      is_best_seller: formData.is_best_seller,
+      is_featured: formData.is_featured,
     };
 
-    if (editingProduct) {
-      setProducts(products.map((p) => (p.id === editingProduct.id ? productData : p)));
-      toast.success('Product updated');
-    } else {
-      setProducts([...products, productData]);
-      toast.success('Product created');
+    try {
+      if (editingProduct) {
+        await updateProduct.mutateAsync({ id: editingProduct.id, ...productData });
+      } else {
+        await createProduct.mutateAsync(productData as any);
+      }
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+      resetForm();
+    } catch (error) {
+      // Error handled by mutation
     }
-
-    setIsDialogOpen(false);
-    setEditingProduct(null);
-    resetForm();
   };
 
   const resetForm = () => {
@@ -111,19 +138,34 @@ export default function AdminProducts() {
       name: '',
       slug: '',
       price: '',
-      salePrice: '',
-      category: '',
-      categorySlug: '',
-      stock: '',
+      sale_price: '',
+      category_id: '',
+      stock: '0',
       sku: '',
-      shortDescription: '',
+      short_description: '',
       description: '',
       images: '',
-      isNew: false,
-      isBestSeller: false,
-      isFeatured: false,
+      is_new: false,
+      is_best_seller: false,
+      is_featured: false,
+      is_active: true,
     });
   };
+
+  // Auto-generate slug from name
+  useEffect(() => {
+    if (!editingProduct && formData.name) {
+      setFormData((prev) => ({ ...prev, slug: generateSlug(prev.name) }));
+    }
+  }, [formData.name, editingProduct]);
+
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-destructive">Failed to load products. Check RLS policies.</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -151,7 +193,7 @@ export default function AdminProducts() {
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <label className="block text-sm font-medium mb-2">Name *</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -161,7 +203,7 @@ export default function AdminProducts() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Slug</label>
+                  <label className="block text-sm font-medium mb-2">Slug *</label>
                   <input
                     type="text"
                     value={formData.slug}
@@ -171,7 +213,7 @@ export default function AdminProducts() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Price</label>
+                  <label className="block text-sm font-medium mb-2">Price *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -186,33 +228,31 @@ export default function AdminProducts() {
                   <input
                     type="number"
                     step="0.01"
-                    value={formData.salePrice}
-                    onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                    value={formData.sale_price}
+                    onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
                     className="input-shop"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Category</label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="input-shop"
-                    required
-                  />
+                  <label className="block text-sm font-medium mb-2">Category *</label>
+                  <Select
+                    value={formData.category_id}
+                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Category Slug</label>
-                  <input
-                    type="text"
-                    value={formData.categorySlug}
-                    onChange={(e) => setFormData({ ...formData, categorySlug: e.target.value })}
-                    className="input-shop"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Stock</label>
+                  <label className="block text-sm font-medium mb-2">Stock *</label>
                   <input
                     type="number"
                     value={formData.stock}
@@ -221,8 +261,8 @@ export default function AdminProducts() {
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">SKU</label>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium mb-2">SKU *</label>
                   <input
                     type="text"
                     value={formData.sku}
@@ -236,10 +276,9 @@ export default function AdminProducts() {
                 <label className="block text-sm font-medium mb-2">Short Description</label>
                 <input
                   type="text"
-                  value={formData.shortDescription}
-                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                  value={formData.short_description}
+                  onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
                   className="input-shop"
-                  required
                 />
               </div>
               <div>
@@ -248,12 +287,11 @@ export default function AdminProducts() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="input-shop min-h-[100px]"
-                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Image URLs (one per line)
+                  Image URLs (one per line) *
                 </label>
                 <textarea
                   value={formData.images}
@@ -267,8 +305,8 @@ export default function AdminProducts() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={formData.isNew}
-                    onChange={(e) => setFormData({ ...formData, isNew: e.target.checked })}
+                    checked={formData.is_new}
+                    onChange={(e) => setFormData({ ...formData, is_new: e.target.checked })}
                     className="w-4 h-4"
                   />
                   <span className="text-sm">New Arrival</span>
@@ -276,8 +314,8 @@ export default function AdminProducts() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={formData.isBestSeller}
-                    onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
+                    checked={formData.is_best_seller}
+                    onChange={(e) => setFormData({ ...formData, is_best_seller: e.target.checked })}
                     className="w-4 h-4"
                   />
                   <span className="text-sm">Best Seller</span>
@@ -285,15 +323,15 @@ export default function AdminProducts() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={formData.isFeatured}
-                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                    checked={formData.is_featured}
+                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
                     className="w-4 h-4"
                   />
                   <span className="text-sm">Featured</span>
                 </label>
               </div>
               <div className="flex gap-3 pt-4">
-                <Button type="submit" className="btn-accent flex-1">
+                <Button type="submit" className="btn-accent flex-1" disabled={createProduct.isPending || updateProduct.isPending}>
                   {editingProduct ? 'Update Product' : 'Create Product'}
                 </Button>
                 <Button
@@ -323,98 +361,97 @@ export default function AdminProducts() {
 
       {/* Products Table */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-secondary/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">
-                  Product
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">
-                  SKU
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">
-                  Price
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">
-                  Stock
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-12 h-12 rounded-lg object-cover bg-secondary"
-                      />
-                      <span className="font-medium line-clamp-1">{product.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground">{product.sku}</td>
-                  <td className="px-6 py-4">
-                    {product.salePrice ? (
-                      <div>
-                        <span className="font-medium">${product.salePrice}</span>
-                        <span className="text-sm text-muted-foreground line-through ml-2">
-                          ${product.price}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="font-medium">${product.price}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`${
-                        product.stock > 10
-                          ? 'text-green-600'
-                          : product.stock > 0
-                          ? 'text-yellow-600'
-                          : 'text-red-600'
-                      }`}
-                    >
-                      {product.stock}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground">{product.category}</td>
-                  <td className="px-6 py-4 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(product)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(product.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-secondary/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Product</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">SKU</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Stock</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Category</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredProducts.map((product) => (
+                  <tr key={product.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.images[0] || '/placeholder.svg'}
+                          alt={product.name}
+                          className="w-12 h-12 rounded-lg object-cover bg-secondary"
+                        />
+                        <span className="font-medium line-clamp-1">{product.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">{product.sku}</td>
+                    <td className="px-6 py-4">
+                      {product.sale_price ? (
+                        <div>
+                          <span className="font-medium">${product.sale_price}</span>
+                          <span className="text-sm text-muted-foreground line-through ml-2">${product.price}</span>
+                        </div>
+                      ) : (
+                        <span className="font-medium">${product.price}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'}>
+                        {product.stock}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">{product.category?.name || '-'}</td>
+                    <td className="px-6 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(product)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDeleteId(product.id)} className="text-destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this product? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
