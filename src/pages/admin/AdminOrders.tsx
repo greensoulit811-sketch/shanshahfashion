@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Search, Eye, MoreHorizontal, RefreshCw } from 'lucide-react';
+import { Search, Eye, MoreHorizontal, RefreshCw, Printer, FileText } from 'lucide-react';
 import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,20 +21,28 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
+import { PrintModal } from '@/components/admin/PrintModal';
 
 const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
 
 export default function AdminOrders() {
   const { data: orders = [], isLoading, error, refetch } = useOrders();
+  const { data: storeSettings } = useStoreSettings();
   const updateStatus = useUpdateOrderStatus();
   const { t, formatCurrency } = useSiteSettings();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [printModal, setPrintModal] = useState<{ open: boolean; type: 'invoice' | 'courier-slip'; order: any | null }>({
+    open: false,
+    type: 'invoice',
+    order: null,
+  });
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -178,6 +187,15 @@ export default function AdminOrders() {
                               <Eye className="h-4 w-4 mr-2" />
                               {t('common.view')} Details
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setPrintModal({ open: true, type: 'invoice', order })}>
+                              <FileText className="h-4 w-4 mr-2" />
+                              Print Invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setPrintModal({ open: true, type: 'courier-slip', order })}>
+                              <Printer className="h-4 w-4 mr-2" />
+                              Print Courier Slip
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -251,10 +269,59 @@ export default function AdminOrders() {
                   <p className="text-sm text-muted-foreground">{selectedOrder.notes}</p>
                 </div>
               )}
+
+              {/* Print Actions */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedOrder(null);
+                    setPrintModal({ open: true, type: 'invoice', order: selectedOrder });
+                  }}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Print Invoice
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedOrder(null);
+                    setPrintModal({ open: true, type: 'courier-slip', order: selectedOrder });
+                  }}
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Courier Slip
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Print Modal */}
+      <PrintModal
+        open={printModal.open}
+        onClose={() => setPrintModal({ open: false, type: 'invoice', order: null })}
+        type={printModal.type}
+        order={printModal.order}
+        storeSettings={storeSettings || {
+          store_name: 'My Store',
+          store_logo: '',
+          store_tagline: '',
+          store_email: '',
+          store_phone: '',
+          store_address: '',
+          store_city: '',
+          store_postal_code: '',
+          facebook_url: '',
+          instagram_url: '',
+          twitter_url: '',
+          youtube_url: '',
+          whatsapp_number: '',
+          footer_text: '',
+        }}
+        formatCurrency={formatCurrency}
+      />
     </div>
   );
 }
