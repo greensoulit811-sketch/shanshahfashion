@@ -77,26 +77,6 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* Quick actions on hover */}
-          <div className="absolute inset-x-3 bottom-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="flex-1 text-xs"
-              onClick={handleAddToCart}
-            >
-              <ShoppingBag className="h-3 w-3 mr-1" />
-              {t('product.addToCart')}
-            </Button>
-            <Button
-              size="sm"
-              className="btn-accent flex-1 text-xs"
-              onClick={handleBuyNow}
-            >
-              <Zap className="h-3 w-3 mr-1" />
-              {t('product.buyNow')}
-            </Button>
-          </div>
         </div>
 
         {/* Content */}
@@ -124,8 +104,8 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
 
-      {/* Mobile buttons */}
-      <div className="px-4 pb-4 flex gap-2 md:hidden">
+      {/* Action buttons - always visible */}
+      <div className="px-4 pb-4 flex gap-2">
         <Button
           size="sm"
           variant="outline"
