@@ -14,6 +14,11 @@ export interface SiteSettings {
   currency_locale: string;
   language: 'en' | 'hi' | 'bn';
   updated_at: string;
+  // Facebook Pixel fields
+  fb_pixel_enabled: boolean;
+  fb_pixel_id: string | null;
+  fb_pixel_test_event_code: string | null;
+  cookie_consent_enabled: boolean;
 }
 
 type TranslationsType = typeof enTranslations;
@@ -33,6 +38,10 @@ const defaultSettings: SiteSettings = {
   currency_locale: 'bn-BD',
   language: 'en',
   updated_at: new Date().toISOString(),
+  fb_pixel_enabled: false,
+  fb_pixel_id: null,
+  fb_pixel_test_event_code: null,
+  cookie_consent_enabled: false,
 };
 
 interface SiteSettingsContextType {

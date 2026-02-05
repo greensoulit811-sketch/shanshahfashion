@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2 } from 'lucide-react';
+import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useSiteSettings, useUpdateSiteSettings } from '@/contexts/SiteSettingsContext';
@@ -8,6 +8,8 @@ import { countries, getCountryByCode, getDefaultCountry } from '@/data/countries
 import { format } from 'date-fns';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { validatePixelId, testPixelConnection } from '@/lib/facebook-pixel';
 import {
   Command,
   CommandEmpty,
@@ -56,7 +58,16 @@ export default function AdminSettings() {
     footer_text: '',
   });
 
+  const [pixelData, setPixelData] = useState({
+    fb_pixel_enabled: false,
+    fb_pixel_id: '',
+    fb_pixel_test_event_code: '',
+    cookie_consent_enabled: false,
+  });
+
   const [countryOpen, setCountryOpen] = useState(false);
+  const [isTestingPixel, setIsTestingPixel] = useState(false);
+  const [pixelTestResult, setPixelTestResult] = useState<'success' | 'error' | null>(null);
 
   // Update form when settings load
   useEffect(() => {
@@ -68,6 +79,12 @@ export default function AdminSettings() {
         currencySymbol: settings.currency_symbol,
         currencyLocale: settings.currency_locale,
         language: settings.language,
+      });
+      setPixelData({
+        fb_pixel_enabled: settings.fb_pixel_enabled,
+        fb_pixel_id: settings.fb_pixel_id || '',
+        fb_pixel_test_event_code: settings.fb_pixel_test_event_code || '',
+        cookie_consent_enabled: settings.cookie_consent_enabled,
       });
     }
   }, [settings]);
@@ -144,6 +161,64 @@ export default function AdminSettings() {
     }
   };
 
+  const handlePixelSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate pixel ID if enabled
+    if (pixelData.fb_pixel_enabled) {
+      if (!pixelData.fb_pixel_id.trim()) {
+        toast.error('Please enter a Facebook Pixel ID');
+        return;
+      }
+      if (!validatePixelId(pixelData.fb_pixel_id.trim())) {
+        toast.error('Pixel ID must be 10-20 digits');
+        return;
+      }
+    }
+
+    try {
+      await updateSettings.mutateAsync({
+        fb_pixel_enabled: pixelData.fb_pixel_enabled,
+        fb_pixel_id: pixelData.fb_pixel_id.trim() || null,
+        fb_pixel_test_event_code: pixelData.fb_pixel_test_event_code.trim() || null,
+        cookie_consent_enabled: pixelData.cookie_consent_enabled,
+      });
+      toast.success('Marketing settings saved successfully');
+    } catch (error) {
+      toast.error('Failed to save marketing settings');
+    }
+  };
+
+  const handleTestPixel = async () => {
+    if (!pixelData.fb_pixel_id.trim()) {
+      toast.error('Enter a Pixel ID first');
+      return;
+    }
+
+    if (!validatePixelId(pixelData.fb_pixel_id.trim())) {
+      toast.error('Invalid Pixel ID format');
+      return;
+    }
+
+    setIsTestingPixel(true);
+    setPixelTestResult(null);
+
+    try {
+      const result = await testPixelConnection(pixelData.fb_pixel_id.trim());
+      setPixelTestResult(result ? 'success' : 'error');
+      if (result) {
+        toast.success('Pixel connection successful!');
+      } else {
+        toast.error('Could not verify pixel. Check the ID or try again.');
+      }
+    } catch {
+      setPixelTestResult('error');
+      toast.error('Failed to test pixel connection');
+    } finally {
+      setIsTestingPixel(false);
+    }
+  };
+
   const languageOptions = [
     { code: 'en', name: 'English', nativeName: 'English' },
     { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
@@ -169,7 +244,7 @@ export default function AdminSettings() {
       <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('admin.settingsTitle')}</h1>
 
       <Tabs defaultValue="store" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
           <TabsTrigger value="store" className="gap-2">
             <Store className="h-4 w-4" />
             Store Info
@@ -177,6 +252,10 @@ export default function AdminSettings() {
           <TabsTrigger value="global" className="gap-2">
             <Globe className="h-4 w-4" />
             {t('admin.globalSettings')}
+          </TabsTrigger>
+          <TabsTrigger value="marketing" className="gap-2">
+            <Megaphone className="h-4 w-4" />
+            Marketing
           </TabsTrigger>
         </TabsList>
 
@@ -567,6 +646,156 @@ export default function AdminSettings() {
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t('admin.resetToDefault')}
+              </Button>
+            </div>
+          </form>
+        </TabsContent>
+
+        {/* Marketing Tab */}
+        <TabsContent value="marketing">
+          <form onSubmit={handlePixelSubmit} className="space-y-6">
+            {/* Facebook Pixel */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="h-5 w-5 text-[#1877F2]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <h2 className="text-lg font-semibold">Facebook Pixel</h2>
+              </div>
+
+              <div className="space-y-6">
+                {/* Enable Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Enable Facebook Pixel</p>
+                    <p className="text-sm text-muted-foreground">
+                      Track page views, add to cart, and purchase events
+                    </p>
+                  </div>
+                  <Switch
+                    checked={pixelData.fb_pixel_enabled}
+                    onCheckedChange={(checked) => setPixelData({ ...pixelData, fb_pixel_enabled: checked })}
+                  />
+                </div>
+
+                {/* Pixel ID */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Facebook Pixel ID <span className="text-destructive">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={pixelData.fb_pixel_id}
+                      onChange={(e) => {
+                        setPixelData({ ...pixelData, fb_pixel_id: e.target.value.replace(/\D/g, '') });
+                        setPixelTestResult(null);
+                      }}
+                      className="input-shop flex-1"
+                      placeholder="123456789012345"
+                      maxLength={20}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleTestPixel}
+                      disabled={isTestingPixel || !pixelData.fb_pixel_id}
+                    >
+                      {isTestingPixel ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : pixelTestResult === 'success' ? (
+                        <CheckCircle className="h-4 w-4 text-success" />
+                      ) : pixelTestResult === 'error' ? (
+                        <XCircle className="h-4 w-4 text-destructive" />
+                      ) : (
+                        'Validate'
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Enter your Pixel ID (10-20 digits). Find it in Facebook Events Manager.
+                  </p>
+                </div>
+
+                {/* Test Event Code */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Test Event Code (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={pixelData.fb_pixel_test_event_code}
+                    onChange={(e) => setPixelData({ ...pixelData, fb_pixel_test_event_code: e.target.value })}
+                    className="input-shop"
+                    placeholder="TEST12345"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use this for testing events in Facebook's Test Events tool
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cookie Consent */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
+                  <path d="M8.5 8.5v.01"/>
+                  <path d="M16 15.5v.01"/>
+                  <path d="M12 12v.01"/>
+                  <path d="M11 17v.01"/>
+                  <path d="M7 14v.01"/>
+                </svg>
+                <h2 className="text-lg font-semibold">Cookie Consent (GDPR)</h2>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Require Cookie Consent</p>
+                  <p className="text-sm text-muted-foreground">
+                    Show a cookie banner and only load pixel after user accepts
+                  </p>
+                </div>
+                <Switch
+                  checked={pixelData.cookie_consent_enabled}
+                  onCheckedChange={(checked) => setPixelData({ ...pixelData, cookie_consent_enabled: checked })}
+                />
+              </div>
+            </div>
+
+            {/* Events Tracked */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="font-medium mb-4">Events Tracked Automatically</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { name: 'PageView', desc: 'Every page load' },
+                  { name: 'ViewContent', desc: 'Product page views' },
+                  { name: 'AddToCart', desc: 'Add to cart clicks' },
+                  { name: 'InitiateCheckout', desc: 'Checkout page load' },
+                  { name: 'Purchase', desc: 'Successful orders' },
+                  { name: 'Search', desc: 'Product searches' },
+                ].map((event) => (
+                  <div key={event.name} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                    <CheckCircle className="h-4 w-4 text-success shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">{event.name}</p>
+                      <p className="text-xs text-muted-foreground">{event.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="flex gap-4">
+              <Button
+                type="submit"
+                className="btn-accent"
+                disabled={updateSettings.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {updateSettings.isPending ? 'Saving...' : 'Save Marketing Settings'}
               </Button>
             </div>
           </form>

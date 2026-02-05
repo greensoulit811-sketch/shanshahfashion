@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { trackInitiateCheckout } from '@/lib/facebook-pixel';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -34,6 +35,17 @@ export default function CheckoutPage() {
 
   const shippingCost = shippingCosts[formData.shippingMethod] || 60;
   const total = subtotal + shippingCost;
+
+  // Track InitiateCheckout when page loads
+  useEffect(() => {
+    if (items.length > 0) {
+      trackInitiateCheckout({
+        numItems: items.reduce((sum, item) => sum + item.quantity, 0),
+        value: subtotal,
+        currency: settings.currency_code,
+      });
+    }
+  }, []); // Only on mount
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -84,7 +96,19 @@ export default function CheckoutPage() {
       });
 
       clearCart();
-      navigate(`/order-success?orderId=${orderNumber}`);
+      // Pass order data to success page for Purchase tracking
+      navigate(`/order-success?orderId=${orderNumber}`, {
+        state: {
+          orderData: {
+            total,
+            items: items.map((item) => ({
+              id: item.id,
+              quantity: item.quantity,
+              price: item.salePrice ?? item.price,
+            })),
+          },
+        },
+      });
     } catch (error) {
       // Error is handled by the mutation
     }

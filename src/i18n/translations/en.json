@@ -198,5 +198,11 @@
     "lastUpdated": "Last Updated",
     "resetToDefault": "Reset to Default",
     "noCountryFound": "No country found"
+  },
+  "cookieConsent": {
+    "title": "We use cookies",
+    "message": "We use cookies and similar technologies to improve your experience, analyze traffic, and for marketing purposes.",
+    "accept": "Accept",
+    "decline": "Decline"
   }
 }

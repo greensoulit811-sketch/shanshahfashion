@@ -8,6 +8,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DebugPanel } from "@/components/DebugPanel";
+import { FacebookPixelProvider } from "@/components/FacebookPixelProvider";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 // Store pages
 import Index from "./pages/Index";
 import ShopPage from "./pages/ShopPage";
@@ -54,40 +56,43 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                <Routes>
-                  {/* Public Store Routes - No auth required */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/shop" element={<ShopPage />} />
-                  <Route path="/categories" element={<CategoriesPage />} />
-                  <Route path="/category/:slug" element={<CategoryPage />} />
-                  <Route path="/product/:slug" element={<ProductDetailsPage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/order-success" element={<OrderSuccessPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/faq" element={<FAQPage />} />
+                <FacebookPixelProvider>
+                  <Routes>
+                    {/* Public Store Routes - No auth required */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/shop" element={<ShopPage />} />
+                    <Route path="/categories" element={<CategoriesPage />} />
+                    <Route path="/category/:slug" element={<CategoryPage />} />
+                    <Route path="/product/:slug" element={<ProductDetailsPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/order-success" element={<OrderSuccessPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/faq" element={<FAQPage />} />
 
-                  {/* Admin Auth Routes - No protection */}
-                  <Route path="/admin/login" element={<AdminLoginPage />} />
-                  <Route path="/admin/register" element={<AdminRegisterPage />} />
+                    {/* Admin Auth Routes - No protection */}
+                    <Route path="/admin/login" element={<AdminLoginPage />} />
+                    <Route path="/admin/register" element={<AdminRegisterPage />} />
 
-                  {/* Protected Admin Routes */}
-                  <Route element={<ProtectedAdminRoute />}>
-                    <Route path="/admin" element={<AdminLayout />}>
-                      <Route index element={<AdminDashboard />} />
-                      <Route path="products" element={<AdminProducts />} />
-                      <Route path="categories" element={<AdminCategories />} />
-                      <Route path="orders" element={<AdminOrders />} />
-                      <Route path="slider" element={<AdminSlider />} />
-                      <Route path="settings" element={<AdminSettings />} />
+                    {/* Protected Admin Routes */}
+                    <Route element={<ProtectedAdminRoute />}>
+                      <Route path="/admin" element={<AdminLayout />}>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="products" element={<AdminProducts />} />
+                        <Route path="categories" element={<AdminCategories />} />
+                        <Route path="orders" element={<AdminOrders />} />
+                        <Route path="slider" element={<AdminSlider />} />
+                        <Route path="settings" element={<AdminSettings />} />
+                      </Route>
                     </Route>
-                  </Route>
 
-                  {/* Catch-all */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                <DebugPanel />
+                    {/* Catch-all */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <CookieConsentBanner />
+                  <DebugPanel />
+                </FacebookPixelProvider>
               </BrowserRouter>
             </TooltipProvider>
           </CartProvider>

@@ -282,31 +282,43 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          cookie_consent_enabled: boolean
           currency_code: string
           currency_locale: string
           currency_symbol: string
           default_country_code: string
           default_country_name: string
+          fb_pixel_enabled: boolean
+          fb_pixel_id: string | null
+          fb_pixel_test_event_code: string | null
           id: string
           language: string
           updated_at: string
         }
         Insert: {
+          cookie_consent_enabled?: boolean
           currency_code?: string
           currency_locale?: string
           currency_symbol?: string
           default_country_code?: string
           default_country_name?: string
+          fb_pixel_enabled?: boolean
+          fb_pixel_id?: string | null
+          fb_pixel_test_event_code?: string | null
           id?: string
           language?: string
           updated_at?: string
         }
         Update: {
+          cookie_consent_enabled?: boolean
           currency_code?: string
           currency_locale?: string
           currency_symbol?: string
           default_country_code?: string
           default_country_name?: string
+          fb_pixel_enabled?: boolean
+          fb_pixel_id?: string | null
+          fb_pixel_test_event_code?: string | null
           id?: string
           language?: string
           updated_at?: string
