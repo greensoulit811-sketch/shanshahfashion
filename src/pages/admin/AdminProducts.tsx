@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct, Product, Category } from '@/hooks/useShopData';
+import { ProductVariantManager } from '@/components/admin/ProductVariantManager';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -348,6 +349,16 @@ export default function AdminProducts() {
                 </Button>
               </div>
             </form>
+
+            {/* Product Variants Manager */}
+            {editingProduct && (
+              <div className="mt-8 pt-8 border-t border-border">
+                <ProductVariantManager
+                  productId={editingProduct.id}
+                  productName={editingProduct.name}
+                />
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
