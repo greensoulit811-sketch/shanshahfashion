@@ -35,6 +35,9 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminSlider from "./pages/admin/AdminSlider";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCourierSettings from "./pages/admin/AdminCourierSettings";
+import AdminCoupons from "./pages/admin/AdminCoupons";
+import AdminShipping from "./pages/admin/AdminShipping";
+import TrackOrderPage from "./pages/TrackOrderPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 
 const queryClient = new QueryClient({
@@ -71,6 +74,7 @@ const App = () => (
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FAQPage />} />
+                    <Route path="/track-order" element={<TrackOrderPage />} />
 
                     {/* Admin Auth Routes - No protection */}
                     <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -86,6 +90,8 @@ const App = () => (
                         <Route path="slider" element={<AdminSlider />} />
                         <Route path="settings" element={<AdminSettings />} />
                         <Route path="courier" element={<AdminCourierSettings />} />
+                        <Route path="coupons" element={<AdminCoupons />} />
+                        <Route path="shipping" element={<AdminShipping />} />
                       </Route>
                     </Route>
 
