@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DebugPanel } from "@/components/DebugPanel";
 import { FacebookPixelProvider } from "@/components/FacebookPixelProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { ScrollToTop } from "@/components/ScrollToTop";
 // Store pages
 import Index from "./pages/Index";
 import ShopPage from "./pages/ShopPage";
@@ -66,6 +67,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <FacebookPixelProvider>
+                  <ScrollToTop />
                   <Routes>
                     {/* Public Store Routes - No auth required */}
                     <Route path="/" element={<Index />} />
