@@ -40,6 +40,7 @@ import AdminShipping from "./pages/admin/AdminShipping";
 import AdminShippingMethods from "./pages/admin/AdminShippingMethods";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminCheckoutLeads from "./pages/admin/AdminCheckoutLeads";
+import AdminUsers from "./pages/admin/AdminUsers";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 
@@ -98,6 +99,7 @@ const App = () => (
                         <Route path="shipping-methods" element={<AdminShippingMethods />} />
                         <Route path="reviews" element={<AdminReviews />} />
                         <Route path="leads" element={<AdminCheckoutLeads />} />
+                        <Route path="users" element={<AdminUsers />} />
                       </Route>
                     </Route>
 
