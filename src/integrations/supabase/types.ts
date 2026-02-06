@@ -595,6 +595,15 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          brand_accent: string | null
+          brand_background: string | null
+          brand_border: string | null
+          brand_card: string | null
+          brand_foreground: string | null
+          brand_muted: string | null
+          brand_primary: string | null
+          brand_radius: string | null
+          brand_secondary: string | null
           cookie_consent_enabled: boolean
           currency_code: string
           currency_locale: string
@@ -610,6 +619,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          brand_accent?: string | null
+          brand_background?: string | null
+          brand_border?: string | null
+          brand_card?: string | null
+          brand_foreground?: string | null
+          brand_muted?: string | null
+          brand_primary?: string | null
+          brand_radius?: string | null
+          brand_secondary?: string | null
           cookie_consent_enabled?: boolean
           currency_code?: string
           currency_locale?: string
@@ -625,6 +643,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          brand_accent?: string | null
+          brand_background?: string | null
+          brand_border?: string | null
+          brand_card?: string | null
+          brand_foreground?: string | null
+          brand_muted?: string | null
+          brand_primary?: string | null
+          brand_radius?: string | null
+          brand_secondary?: string | null
           cookie_consent_enabled?: boolean
           currency_code?: string
           currency_locale?: string
