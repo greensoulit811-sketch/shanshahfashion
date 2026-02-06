@@ -766,16 +766,33 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            {/* Last Updated */}
+            {/* Active Settings Debug Info */}
             <div className="bg-card rounded-xl border border-border p-6">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm">
-                  {t('admin.lastUpdated')}:{' '}
-                  {settings.updated_at
-                    ? format(new Date(settings.updated_at), 'PPpp')
-                    : 'Never'}
-                </span>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="h-5 w-5 text-accent" />
+                <h2 className="text-lg font-semibold">Current Active Settings</h2>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-secondary/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground mb-1">Country</p>
+                  <p className="font-semibold">{settings.default_country_name} ({settings.default_country_code})</p>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground mb-1">Currency</p>
+                  <p className="font-semibold">{settings.currency_symbol} {settings.currency_code}</p>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground mb-1">Language</p>
+                  <p className="font-semibold">{settings.language.toUpperCase()}</p>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground mb-1">Last Updated</p>
+                  <p className="font-semibold text-xs">
+                    {settings.updated_at
+                      ? format(new Date(settings.updated_at), 'PPpp')
+                      : 'Never'}
+                  </p>
+                </div>
               </div>
             </div>
 

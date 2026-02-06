@@ -1,6 +1,7 @@
 import { Package, FolderOpen, ShoppingCart, TrendingUp, DollarSign, Users } from 'lucide-react';
 import { useProducts, useCategories } from '@/hooks/useShopData';
 import { useOrders } from '@/hooks/useOrders';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -8,6 +9,7 @@ export default function AdminDashboard() {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   const { data: orders = [], isLoading } = useOrders();
+  const { formatCurrency } = useSiteSettings();
 
   const pendingOrders = orders.filter((o) => o.status === 'pending').length;
   const revenue = orders
@@ -86,7 +88,7 @@ export default function AdminDashboard() {
               <DollarSign className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold">${revenue.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{formatCurrency(revenue)}</p>
               <p className="text-xs text-muted-foreground">Revenue</p>
             </div>
           </div>
@@ -137,7 +139,7 @@ export default function AdminDashboard() {
                   <tr key={order.id} className="hover:bg-secondary/30 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap font-medium">{order.order_number}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{order.customer_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">${order.total}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(Number(order.total))}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}

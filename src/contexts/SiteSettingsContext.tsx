@@ -157,7 +157,7 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (error) throw error;
       return (data as SiteSettings) || defaultSettings;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds - ensures quick propagation after admin saves
     retry: 2,
   });
 
