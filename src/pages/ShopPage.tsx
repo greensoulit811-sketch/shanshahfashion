@@ -19,7 +19,7 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 999999]);
+  
 
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
@@ -43,12 +43,6 @@ export default function ShopPage() {
         filtered = filtered.filter((p) => p.category_id === category.id);
       }
     }
-
-    // Price filter
-    filtered = filtered.filter((p) => {
-      const price = p.sale_price ?? p.price;
-      return price >= priceRange[0] && price <= priceRange[1];
-    });
 
     // URL params filter
     const filter = searchParams.get('filter');
@@ -75,7 +69,7 @@ export default function ShopPage() {
     }
 
     return filtered;
-  }, [searchQuery, selectedCategory, sortBy, priceRange, searchParams, products, categories]);
+  }, [searchQuery, selectedCategory, sortBy, searchParams, products, categories]);
 
   const isLoading = productsLoading || categoriesLoading;
 
@@ -111,35 +105,12 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Price Range */}
-      <div>
-        <h3 className="font-semibold mb-3">Price Range</h3>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            value={priceRange[0]}
-            onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
-            className="input-shop w-20 text-center text-sm"
-            placeholder="Min"
-          />
-          <span className="text-muted-foreground">—</span>
-          <input
-            type="number"
-            value={priceRange[1]}
-            onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-            className="input-shop w-20 text-center text-sm"
-            placeholder="Max"
-          />
-        </div>
-      </div>
-
       {/* Clear Filters */}
       <Button
         variant="outline"
         className="w-full"
         onClick={() => {
           setSelectedCategory('all');
-          setPriceRange([0, 999999]);
           setSearchQuery('');
           setSearchParams({});
         }}
