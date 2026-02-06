@@ -64,9 +64,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    const accessToken = Deno.env.get("FB_CAPI_ACCESS_TOKEN");
+    // Try to read token from capi_secrets table first, fallback to env
+    let accessToken = Deno.env.get("FB_CAPI_ACCESS_TOKEN") || null;
+
+    const { data: secretRow } = await supabase
+      .from("capi_secrets")
+      .select("access_token")
+      .eq("id", "global")
+      .single();
+
+    if (secretRow?.access_token && secretRow.access_token.trim().length > 0) {
+      accessToken = secretRow.access_token;
+    }
+
     if (!accessToken) {
-      console.error("[CAPI] FB_CAPI_ACCESS_TOKEN not configured");
+      console.error("[CAPI] No access token configured (env or DB)");
       return new Response(
         JSON.stringify({ success: true, skipped: true, reason: "token_missing" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      capi_secrets: {
+        Row: {
+          access_token: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2, Palette, Server } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2, Palette, Server, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useSiteSettings, useUpdateSiteSettings } from '@/contexts/SiteSettingsContext';
@@ -9,7 +9,9 @@ import { format } from 'date-fns';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { validatePixelId, testPixelConnection, testCapiEvent } from '@/lib/facebook-pixel';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Command,
   CommandEmpty,
@@ -85,6 +87,65 @@ export default function AdminSettings() {
   const [pixelTestResult, setPixelTestResult] = useState<'success' | 'error' | null>(null);
   const [isTestingCapi, setIsTestingCapi] = useState(false);
   const [capiTestResult, setCapiTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  
+  // CAPI Token state
+  const [capiToken, setCapiToken] = useState('');
+  const [capiTokenMasked, setCapiTokenMasked] = useState<string | null>(null);
+  const [hasCapiToken, setHasCapiToken] = useState(false);
+  const [isSavingToken, setIsSavingToken] = useState(false);
+  const [showTokenInput, setShowTokenInput] = useState(false);
+  const [showTokenValue, setShowTokenValue] = useState(false);
+  const [tokenLastUpdated, setTokenLastUpdated] = useState<string | null>(null);
+
+  // Fetch CAPI token status on mount
+  const fetchTokenStatus = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await supabase.functions.invoke('manage-capi-token', {
+        method: 'GET',
+      });
+
+      if (response.data) {
+        setHasCapiToken(response.data.has_token || false);
+        setCapiTokenMasked(response.data.masked || null);
+        setTokenLastUpdated(response.data.updated_at || null);
+      }
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTokenStatus();
+  }, [fetchTokenStatus]);
+
+  const handleSaveToken = async () => {
+    if (!capiToken.trim()) {
+      toast.error('Please enter an access token');
+      return;
+    }
+    setIsSavingToken(true);
+    try {
+      const response = await supabase.functions.invoke('manage-capi-token', {
+        body: { access_token: capiToken.trim() },
+      });
+
+      if (response.data?.success) {
+        toast.success('Access token saved securely');
+        setCapiToken('');
+        setShowTokenInput(false);
+        await fetchTokenStatus();
+      } else {
+        toast.error(response.data?.error || 'Failed to save token');
+      }
+    } catch {
+      toast.error('Failed to save access token');
+    } finally {
+      setIsSavingToken(false);
+    }
+  };
 
   // Update form when settings load
   useEffect(() => {
@@ -1055,13 +1116,87 @@ export default function AdminSettings() {
                       </p>
                     </div>
 
-                    {/* Access Token Note */}
-                    <div className="p-3 bg-muted/50 rounded-lg border border-border">
-                      <p className="text-sm font-medium mb-1">🔒 Access Token</p>
-                      <p className="text-xs text-muted-foreground">
-                        The CAPI Access Token is securely stored as a server secret and is never exposed to the browser. 
-                        To update it, go to Cloud Settings → Secrets → FB_CAPI_ACCESS_TOKEN.
-                      </p>
+                    {/* Access Token */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        <ShieldCheck className="h-4 w-4 inline mr-1" />
+                        CAPI Access Token <span className="text-destructive">*</span>
+                      </label>
+
+                      {hasCapiToken && !showTokenInput ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <ShieldCheck className="h-5 w-5 text-green-600 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-green-700">Token configured</p>
+                              <p className="text-xs text-muted-foreground font-mono">{capiTokenMasked}</p>
+                              {tokenLastUpdated && (
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  Updated: {new Date(tokenLastUpdated).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowTokenInput(true)}
+                            >
+                              Update
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            🔒 Token is stored securely and never exposed to the browser.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <Input
+                                type={showTokenValue ? 'text' : 'password'}
+                                value={capiToken}
+                                onChange={(e) => setCapiToken(e.target.value)}
+                                placeholder="Paste your CAPI access token here"
+                                className="pr-10"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowTokenValue(!showTokenValue)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                              >
+                                {showTokenValue ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </button>
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={handleSaveToken}
+                              disabled={isSavingToken || !capiToken.trim()}
+                            >
+                              {isSavingToken ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Save className="h-4 w-4" />
+                              )}
+                              <span className="ml-2">{isSavingToken ? 'Saving...' : 'Save Token'}</span>
+                            </Button>
+                          </div>
+                          {hasCapiToken && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => { setShowTokenInput(false); setCapiToken(''); }}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            🔒 Token will be stored securely server-side. It is never sent to the browser.
+                            Generate it from Meta Events Manager → Settings → Conversions API.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Test Event Code */}
