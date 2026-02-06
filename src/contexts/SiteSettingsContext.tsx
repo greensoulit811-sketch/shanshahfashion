@@ -41,6 +41,17 @@ function hexToHSL(hex: string): string {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
+// Returns HSL for white or black foreground based on hex luminance
+function getContrastForeground(hex: string): string {
+  hex = hex.replace(/^#/, '');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  // Relative luminance
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.5 ? '220 20% 12%' : '0 0% 100%';
+}
+
 export interface SiteSettings {
   id: string;
   default_country_code: string;
@@ -55,8 +66,18 @@ export interface SiteSettings {
   fb_pixel_id: string | null;
   fb_pixel_test_event_code: string | null;
   cookie_consent_enabled: boolean;
-  // Theme settings
+  // Theme settings (legacy)
   theme_accent_color: string;
+  // Brand theme colors
+  brand_primary: string;
+  brand_secondary: string;
+  brand_accent: string;
+  brand_background: string;
+  brand_foreground: string;
+  brand_muted: string;
+  brand_border: string;
+  brand_card: string;
+  brand_radius: string;
 }
 
 type TranslationsType = typeof enTranslations;
@@ -81,6 +102,15 @@ const defaultSettings: SiteSettings = {
   fb_pixel_test_event_code: null,
   cookie_consent_enabled: false,
   theme_accent_color: '#e85a4f',
+  brand_primary: '#1a1a2e',
+  brand_secondary: '#f0f0f0',
+  brand_accent: '#e85a4f',
+  brand_background: '#faf9f7',
+  brand_foreground: '#1a1a2e',
+  brand_muted: '#6b7280',
+  brand_border: '#e5e7eb',
+  brand_card: '#ffffff',
+  brand_radius: '0.5',
 };
 
 interface SiteSettingsContextType {
@@ -133,16 +163,88 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const activeSettings = settings || defaultSettings;
 
-  // Apply theme color to CSS variables
+  // Apply all brand theme colors to CSS variables
   useEffect(() => {
-    if (activeSettings.theme_accent_color) {
-      const color = activeSettings.theme_accent_color;
-      // Convert hex to HSL for CSS variables
-      const hsl = hexToHSL(color);
-      document.documentElement.style.setProperty('--accent', hsl);
-      document.documentElement.style.setProperty('--ring', hsl);
+    const root = document.documentElement;
+    const s = activeSettings;
+
+    // Apply accent (also used as ring)
+    const accentColor = s.brand_accent || s.theme_accent_color;
+    if (accentColor) {
+      const accentHsl = hexToHSL(accentColor);
+      root.style.setProperty('--accent', accentHsl);
+      root.style.setProperty('--ring', accentHsl);
+      root.style.setProperty('--sidebar-ring', accentHsl);
+      // Compute accent foreground (white or black based on luminance)
+      root.style.setProperty('--accent-foreground', getContrastForeground(accentColor));
     }
-  }, [activeSettings.theme_accent_color]);
+
+    // Apply primary
+    if (s.brand_primary) {
+      const primaryHsl = hexToHSL(s.brand_primary);
+      root.style.setProperty('--primary', primaryHsl);
+      root.style.setProperty('--sidebar-primary', primaryHsl);
+      root.style.setProperty('--primary-foreground', getContrastForeground(s.brand_primary));
+      root.style.setProperty('--sidebar-primary-foreground', getContrastForeground(s.brand_primary));
+    }
+
+    // Apply secondary
+    if (s.brand_secondary) {
+      const secondaryHsl = hexToHSL(s.brand_secondary);
+      root.style.setProperty('--secondary', secondaryHsl);
+      root.style.setProperty('--sidebar-accent', secondaryHsl);
+      root.style.setProperty('--secondary-foreground', getContrastForeground(s.brand_secondary));
+    }
+
+    // Apply background
+    if (s.brand_background) {
+      root.style.setProperty('--background', hexToHSL(s.brand_background));
+      root.style.setProperty('--sidebar-background', hexToHSL(s.brand_background));
+    }
+
+    // Apply foreground
+    if (s.brand_foreground) {
+      root.style.setProperty('--foreground', hexToHSL(s.brand_foreground));
+      root.style.setProperty('--sidebar-foreground', hexToHSL(s.brand_foreground));
+    }
+
+    // Apply muted
+    if (s.brand_muted) {
+      root.style.setProperty('--muted-foreground', hexToHSL(s.brand_muted));
+    }
+
+    // Apply border
+    if (s.brand_border) {
+      const borderHsl = hexToHSL(s.brand_border);
+      root.style.setProperty('--border', borderHsl);
+      root.style.setProperty('--input', borderHsl);
+      root.style.setProperty('--sidebar-border', borderHsl);
+    }
+
+    // Apply card
+    if (s.brand_card) {
+      root.style.setProperty('--card', hexToHSL(s.brand_card));
+      root.style.setProperty('--popover', hexToHSL(s.brand_card));
+      root.style.setProperty('--card-foreground', getContrastForeground(s.brand_card));
+      root.style.setProperty('--popover-foreground', getContrastForeground(s.brand_card));
+    }
+
+    // Apply radius
+    if (s.brand_radius) {
+      root.style.setProperty('--radius', `${s.brand_radius}rem`);
+    }
+  }, [
+    activeSettings.brand_primary,
+    activeSettings.brand_secondary,
+    activeSettings.brand_accent,
+    activeSettings.brand_background,
+    activeSettings.brand_foreground,
+    activeSettings.brand_muted,
+    activeSettings.brand_border,
+    activeSettings.brand_card,
+    activeSettings.brand_radius,
+    activeSettings.theme_accent_color,
+  ]);
   
   // User preference overrides global setting
   const activeLanguage = (userLanguagePreference as 'en' | 'hi' | 'bn') || activeSettings.language;

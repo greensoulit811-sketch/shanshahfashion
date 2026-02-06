@@ -40,6 +40,16 @@ export default function AdminSettings() {
     currencyLocale: settings.currency_locale,
     language: settings.language,
     themeAccentColor: settings.theme_accent_color || '#e85a4f',
+    // Brand theme
+    brand_primary: settings.brand_primary || '#1a1a2e',
+    brand_secondary: settings.brand_secondary || '#f0f0f0',
+    brand_accent: settings.brand_accent || '#e85a4f',
+    brand_background: settings.brand_background || '#faf9f7',
+    brand_foreground: settings.brand_foreground || '#1a1a2e',
+    brand_muted: settings.brand_muted || '#6b7280',
+    brand_border: settings.brand_border || '#e5e7eb',
+    brand_card: settings.brand_card || '#ffffff',
+    brand_radius: settings.brand_radius || '0.5',
   });
 
   const [storeData, setStoreData] = useState({
@@ -81,6 +91,15 @@ export default function AdminSettings() {
         currencyLocale: settings.currency_locale,
         language: settings.language,
         themeAccentColor: settings.theme_accent_color || '#e85a4f',
+        brand_primary: settings.brand_primary || '#1a1a2e',
+        brand_secondary: settings.brand_secondary || '#f0f0f0',
+        brand_accent: settings.brand_accent || '#e85a4f',
+        brand_background: settings.brand_background || '#faf9f7',
+        brand_foreground: settings.brand_foreground || '#1a1a2e',
+        brand_muted: settings.brand_muted || '#6b7280',
+        brand_border: settings.brand_border || '#e5e7eb',
+        brand_card: settings.brand_card || '#ffffff',
+        brand_radius: settings.brand_radius || '0.5',
       });
       setPixelData({
         fb_pixel_enabled: settings.fb_pixel_enabled,
@@ -127,6 +146,15 @@ export default function AdminSettings() {
       currencyLocale: defaultCountry.currencyLocale,
       language: 'en',
       themeAccentColor: '#e85a4f',
+      brand_primary: '#1a1a2e',
+      brand_secondary: '#f0f0f0',
+      brand_accent: '#e85a4f',
+      brand_background: '#faf9f7',
+      brand_foreground: '#1a1a2e',
+      brand_muted: '#6b7280',
+      brand_border: '#e5e7eb',
+      brand_card: '#ffffff',
+      brand_radius: '0.5',
     });
   };
 
@@ -146,8 +174,17 @@ export default function AdminSettings() {
         currency_symbol: formData.currencySymbol,
         currency_locale: formData.currencyLocale,
         language: formData.language,
-        theme_accent_color: formData.themeAccentColor,
-      });
+        theme_accent_color: formData.brand_accent,
+        brand_primary: formData.brand_primary,
+        brand_secondary: formData.brand_secondary,
+        brand_accent: formData.brand_accent,
+        brand_background: formData.brand_background,
+        brand_foreground: formData.brand_foreground,
+        brand_muted: formData.brand_muted,
+        brand_border: formData.brand_border,
+        brand_card: formData.brand_card,
+        brand_radius: formData.brand_radius,
+      } as any);
       toast.success(t('admin.settingsSaved'));
     } catch (error) {
       toast.error('Failed to save settings');
@@ -248,7 +285,7 @@ export default function AdminSettings() {
       <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('admin.settingsTitle')}</h1>
 
       <Tabs defaultValue="store" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
           <TabsTrigger value="store" className="gap-2">
             <Store className="h-4 w-4" />
             Store Info
@@ -256,6 +293,10 @@ export default function AdminSettings() {
           <TabsTrigger value="global" className="gap-2">
             <Globe className="h-4 w-4" />
             {t('admin.globalSettings')}
+          </TabsTrigger>
+          <TabsTrigger value="theme" className="gap-2">
+            <Palette className="h-4 w-4" />
+            Theme
           </TabsTrigger>
           <TabsTrigger value="marketing" className="gap-2">
             <Megaphone className="h-4 w-4" />
@@ -585,75 +626,6 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            {/* Theme Color Settings */}
-            <div className="bg-card rounded-xl border border-border p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Palette className="h-5 w-5 text-accent" />
-                <h2 className="text-lg font-semibold">Theme Color</h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Accent Color
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="color"
-                      value={formData.themeAccentColor}
-                      onChange={(e) => setFormData({ ...formData, themeAccentColor: e.target.value })}
-                      className="w-16 h-10 rounded-lg border border-border cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={formData.themeAccentColor}
-                      onChange={(e) => setFormData({ ...formData, themeAccentColor: e.target.value })}
-                      className="input-shop w-32"
-                      placeholder="#e85a4f"
-                    />
-                    <div 
-                      className="w-10 h-10 rounded-lg border border-border"
-                      style={{ backgroundColor: formData.themeAccentColor }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    This color will be used for buttons, links, and accent elements throughout the website
-                  </p>
-                </div>
-
-                {/* Preset Colors */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Quick Presets</label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { color: '#e85a4f', name: 'Coral' },
-                      { color: '#3b82f6', name: 'Blue' },
-                      { color: '#10b981', name: 'Emerald' },
-                      { color: '#8b5cf6', name: 'Violet' },
-                      { color: '#f59e0b', name: 'Amber' },
-                      { color: '#ec4899', name: 'Pink' },
-                      { color: '#06b6d4', name: 'Cyan' },
-                      { color: '#ef4444', name: 'Red' },
-                    ].map((preset) => (
-                      <button
-                        key={preset.color}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, themeAccentColor: preset.color })}
-                        className={cn(
-                          'w-10 h-10 rounded-lg border-2 transition-all hover:scale-110',
-                          formData.themeAccentColor === preset.color
-                            ? 'border-foreground ring-2 ring-offset-2 ring-foreground'
-                            : 'border-transparent'
-                        )}
-                        style={{ backgroundColor: preset.color }}
-                        title={preset.name}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Language Settings */}
             <div className="bg-card rounded-xl border border-border p-6">
               <div className="flex items-center gap-2 mb-4">
@@ -719,6 +691,194 @@ export default function AdminSettings() {
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 {t('admin.resetToDefault')}
+              </Button>
+            </div>
+          </form>
+        </TabsContent>
+
+        {/* Theme Tab */}
+        <TabsContent value="theme">
+          <form onSubmit={handleSiteSubmit} className="space-y-6">
+            {/* Brand Theme Settings */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Palette className="h-5 w-5 text-accent" />
+                <h2 className="text-lg font-semibold">Brand Colors</h2>
+              </div>
+
+              <div className="space-y-6">
+                {/* Color Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { key: 'brand_accent', label: 'Accent / CTA', desc: 'Buttons, links, badges' },
+                    { key: 'brand_primary', label: 'Primary', desc: 'Header, headings, text' },
+                    { key: 'brand_secondary', label: 'Secondary', desc: 'Secondary surfaces' },
+                    { key: 'brand_background', label: 'Background', desc: 'Page background' },
+                    { key: 'brand_foreground', label: 'Text', desc: 'Main text color' },
+                    { key: 'brand_muted', label: 'Muted Text', desc: 'Secondary text' },
+                    { key: 'brand_border', label: 'Border', desc: 'Borders, dividers' },
+                    { key: 'brand_card', label: 'Card / Surface', desc: 'Cards, modals, popups' },
+                  ].map((item) => (
+                    <div key={item.key} className="space-y-1">
+                      <label className="block text-sm font-medium">{item.label}</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={(formData as any)[item.key]}
+                          onChange={(e) => setFormData({ ...formData, [item.key]: e.target.value })}
+                          className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={(formData as any)[item.key]}
+                          onChange={(e) => setFormData({ ...formData, [item.key]: e.target.value })}
+                          className="input-shop text-xs font-mono"
+                          placeholder="#000000"
+                          maxLength={7}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Border Radius */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Border Radius</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max="1.5"
+                      step="0.125"
+                      value={formData.brand_radius}
+                      onChange={(e) => setFormData({ ...formData, brand_radius: e.target.value })}
+                      className="flex-1"
+                    />
+                    <span className="text-sm font-mono w-16 text-right">{formData.brand_radius}rem</span>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    {[
+                      { val: '0', label: 'Sharp' },
+                      { val: '0.375', label: 'Subtle' },
+                      { val: '0.5', label: 'Default' },
+                      { val: '0.75', label: 'Rounded' },
+                      { val: '1', label: 'Pill' },
+                    ].map((r) => (
+                      <button
+                        key={r.val}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, brand_radius: r.val })}
+                        className={cn(
+                          'px-3 py-1 text-xs border transition-colors',
+                          formData.brand_radius === r.val
+                            ? 'border-accent bg-accent/10 text-accent'
+                            : 'border-border hover:border-accent/50'
+                        )}
+                        style={{ borderRadius: `${r.val}rem` }}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Accent Presets */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Quick Accent Presets</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { color: '#e85a4f', name: 'Coral' },
+                      { color: '#3b82f6', name: 'Blue' },
+                      { color: '#10b981', name: 'Emerald' },
+                      { color: '#8b5cf6', name: 'Violet' },
+                      { color: '#f59e0b', name: 'Amber' },
+                      { color: '#ec4899', name: 'Pink' },
+                      { color: '#06b6d4', name: 'Cyan' },
+                      { color: '#ef4444', name: 'Red' },
+                      { color: '#16a34a', name: 'Green' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.color}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, brand_accent: preset.color, themeAccentColor: preset.color })}
+                        className={cn(
+                          'w-10 h-10 rounded-lg border-2 transition-all hover:scale-110',
+                          formData.brand_accent === preset.color
+                            ? 'border-foreground ring-2 ring-offset-2 ring-foreground'
+                            : 'border-transparent'
+                        )}
+                        style={{ backgroundColor: preset.color }}
+                        title={preset.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live Preview */}
+                <div>
+                  <label className="block text-sm font-medium mb-3">Live Preview</label>
+                  <div
+                    className="rounded-xl border-2 overflow-hidden"
+                    style={{ borderColor: formData.brand_border, borderRadius: `${formData.brand_radius}rem` }}
+                  >
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: formData.brand_primary }}>
+                      <span className="text-sm font-bold" style={{ color: formData.brand_background }}>Store Name</span>
+                      <div className="flex gap-2">
+                        <span className="text-xs" style={{ color: formData.brand_background }}>Shop</span>
+                        <span className="text-xs" style={{ color: formData.brand_background }}>Cart</span>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-3" style={{ backgroundColor: formData.brand_background }}>
+                      <div className="p-3" style={{ backgroundColor: formData.brand_card, borderRadius: `${formData.brand_radius}rem`, border: `1px solid ${formData.brand_border}` }}>
+                        <h3 className="text-sm font-semibold" style={{ color: formData.brand_foreground }}>Product Card</h3>
+                        <p className="text-xs mt-1" style={{ color: formData.brand_muted }}>This is how content looks</p>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            className="px-3 py-1.5 text-xs font-medium text-white"
+                            style={{ backgroundColor: formData.brand_accent, borderRadius: `${formData.brand_radius}rem` }}
+                          >
+                            Buy Now
+                          </button>
+                          <button
+                            className="px-3 py-1.5 text-xs font-medium"
+                            style={{
+                              border: `1px solid ${formData.brand_border}`,
+                              borderRadius: `${formData.brand_radius}rem`,
+                              color: formData.brand_foreground,
+                              backgroundColor: formData.brand_background,
+                            }}
+                          >
+                            Add to Cart
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-4 py-2 text-center" style={{ backgroundColor: formData.brand_primary }}>
+                      <span className="text-[10px]" style={{ color: formData.brand_muted }}>© 2026 Store</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Save */}
+            <div className="flex flex-wrap gap-4">
+              <Button
+                type="submit"
+                className="btn-accent"
+                disabled={updateSettings.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {updateSettings.isPending ? 'Saving...' : 'Save Theme'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleReset}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset to Defaults
               </Button>
             </div>
           </form>
