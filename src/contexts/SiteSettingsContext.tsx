@@ -78,6 +78,11 @@ export interface SiteSettings {
   brand_border: string;
   brand_card: string;
   brand_radius: string;
+  // Conversion API fields
+  fb_capi_enabled: boolean;
+  fb_capi_dataset_id: string | null;
+  fb_capi_test_event_code: string | null;
+  fb_capi_api_version: string;
 }
 
 type TranslationsType = typeof enTranslations;
@@ -111,6 +116,10 @@ const defaultSettings: SiteSettings = {
   brand_border: '#e5e7eb',
   brand_card: '#ffffff',
   brand_radius: '0.5',
+  fb_capi_enabled: false,
+  fb_capi_dataset_id: null,
+  fb_capi_test_event_code: null,
+  fb_capi_api_version: 'v20.0',
 };
 
 interface SiteSettingsContextType {
