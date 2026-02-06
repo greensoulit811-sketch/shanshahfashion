@@ -610,6 +610,10 @@ export type Database = {
           currency_symbol: string
           default_country_code: string
           default_country_name: string
+          fb_capi_api_version: string
+          fb_capi_dataset_id: string | null
+          fb_capi_enabled: boolean
+          fb_capi_test_event_code: string | null
           fb_pixel_enabled: boolean
           fb_pixel_id: string | null
           fb_pixel_test_event_code: string | null
@@ -634,6 +638,10 @@ export type Database = {
           currency_symbol?: string
           default_country_code?: string
           default_country_name?: string
+          fb_capi_api_version?: string
+          fb_capi_dataset_id?: string | null
+          fb_capi_enabled?: boolean
+          fb_capi_test_event_code?: string | null
           fb_pixel_enabled?: boolean
           fb_pixel_id?: string | null
           fb_pixel_test_event_code?: string | null
@@ -658,6 +666,10 @@ export type Database = {
           currency_symbol?: string
           default_country_code?: string
           default_country_name?: string
+          fb_capi_api_version?: string
+          fb_capi_dataset_id?: string | null
+          fb_capi_enabled?: boolean
+          fb_capi_test_event_code?: string | null
           fb_pixel_enabled?: boolean
           fb_pixel_id?: string | null
           fb_pixel_test_event_code?: string | null
