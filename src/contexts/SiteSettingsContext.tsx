@@ -177,6 +177,8 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       root.style.setProperty('--sidebar-ring', accentHsl);
       // Compute accent foreground (white or black based on luminance)
       root.style.setProperty('--accent-foreground', getContrastForeground(accentColor));
+      // Update gradient to use the new accent color
+      root.style.setProperty('--gradient-accent', `linear-gradient(135deg, hsl(${accentHsl}) 0%, hsl(${accentHsl}) 100%)`);
     }
 
     // Apply primary
