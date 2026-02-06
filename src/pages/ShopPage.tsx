@@ -19,7 +19,7 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 999999]);
 
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
@@ -139,7 +139,7 @@ export default function ShopPage() {
         className="w-full"
         onClick={() => {
           setSelectedCategory('all');
-          setPriceRange([0, 500]);
+          setPriceRange([0, 999999]);
           setSearchQuery('');
           setSearchParams({});
         }}
