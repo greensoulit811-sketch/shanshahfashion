@@ -153,13 +153,21 @@ export default function CheckoutPage() {
           status: 'pending',
           notes: formData.notes || null,
         },
-        items: items.map((item) => ({
-          product_id: item.id,
-          product_name: item.name,
-          product_image: item.image,
-          quantity: item.quantity,
-          price: item.salePrice ?? item.price,
-        })),
+        items: items.map((item) => {
+          // item.id may be "productId-variantId" for variant items; extract the real product UUID
+          const productId = item.id.includes('-') && item.variantId
+            ? item.id.replace(`-${item.variantId}`, '')
+            : item.id;
+          return {
+            product_id: productId,
+            product_name: item.name,
+            product_image: item.image,
+            quantity: item.quantity,
+            price: item.salePrice ?? item.price,
+            variant_id: item.variantId || null,
+            variant_info: item.variantInfo ? JSON.parse(JSON.stringify(item.variantInfo)) : null,
+          };
+        }),
       });
 
       // Mark lead as converted and clear storage

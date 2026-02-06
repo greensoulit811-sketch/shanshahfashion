@@ -31,6 +31,9 @@ export interface OrderItem {
   product_image: string | null;
   quantity: number;
   price: number;
+  variant_id?: string | null;
+  variant_info?: Record<string, string | null | undefined> | null;
+  line_total?: number | null;
   created_at: string;
 }
 
