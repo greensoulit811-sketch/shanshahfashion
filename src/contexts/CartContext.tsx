@@ -8,6 +8,8 @@ export interface CartItem {
   image: string;
   quantity: number;
   stock: number;
+  variantId?: string;
+  variantInfo?: { size?: string | null; color?: string | null };
 }
 
 interface CartState {

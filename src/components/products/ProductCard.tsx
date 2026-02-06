@@ -22,8 +22,15 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // If product has variants, redirect to product page for selection
+    if (product.has_variants) {
+      toast.info('Please select size/color options');
+      navigate(`/product/${product.slug}`);
+      return;
+    }
+
     setIsAddingToCart(true);
-    
     await new Promise(resolve => setTimeout(resolve, 300));
     
     addItem({
@@ -46,6 +53,14 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleBuyNow = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // If product has variants, redirect to product page for selection
+    if (product.has_variants) {
+      toast.info('Please select size/color options');
+      navigate(`/product/${product.slug}`);
+      return;
+    }
+
     setIsBuyingNow(true);
     
     addItem({
@@ -122,7 +137,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
 
-      {/* Action Buttons - Always visible */}
+      {/* Action Buttons */}
       <div className="p-3 pt-0 mt-auto space-y-2">
         <Button
           variant="outline"
@@ -130,14 +145,14 @@ export function ProductCard({ product }: ProductCardProps) {
           className="w-full h-9 text-xs font-medium"
           onClick={handleAddToCart}
           disabled={isAddingToCart || product.stock === 0}
-          aria-label={t('product.addToCart')}
+          aria-label={product.has_variants ? t('product.selectOptions') || 'Select Options' : t('product.addToCart')}
         >
           {isAddingToCart ? (
             <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
           ) : (
             <ShoppingBag className="h-3.5 w-3.5 mr-1.5" />
           )}
-          {t('product.addToCart')}
+          {product.has_variants ? 'Select Options' : t('product.addToCart')}
         </Button>
         <Button
           size="sm"
