@@ -3,10 +3,14 @@ import type { ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
+type AppRole = 'admin' | 'manager' | 'order_handler' | 'customer';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  isStaff: boolean;
+  userRole: AppRole | null;
   isLoading: boolean;
   authError: string | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -16,30 +20,55 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_TIMEOUT_MS = 8000; // 8 seconds max wait
+const AUTH_TIMEOUT_MS = 8000;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
+  const [userRole, setUserRole] = useState<AppRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const initRef = useRef(false);
   const timeoutRef = useRef<number | null>(null);
 
-  const checkAdminRole = async (userId: string): Promise<boolean> => {
+  const checkRoles = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .rpc('is_admin', { _user_id: userId });
-      
-      if (error) {
-        console.error('Error checking admin role:', error);
-        return false;
+      // Check is_active first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_active')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (profile && profile.is_active === false) {
+        // User is disabled
+        await supabase.auth.signOut();
+        setAuthError('Your account has been disabled. Contact an administrator.');
+        setUser(null);
+        setSession(null);
+        setIsAdmin(false);
+        setIsStaff(false);
+        setUserRole(null);
+        return;
       }
-      return data as boolean;
+
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      const role = (roleData?.role as AppRole) || 'customer';
+      setUserRole(role);
+      setIsAdmin(role === 'admin');
+      setIsStaff(['admin', 'manager', 'order_handler'].includes(role));
     } catch (error) {
-      console.error('Error checking admin role:', error);
-      return false;
+      console.error('Error checking roles:', error);
+      setIsAdmin(false);
+      setIsStaff(false);
+      setUserRole(null);
     }
   };
 
@@ -52,49 +81,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // Prevent double initialization in React strict mode
     if (initRef.current) return;
     initRef.current = true;
 
-    // Safety timeout - never let the app hang forever
     timeoutRef.current = window.setTimeout(() => {
-      console.warn('Auth initialization timed out, proceeding without auth');
+      console.warn('Auth initialization timed out');
       setAuthError('Auth initialization timed out');
       finishLoading();
     }, AUTH_TIMEOUT_MS);
 
-    // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log('Auth state changed:', event, newSession?.user?.email);
-        
         setSession(newSession);
         setUser(newSession?.user ?? null);
-        
+
         if (newSession?.user) {
-          // Check admin role - use setTimeout to avoid Supabase deadlock
           setTimeout(async () => {
-            try {
-              const adminStatus = await checkAdminRole(newSession.user.id);
-              setIsAdmin(adminStatus);
-            } catch (error) {
-              console.error('Failed to check admin role:', error);
-              setIsAdmin(false);
-            }
+            await checkRoles(newSession.user.id);
             finishLoading();
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsStaff(false);
+          setUserRole(null);
           finishLoading();
         }
       }
     );
 
-    // Get the current session
     supabase.auth.getSession()
       .then(async ({ data: { session: currentSession }, error }) => {
         if (error) {
-          console.error('Error getting session:', error);
           setAuthError(error.message);
           finishLoading();
           return;
@@ -102,21 +119,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        
+
         if (currentSession?.user) {
-          try {
-            const adminStatus = await checkAdminRole(currentSession.user.id);
-            setIsAdmin(adminStatus);
-          } catch (error) {
-            console.error('Failed to check admin role:', error);
-            setIsAdmin(false);
-          }
+          await checkRoles(currentSession.user.id);
         }
-        
         finishLoading();
       })
-      .catch((error) => {
-        console.error('Auth getSession failed:', error);
+      .catch(() => {
         setAuthError('Failed to initialize auth');
         finishLoading();
       });
@@ -131,13 +140,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     setAuthError(null);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) {
-      setAuthError(error.message);
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setAuthError(error.message);
     return { error: error as Error | null };
   };
 
@@ -146,13 +150,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
+      options: { emailRedirectTo: window.location.origin },
     });
-    if (error) {
-      setAuthError(error.message);
-    }
+    if (error) setAuthError(error.message);
     return { error: error as Error | null };
   };
 
@@ -160,20 +160,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthError(null);
     await supabase.auth.signOut();
     setIsAdmin(false);
+    setIsStaff(false);
+    setUserRole(null);
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        session,
-        isAdmin,
-        isLoading,
-        authError,
-        signIn,
-        signUp,
-        signOut,
-      }}
+      value={{ user, session, isAdmin, isStaff, userRole, isLoading, authError, signIn, signUp, signOut }}
     >
       {children}
     </AuthContext.Provider>

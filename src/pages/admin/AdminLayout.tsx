@@ -16,42 +16,53 @@ import {
   MapPin,
   MessageSquare,
   Users,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useAuth } from '@/hooks/useAuth';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { t } = useSiteSettings();
-  const { user, signOut } = useAuth();
+  const { user, signOut, userRole, isAdmin } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
     navigate('/admin/login');
   };
 
-  const sidebarItems = [
-    { name: t('admin.dashboard'), href: '/admin', icon: LayoutDashboard },
-    { name: t('admin.products'), href: '/admin/products', icon: Package },
-    { name: t('admin.categories'), href: '/admin/categories', icon: FolderOpen },
-    { name: t('admin.orders'), href: '/admin/orders', icon: ShoppingCart },
-    { name: 'Checkout Leads', href: '/admin/leads', icon: Users },
-    { name: t('admin.slider'), href: '/admin/slider', icon: Image },
-    { name: 'Coupons', href: '/admin/coupons', icon: Tag },
-    { name: 'Shipping Zones', href: '/admin/shipping', icon: MapPin },
-    { name: 'Shipping Methods', href: '/admin/shipping-methods', icon: Truck },
-    { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
-    { name: 'Courier', href: '/admin/courier', icon: Truck },
-    { name: t('admin.settings'), href: '/admin/settings', icon: Settings },
+  // Role-based sidebar items
+  const allItems = [
+    { name: t('admin.dashboard'), href: '/admin', icon: LayoutDashboard, roles: ['admin', 'manager', 'order_handler'] },
+    { name: t('admin.products'), href: '/admin/products', icon: Package, roles: ['admin', 'manager'] },
+    { name: t('admin.categories'), href: '/admin/categories', icon: FolderOpen, roles: ['admin', 'manager'] },
+    { name: t('admin.orders'), href: '/admin/orders', icon: ShoppingCart, roles: ['admin', 'manager', 'order_handler'] },
+    { name: 'Checkout Leads', href: '/admin/leads', icon: Users, roles: ['admin', 'manager'] },
+    { name: t('admin.slider'), href: '/admin/slider', icon: Image, roles: ['admin', 'manager'] },
+    { name: 'Coupons', href: '/admin/coupons', icon: Tag, roles: ['admin', 'manager'] },
+    { name: 'Shipping Zones', href: '/admin/shipping', icon: MapPin, roles: ['admin'] },
+    { name: 'Shipping Methods', href: '/admin/shipping-methods', icon: Truck, roles: ['admin'] },
+    { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare, roles: ['admin', 'manager'] },
+    { name: 'Courier', href: '/admin/courier', icon: Truck, roles: ['admin'] },
+    { name: 'Users', href: '/admin/users', icon: ShieldCheck, roles: ['admin'] },
+    { name: t('admin.settings'), href: '/admin/settings', icon: Settings, roles: ['admin'] },
   ];
+
+  const sidebarItems = allItems.filter((item) => item.roles.includes(userRole || ''));
+
+  const ROLE_LABELS: Record<string, string> = {
+    admin: 'Admin',
+    manager: 'Manager',
+    order_handler: 'Staff',
+  };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className="p-6 border-b border-border">
         <Link to="/admin" className="flex items-center gap-2">
           <span className="text-xl font-bold">STORE</span>
@@ -61,7 +72,6 @@ export default function AdminLayout() {
         </Link>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         {sidebarItems.map((item) => {
           const isActive = location.pathname === item.href;
@@ -84,11 +94,15 @@ export default function AdminLayout() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="p-4 border-t border-border space-y-1">
         {user && (
-          <div className="px-4 py-2 text-xs text-muted-foreground truncate">
-            {user.email}
+          <div className="px-4 py-2 text-xs text-muted-foreground">
+            <p className="truncate">{user.email}</p>
+            {userRole && (
+              <Badge variant="outline" className="mt-1 text-[10px]">
+                {ROLE_LABELS[userRole] || userRole}
+              </Badge>
+            )}
           </div>
         )}
         <Link 
@@ -111,16 +125,13 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 bg-card border-r border-border shrink-0">
         <div className="sticky top-0 h-screen overflow-y-auto">
           <SidebarContent />
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Header */}
         <header className="lg:hidden sticky top-0 z-40 bg-card border-b border-border">
           <div className="flex items-center justify-between h-16 px-4">
             <Link to="/admin" className="flex items-center gap-2">
@@ -143,7 +154,6 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           <Outlet />
         </main>
