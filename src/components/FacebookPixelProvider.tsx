@@ -32,7 +32,8 @@ export function FacebookPixelProvider({ children }: { children: React.ReactNode 
     try {
       const success = initFacebookPixel(
         settings.fb_pixel_id,
-        settings.fb_pixel_test_event_code
+        settings.fb_pixel_test_event_code,
+        settings.fb_capi_enabled || false
       );
 
       if (success) {
@@ -61,7 +62,7 @@ export function FacebookPixelProvider({ children }: { children: React.ReactNode 
 // Export consent functions for cookie banner
 export function acceptCookieConsent(): void {
   localStorage.setItem(CONSENT_KEY, 'accepted');
-  window.location.reload(); // Reload to initialize pixel
+  window.location.reload();
 }
 
 export function declineCookieConsent(): void {

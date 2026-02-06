@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2, Palette } from 'lucide-react';
+import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2, Palette, Server } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useSiteSettings, useUpdateSiteSettings } from '@/contexts/SiteSettingsContext';
@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { validatePixelId, testPixelConnection } from '@/lib/facebook-pixel';
+import { validatePixelId, testPixelConnection, testCapiEvent } from '@/lib/facebook-pixel';
 import {
   Command,
   CommandEmpty,
@@ -74,11 +74,17 @@ export default function AdminSettings() {
     fb_pixel_id: '',
     fb_pixel_test_event_code: '',
     cookie_consent_enabled: false,
+    fb_capi_enabled: false,
+    fb_capi_dataset_id: '',
+    fb_capi_test_event_code: '',
+    fb_capi_api_version: 'v20.0',
   });
 
   const [countryOpen, setCountryOpen] = useState(false);
   const [isTestingPixel, setIsTestingPixel] = useState(false);
   const [pixelTestResult, setPixelTestResult] = useState<'success' | 'error' | null>(null);
+  const [isTestingCapi, setIsTestingCapi] = useState(false);
+  const [capiTestResult, setCapiTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // Update form when settings load
   useEffect(() => {
@@ -106,6 +112,10 @@ export default function AdminSettings() {
         fb_pixel_id: settings.fb_pixel_id || '',
         fb_pixel_test_event_code: settings.fb_pixel_test_event_code || '',
         cookie_consent_enabled: settings.cookie_consent_enabled,
+        fb_capi_enabled: settings.fb_capi_enabled || false,
+        fb_capi_dataset_id: settings.fb_capi_dataset_id || '',
+        fb_capi_test_event_code: settings.fb_capi_test_event_code || '',
+        fb_capi_api_version: settings.fb_capi_api_version || 'v20.0',
       });
     }
   }, [settings]);
@@ -217,16 +227,50 @@ export default function AdminSettings() {
       }
     }
 
+    // Validate CAPI
+    if (pixelData.fb_capi_enabled) {
+      if (!pixelData.fb_capi_dataset_id.trim() && !pixelData.fb_pixel_id.trim()) {
+        toast.error('Please enter a Dataset ID or Pixel ID for Conversion API');
+        return;
+      }
+    }
+
     try {
       await updateSettings.mutateAsync({
         fb_pixel_enabled: pixelData.fb_pixel_enabled,
         fb_pixel_id: pixelData.fb_pixel_id.trim() || null,
         fb_pixel_test_event_code: pixelData.fb_pixel_test_event_code.trim() || null,
         cookie_consent_enabled: pixelData.cookie_consent_enabled,
-      });
+        fb_capi_enabled: pixelData.fb_capi_enabled,
+        fb_capi_dataset_id: pixelData.fb_capi_dataset_id.trim() || null,
+        fb_capi_test_event_code: pixelData.fb_capi_test_event_code.trim() || null,
+        fb_capi_api_version: pixelData.fb_capi_api_version || 'v20.0',
+      } as any);
       toast.success('Marketing settings saved successfully');
     } catch (error) {
       toast.error('Failed to save marketing settings');
+    }
+  };
+
+  const handleTestCapi = async () => {
+    setIsTestingCapi(true);
+    setCapiTestResult(null);
+    try {
+      const result = await testCapiEvent();
+      setCapiTestResult({
+        success: result.success,
+        message: result.success ? 'Test event sent successfully!' : (result.error || 'Failed'),
+      });
+      if (result.success) {
+        toast.success('CAPI test event sent!');
+      } else {
+        toast.error(result.error || 'CAPI test failed');
+      }
+    } catch {
+      setCapiTestResult({ success: false, message: 'Unexpected error' });
+      toast.error('Failed to test CAPI');
+    } finally {
+      setIsTestingCapi(false);
     }
   };
 
@@ -969,7 +1013,119 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            {/* Cookie Consent */}
+            {/* Conversion API (CAPI) */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Server className="h-5 w-5 text-accent" />
+                <h2 className="text-lg font-semibold">Conversion API (Server-Side)</h2>
+              </div>
+
+              <div className="space-y-6">
+                {/* Enable Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Enable Conversion API</p>
+                    <p className="text-sm text-muted-foreground">
+                      Send events server-side for improved tracking accuracy and reliability
+                    </p>
+                  </div>
+                  <Switch
+                    checked={pixelData.fb_capi_enabled}
+                    onCheckedChange={(checked) => setPixelData({ ...pixelData, fb_capi_enabled: checked })}
+                  />
+                </div>
+
+                {pixelData.fb_capi_enabled && (
+                  <>
+                    {/* Dataset ID */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Dataset ID
+                      </label>
+                      <input
+                        type="text"
+                        value={pixelData.fb_capi_dataset_id}
+                        onChange={(e) => setPixelData({ ...pixelData, fb_capi_dataset_id: e.target.value.replace(/\D/g, '') })}
+                        className="input-shop"
+                        placeholder="Same as Pixel ID (leave blank to use Pixel ID)"
+                        maxLength={20}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Usually the same as your Pixel ID. Leave blank to use the Pixel ID above.
+                      </p>
+                    </div>
+
+                    {/* Access Token Note */}
+                    <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                      <p className="text-sm font-medium mb-1">🔒 Access Token</p>
+                      <p className="text-xs text-muted-foreground">
+                        The CAPI Access Token is securely stored as a server secret and is never exposed to the browser. 
+                        To update it, go to Cloud Settings → Secrets → FB_CAPI_ACCESS_TOKEN.
+                      </p>
+                    </div>
+
+                    {/* Test Event Code */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        CAPI Test Event Code (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={pixelData.fb_capi_test_event_code}
+                        onChange={(e) => setPixelData({ ...pixelData, fb_capi_test_event_code: e.target.value })}
+                        className="input-shop"
+                        placeholder="TEST12345"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Events with this code appear in Facebook's Test Events tool
+                      </p>
+                    </div>
+
+                    {/* API Version */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        API Version
+                      </label>
+                      <input
+                        type="text"
+                        value={pixelData.fb_capi_api_version}
+                        onChange={(e) => setPixelData({ ...pixelData, fb_capi_api_version: e.target.value })}
+                        className="input-shop"
+                        placeholder="v20.0"
+                      />
+                    </div>
+
+                    {/* Test Button */}
+                    <div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleTestCapi}
+                        disabled={isTestingCapi}
+                      >
+                        {isTestingCapi ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Server className="h-4 w-4 mr-2" />
+                        )}
+                        Send Test Event
+                      </Button>
+                      {capiTestResult && (
+                        <div className={`mt-2 flex items-center gap-2 text-sm ${capiTestResult.success ? 'text-green-600' : 'text-destructive'}`}>
+                          {capiTestResult.success ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          {capiTestResult.message}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             <div className="bg-card rounded-xl border border-border p-6">
               <div className="flex items-center gap-2 mb-4">
                 <svg className="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
