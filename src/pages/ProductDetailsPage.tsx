@@ -125,7 +125,7 @@ export default function ProductDetailsPage() {
       variantInfo: selectedVariant
         ? { size: selectedVariant.size, color: selectedVariant.color }
         : undefined,
-    } as any);
+    });
     
     // Track AddToCart event
     trackAddToCart({
@@ -167,7 +167,7 @@ export default function ProductDetailsPage() {
       variantInfo: selectedVariant
         ? { size: selectedVariant.size, color: selectedVariant.color }
         : undefined,
-    } as any);
+    });
     
     // Track AddToCart event for buy now as well
     trackAddToCart({

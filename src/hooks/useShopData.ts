@@ -20,6 +20,7 @@ export interface Product {
   is_featured: boolean;
   created_at: string;
   updated_at: string;
+  has_variants?: boolean;
 }
 
 export interface Category {
@@ -61,11 +62,15 @@ export const useProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, category:categories(*)')
+        .select('*, category:categories(*), product_variants(count)')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Product & { category: Category | null })[];
+      return (data || []).map((p: any) => ({
+        ...p,
+        product_variants: undefined,
+        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+      })) as (Product & { category: Category | null })[];
     },
   });
 };
@@ -93,12 +98,16 @@ export const useFeaturedProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, category:categories(*)')
+        .select('*, category:categories(*), product_variants(count)')
         .eq('is_featured', true)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Product & { category: Category | null })[];
+      return (data || []).map((p: any) => ({
+        ...p,
+        product_variants: undefined,
+        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+      })) as (Product & { category: Category | null })[];
     },
   });
 };
@@ -109,12 +118,16 @@ export const useBestSellers = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, category:categories(*)')
+        .select('*, category:categories(*), product_variants(count)')
         .eq('is_best_seller', true)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Product & { category: Category | null })[];
+      return (data || []).map((p: any) => ({
+        ...p,
+        product_variants: undefined,
+        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+      })) as (Product & { category: Category | null })[];
     },
   });
 };
@@ -125,12 +138,16 @@ export const useNewArrivals = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, category:categories(*)')
+        .select('*, category:categories(*), product_variants(count)')
         .eq('is_new', true)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Product & { category: Category | null })[];
+      return (data || []).map((p: any) => ({
+        ...p,
+        product_variants: undefined,
+        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+      })) as (Product & { category: Category | null })[];
     },
   });
 };
@@ -150,12 +167,16 @@ export const useProductsByCategory = (categorySlug: string) => {
 
       const { data, error } = await supabase
         .from('products')
-        .select('*, category:categories(*)')
+        .select('*, category:categories(*), product_variants(count)')
         .eq('category_id', category.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Product & { category: Category | null })[];
+      return (data || []).map((p: any) => ({
+        ...p,
+        product_variants: undefined,
+        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+      })) as (Product & { category: Category | null })[];
     },
     enabled: !!categorySlug,
   });
@@ -169,13 +190,17 @@ export const useRelatedProducts = (product: Product | null, limit = 4) => {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*, category:categories(*)')
+        .select('*, category:categories(*), product_variants(count)')
         .eq('category_id', product.category_id)
         .neq('id', product.id)
         .limit(limit);
       
       if (error) throw error;
-      return data as (Product & { category: Category | null })[];
+      return (data || []).map((p: any) => ({
+        ...p,
+        product_variants: undefined,
+        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+      })) as (Product & { category: Category | null })[];
     },
     enabled: !!product,
   });
