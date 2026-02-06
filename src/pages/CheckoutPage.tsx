@@ -7,9 +7,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { useIncrementCouponUsage, Coupon } from '@/hooks/useCoupons';
 import { useShippingMethods } from '@/hooks/useShippingMethods';
+import { usePaymentMethods, PaymentMethod } from '@/hooks/usePaymentMethods';
 import { useCheckoutLeadCapture, useConvertLead } from '@/hooks/useCheckoutLeads';
 import { CouponInput } from '@/components/checkout/CouponInput';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { trackInitiateCheckout } from '@/lib/facebook-pixel';
@@ -22,12 +24,13 @@ export default function CheckoutPage() {
   const createOrder = useCreateOrder();
   const incrementCouponUsage = useIncrementCouponUsage();
   const { data: shippingMethods = [], isLoading: isLoadingMethods } = useShippingMethods(true);
+  const { data: paymentMethods = [], isLoading: isLoadingPayments } = usePaymentMethods(true);
   const { debouncedSave, saveImmediately, clearLeadStorage } = useCheckoutLeadCapture();
   const convertLead = useConvertLead();
 
-  // Coupon state
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [transactionId, setTransactionId] = useState('');
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -38,19 +41,43 @@ export default function CheckoutPage() {
     country: settings.default_country_name,
     notes: '',
     shippingMethodId: '',
-    paymentMethod: 'cod',
+    paymentMethodId: '',
   });
 
-  // Set default shipping method when methods load
+  // Set defaults when methods load
   useEffect(() => {
     if (shippingMethods.length > 0 && !formData.shippingMethodId) {
       setFormData(prev => ({ ...prev, shippingMethodId: shippingMethods[0].id }));
     }
   }, [shippingMethods]);
 
-  const selectedMethod = shippingMethods.find(m => m.id === formData.shippingMethodId);
-  const shippingCost = selectedMethod?.base_rate || 0;
+  useEffect(() => {
+    if (paymentMethods.length > 0 && !formData.paymentMethodId) {
+      setFormData(prev => ({ ...prev, paymentMethodId: paymentMethods[0].id }));
+    }
+  }, [paymentMethods]);
+
+  const selectedShipping = shippingMethods.find(m => m.id === formData.shippingMethodId);
+  const shippingCost = selectedShipping?.base_rate || 0;
   const total = subtotal - discountAmount + shippingCost;
+
+  const selectedPayment = paymentMethods.find(m => m.id === formData.paymentMethodId);
+
+  // Calculate partial payment
+  const hasPartial = selectedPayment?.allow_partial_delivery_payment || false;
+  let advanceAmount = 0;
+  let dueOnDelivery = total;
+
+  if (hasPartial && selectedPayment) {
+    if (selectedPayment.partial_type === 'delivery_charge') {
+      advanceAmount = shippingCost;
+    } else if (selectedPayment.partial_type === 'fixed_amount') {
+      advanceAmount = Math.min(selectedPayment.fixed_partial_amount || 0, total);
+    }
+    dueOnDelivery = total - advanceAmount;
+  }
+
+  const requiresTrxId = selectedPayment?.require_transaction_id || false;
 
   // Build lead data for capture
   const buildLeadData = useCallback(() => ({
@@ -74,21 +101,18 @@ export default function CheckoutPage() {
     currency_code: settings.currency_code,
   }), [formData, items, subtotal, shippingCost, total, settings.currency_code]);
 
-  // Save lead when form data or cart changes (debounced)
   useEffect(() => {
     if (formData.phone && formData.phone.trim().length >= 5 && items.length > 0) {
       debouncedSave(buildLeadData());
     }
   }, [formData, items, shippingCost, debouncedSave, buildLeadData]);
 
-  // Save lead on beforeunload (user leaving page)
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (formData.phone && formData.phone.trim().length >= 5 && items.length > 0) {
         saveImmediately();
       }
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [formData.phone, items.length, saveImmediately]);
@@ -103,7 +127,6 @@ export default function CheckoutPage() {
     setDiscountAmount(0);
   };
 
-  // Track InitiateCheckout when page loads
   useEffect(() => {
     if (items.length > 0) {
       trackInitiateCheckout({
@@ -112,7 +135,7 @@ export default function CheckoutPage() {
         currency: settings.currency_code,
       });
     }
-  }, []); // Only on mount
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -133,7 +156,20 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (requiresTrxId && !transactionId.trim()) {
+      toast.error('Transaction ID is required for this payment method');
+      return;
+    }
+
     const orderNumber = `ORD-${Date.now().toString().slice(-8)}`;
+
+    // Build partial rule snapshot
+    const partialSnapshot = hasPartial && selectedPayment ? {
+      partial_type: selectedPayment.partial_type,
+      fixed_partial_amount: selectedPayment.fixed_partial_amount,
+      advance_amount: advanceAmount,
+      due_on_delivery: dueOnDelivery,
+    } : null;
 
     try {
       const orderResult = await createOrder.mutateAsync({
@@ -145,16 +181,22 @@ export default function CheckoutPage() {
           customer_email: formData.email || null,
           shipping_address: formData.address,
           shipping_city: formData.city,
-          shipping_method: selectedMethod?.name || 'Standard',
+          shipping_method: selectedShipping?.name || 'Standard',
           shipping_cost: shippingCost,
-          payment_method: formData.paymentMethod,
+          payment_method: selectedPayment?.code || 'cod',
           subtotal,
           total,
           status: 'pending',
           notes: formData.notes || null,
+          payment_method_id: selectedPayment?.id || null,
+          payment_method_name: selectedPayment?.name || 'Cash on Delivery',
+          payment_status: hasPartial ? 'partial_paid' : 'unpaid',
+          paid_amount: advanceAmount,
+          due_amount: dueOnDelivery,
+          transaction_id: transactionId.trim() || null,
+          partial_rule_snapshot: partialSnapshot,
         },
         items: items.map((item) => {
-          // item.id may be "productId-variantId" for variant items; extract the real product UUID
           const productId = item.id.includes('-') && item.variantId
             ? item.id.replace(`-${item.variantId}`, '')
             : item.id;
@@ -170,19 +212,16 @@ export default function CheckoutPage() {
         }),
       });
 
-      // Mark lead as converted and clear storage
       if (orderResult?.id) {
         convertLead.mutate(orderResult.id);
       }
       clearLeadStorage();
 
-      // Increment coupon usage if one was applied
       if (appliedCoupon) {
         incrementCouponUsage.mutate(appliedCoupon.id);
       }
 
       clearCart();
-      // Pass order data to success page for Purchase tracking
       navigate(`/order-success?orderId=${orderNumber}`, {
         state: {
           orderData: {
@@ -230,39 +269,17 @@ export default function CheckoutPage() {
                     <label className="block text-sm font-medium mb-2">
                       {t('checkout.fullName')} <span className="text-destructive">*</span>
                     </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      className="input-shop"
-                      required
-                    />
+                    <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className="input-shop" required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       {t('checkout.phone')} <span className="text-destructive">*</span>
                     </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="input-shop"
-                      required
-                    />
+                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="input-shop" required />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      {t('checkout.emailOptional')}
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="input-shop"
-                    />
+                    <label className="block text-sm font-medium mb-2">{t('checkout.emailOptional')}</label>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="input-shop" />
                   </div>
                 </div>
               </div>
@@ -272,55 +289,24 @@ export default function CheckoutPage() {
                 <h2 className="text-lg font-semibold mb-4">{t('checkout.shippingAddress')}</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      {t('checkout.country')}
-                    </label>
-                    <input
-                      type="text"
-                      name="country"
-                      value={formData.country}
-                      readOnly
-                      className="input-shop bg-muted cursor-not-allowed"
-                    />
+                    <label className="block text-sm font-medium mb-2">{t('checkout.country')}</label>
+                    <input type="text" name="country" value={formData.country} readOnly className="input-shop bg-muted cursor-not-allowed" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       {t('checkout.address')} <span className="text-destructive">*</span>
                     </label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      className="input-shop"
-                      placeholder={t('checkout.addressPlaceholder')}
-                      required
-                    />
+                    <input type="text" name="address" value={formData.address} onChange={handleChange} className="input-shop" placeholder={t('checkout.addressPlaceholder')} required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       {t('checkout.city')} <span className="text-destructive">*</span>
                     </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="input-shop"
-                      required
-                    />
+                    <input type="text" name="city" value={formData.city} onChange={handleChange} className="input-shop" required />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      {t('checkout.orderNotes')}
-                    </label>
-                    <textarea
-                      name="notes"
-                      value={formData.notes}
-                      onChange={handleChange}
-                      className="input-shop min-h-[100px]"
-                      placeholder={t('checkout.orderNotesPlaceholder')}
-                    />
+                    <label className="block text-sm font-medium mb-2">{t('checkout.orderNotes')}</label>
+                    <textarea name="notes" value={formData.notes} onChange={handleChange} className="input-shop min-h-[100px]" placeholder={t('checkout.orderNotesPlaceholder')} />
                   </div>
                 </div>
               </div>
@@ -338,26 +324,12 @@ export default function CheckoutPage() {
                 ) : (
                   <div className="space-y-3">
                     {shippingMethods.map((method) => (
-                      <label
-                        key={method.id}
-                        className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors"
-                      >
-                        <input
-                          type="radio"
-                          name="shippingMethodId"
-                          value={method.id}
-                          checked={formData.shippingMethodId === method.id}
-                          onChange={handleChange}
-                          className="w-4 h-4 text-accent"
-                        />
+                      <label key={method.id} className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
+                        <input type="radio" name="shippingMethodId" value={method.id} checked={formData.shippingMethodId === method.id} onChange={handleChange} className="w-4 h-4 text-accent" />
                         <div className="flex-1">
                           <p className="font-medium">{method.name}</p>
-                          {method.estimated_days && (
-                            <p className="text-sm text-muted-foreground">{method.estimated_days}</p>
-                          )}
-                          {method.description && (
-                            <p className="text-xs text-muted-foreground mt-1">{method.description}</p>
-                          )}
+                          {method.estimated_days && <p className="text-sm text-muted-foreground">{method.estimated_days}</p>}
+                          {method.description && <p className="text-xs text-muted-foreground mt-1">{method.description}</p>}
                         </div>
                         <span className="font-semibold">{formatCurrency(method.base_rate)}</span>
                       </label>
@@ -369,37 +341,74 @@ export default function CheckoutPage() {
               {/* Payment Method */}
               <div className="bg-card rounded-xl border border-border p-6">
                 <h2 className="text-lg font-semibold mb-4">{t('checkout.paymentMethod')}</h2>
-                <div className="space-y-3">
-                  <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="cod"
-                      checked={formData.paymentMethod === 'cod'}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-accent"
+                {isLoadingPayments ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                ) : paymentMethods.length === 0 ? (
+                  <p className="text-muted-foreground">No payment methods available</p>
+                ) : (
+                  <div className="space-y-3">
+                    {paymentMethods.map((pm) => (
+                      <label
+                        key={pm.id}
+                        className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                          formData.paymentMethodId === pm.id ? 'border-accent bg-accent/5' : 'border-border hover:border-accent'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethodId"
+                          value={pm.id}
+                          checked={formData.paymentMethodId === pm.id}
+                          onChange={handleChange}
+                          className="w-4 h-4 text-accent mt-1"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{pm.name}</p>
+                          {pm.description && <p className="text-sm text-muted-foreground">{pm.description}</p>}
+                          {pm.instructions && formData.paymentMethodId === pm.id && (
+                            <div className="mt-2 p-3 bg-secondary/50 rounded-lg text-sm text-muted-foreground">
+                              {pm.instructions}
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* Transaction ID input */}
+                {requiresTrxId && formData.paymentMethodId && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium mb-2">
+                      Transaction ID <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      placeholder="Enter your transaction/reference ID"
+                      required
                     />
-                    <div className="flex-1">
-                      <p className="font-medium">{t('checkout.cashOnDelivery')}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {t('checkout.codDescription')}
-                      </p>
+                  </div>
+                )}
+
+                {/* Partial Payment Breakdown */}
+                {hasPartial && formData.paymentMethodId && (
+                  <div className="mt-4 p-4 border border-accent/30 bg-accent/5 rounded-lg">
+                    <h3 className="font-semibold text-sm mb-2">Payment Breakdown</h3>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Pay now (advance):</span>
+                        <span className="font-semibold">{formatCurrency(advanceAmount)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Pay on delivery:</span>
+                        <span className="font-semibold">{formatCurrency(dueOnDelivery)}</span>
+                      </div>
                     </div>
-                  </label>
-                  <label className="flex items-center gap-3 p-4 border border-border rounded-lg cursor-pointer hover:border-accent transition-colors opacity-50">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="card"
-                      disabled
-                      className="w-4 h-4 text-accent"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{t('checkout.cardPayment')}</p>
-                      <p className="text-sm text-muted-foreground">{t('checkout.comingSoon')}</p>
-                    </div>
-                  </label>
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -408,28 +417,17 @@ export default function CheckoutPage() {
               <div className="bg-card rounded-xl border border-border p-6 sticky top-24">
                 <h2 className="text-lg font-semibold mb-4">{t('checkout.orderSummary')}</h2>
 
-                {/* Items */}
                 <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
                   {items.map((item) => {
                     const price = item.salePrice ?? item.price;
                     return (
                       <div key={item.id} className="flex gap-3">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-14 h-14 rounded-lg object-cover bg-secondary"
-                        />
+                        <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover bg-secondary" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium line-clamp-1">
-                            {item.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {t('product.quantity')}: {item.quantity}
-                          </p>
+                          <p className="text-sm font-medium line-clamp-1">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{t('product.quantity')}: {item.quantity}</p>
                         </div>
-                        <span className="text-sm font-medium">
-                          {formatCurrency(price * item.quantity)}
-                        </span>
+                        <span className="text-sm font-medium">{formatCurrency(price * item.quantity)}</span>
                       </div>
                     );
                   })}
@@ -437,7 +435,6 @@ export default function CheckoutPage() {
 
                 <hr className="border-border mb-4" />
 
-                {/* Coupon Input */}
                 <div className="mb-4">
                   <CouponInput
                     subtotal={subtotal}
@@ -469,12 +466,23 @@ export default function CheckoutPage() {
 
                 <hr className="border-border mb-4" />
 
-                <div className="flex justify-between mb-6">
+                <div className="flex justify-between mb-2">
                   <span className="font-semibold">{t('cart.total')}</span>
-                  <span className="text-xl font-bold">
-                    {formatCurrency(total)}
-                  </span>
+                  <span className="text-xl font-bold">{formatCurrency(total)}</span>
                 </div>
+
+                {hasPartial && (
+                  <div className="text-xs text-muted-foreground mb-4 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Advance payment:</span>
+                      <span className="font-medium text-foreground">{formatCurrency(advanceAmount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Due on delivery:</span>
+                      <span className="font-medium text-foreground">{formatCurrency(dueOnDelivery)}</span>
+                    </div>
+                  </div>
+                )}
 
                 <Button
                   type="submit"
