@@ -21,6 +21,14 @@ export interface Order {
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];
+  // Payment tracking fields
+  payment_method_id: string | null;
+  payment_method_name: string | null;
+  payment_status: string;
+  paid_amount: number;
+  due_amount: number;
+  transaction_id: string | null;
+  partial_rule_snapshot: Record<string, any> | null;
 }
 
 export interface OrderItem {

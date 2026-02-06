@@ -331,10 +331,16 @@ export type Database = {
           customer_email: string | null
           customer_name: string
           customer_phone: string
+          due_amount: number
           id: string
           notes: string | null
           order_number: string
+          paid_amount: number
+          partial_rule_snapshot: Json | null
           payment_method: string
+          payment_method_id: string | null
+          payment_method_name: string | null
+          payment_status: string
           shipping_address: string
           shipping_city: string
           shipping_cost: number
@@ -342,6 +348,7 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          transaction_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -359,10 +366,16 @@ export type Database = {
           customer_email?: string | null
           customer_name: string
           customer_phone: string
+          due_amount?: number
           id?: string
           notes?: string | null
           order_number: string
+          paid_amount?: number
+          partial_rule_snapshot?: Json | null
           payment_method?: string
+          payment_method_id?: string | null
+          payment_method_name?: string | null
+          payment_status?: string
           shipping_address: string
           shipping_city: string
           shipping_cost: number
@@ -370,6 +383,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          transaction_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -387,10 +401,16 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
+          due_amount?: number
           id?: string
           notes?: string | null
           order_number?: string
+          paid_amount?: number
+          partial_rule_snapshot?: Json | null
           payment_method?: string
+          payment_method_id?: string | null
+          payment_method_name?: string | null
+          payment_status?: string
           shipping_address?: string
           shipping_city?: string
           shipping_cost?: number
@@ -398,8 +418,68 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
+          transaction_id?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          allow_partial_delivery_payment: boolean
+          code: string
+          created_at: string
+          description: string | null
+          fixed_partial_amount: number | null
+          id: string
+          instructions: string | null
+          is_enabled: boolean
+          name: string
+          partial_type: string | null
+          provider_fields: Json | null
+          require_transaction_id: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          allow_partial_delivery_payment?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          fixed_partial_amount?: number | null
+          id?: string
+          instructions?: string | null
+          is_enabled?: boolean
+          name: string
+          partial_type?: string | null
+          provider_fields?: Json | null
+          require_transaction_id?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          allow_partial_delivery_payment?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          fixed_partial_amount?: number | null
+          id?: string
+          instructions?: string | null
+          is_enabled?: boolean
+          name?: string
+          partial_type?: string | null
+          provider_fields?: Json | null
+          require_transaction_id?: boolean
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }

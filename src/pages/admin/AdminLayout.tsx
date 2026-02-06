@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Users,
   ShieldCheck,
+  CreditCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -49,6 +50,7 @@ export default function AdminLayout() {
     { name: 'Shipping Methods', href: '/admin/shipping-methods', icon: Truck, roles: ['admin'] },
     { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare, roles: ['admin', 'manager'] },
     { name: 'Courier', href: '/admin/courier', icon: Truck, roles: ['admin'] },
+    { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard, roles: ['admin'] },
     { name: 'Users', href: '/admin/users', icon: ShieldCheck, roles: ['admin'] },
     { name: t('admin.settings'), href: '/admin/settings', icon: Settings, roles: ['admin'] },
   ];

@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Search, Eye, MoreHorizontal, RefreshCw, Printer, FileText, Truck, Tag } from 'lucide-react';
+import { Search, Eye, MoreHorizontal, RefreshCw, Printer, FileText, Truck, Tag, CheckCircle } from 'lucide-react';
 import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Button } from '@/components/ui/button';
@@ -261,6 +263,71 @@ export default function AdminOrders() {
                   <span>{t('cart.total')}</span>
                   <span>{formatCurrency(selectedOrder.total)}</span>
                 </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="border-t border-border pt-4">
+                <h4 className="font-semibold mb-2">Payment Info</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Method:</span>
+                    <p className="font-medium">{selectedOrder.payment_method_name || selectedOrder.payment_method}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Status:</span>
+                    <p className="font-medium">
+                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                        selectedOrder.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
+                        selectedOrder.payment_status === 'partial_paid' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {selectedOrder.payment_status === 'paid' ? 'Paid' :
+                         selectedOrder.payment_status === 'partial_paid' ? 'Partial Paid' : 'Unpaid'}
+                      </span>
+                    </p>
+                  </div>
+                  {(selectedOrder.paid_amount > 0 || selectedOrder.due_amount > 0) && (
+                    <>
+                      <div>
+                        <span className="text-muted-foreground">Paid:</span>
+                        <p className="font-medium">{formatCurrency(selectedOrder.paid_amount)}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Due:</span>
+                        <p className="font-medium">{formatCurrency(selectedOrder.due_amount)}</p>
+                      </div>
+                    </>
+                  )}
+                  {selectedOrder.transaction_id && (
+                    <div className="col-span-2">
+                      <span className="text-muted-foreground">Transaction ID:</span>
+                      <p className="font-medium font-mono">{selectedOrder.transaction_id}</p>
+                    </div>
+                  )}
+                </div>
+                {selectedOrder.payment_status !== 'paid' && (
+                  <Button
+                    size="sm"
+                    className="mt-3 gap-2"
+                    variant="outline"
+                    onClick={async () => {
+                      await supabase
+                        .from('orders')
+                        .update({
+                          payment_status: 'paid',
+                          paid_amount: selectedOrder.total,
+                          due_amount: 0,
+                        })
+                        .eq('id', selectedOrder.id);
+                      refetch();
+                      setSelectedOrder({ ...selectedOrder, payment_status: 'paid', paid_amount: selectedOrder.total, due_amount: 0 });
+                      toast.success('Marked as paid');
+                    }}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Mark as Paid
+                  </Button>
+                )}
               </div>
 
               {/* Notes */}
