@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Eye, MoreHorizontal, RefreshCw, Printer, FileText, Truck, Tag, CheckCircle } from 'lucide-react';
+import { Search, Eye, MoreHorizontal, RefreshCw, Printer, FileText, Truck, Tag, CheckCircle, Send } from 'lucide-react';
 import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -30,13 +30,13 @@ import { format } from 'date-fns';
 import { PrintModal } from '@/components/admin/PrintModal';
 import { OrderCourierSection } from '@/components/admin/OrderCourierSection';
 
-const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
+const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
 
 export default function AdminOrders() {
   const { data: orders = [], isLoading, error, refetch } = useOrders();
   const { data: storeSettings } = useStoreSettings();
   const updateStatus = useUpdateOrderStatus();
-  const { t, formatCurrency } = useSiteSettings();
+  const { t, formatCurrency, settings } = useSiteSettings();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -57,12 +57,64 @@ export default function AdminOrders() {
   });
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o.id === orderId);
     await updateStatus.mutateAsync({ id: orderId, status: newStatus as any });
+    
+    // Send Purchase event when status changes to confirmed
+    if (newStatus === 'confirmed' && order && !order.fb_purchase_sent) {
+      sendPurchaseEvent(order);
+    }
+  };
+
+  const sendPurchaseEvent = async (order: any) => {
+    try {
+      const eventId = `purchase_${order.order_number}_${Date.now()}`;
+      const { data, error } = await supabase.functions.invoke('meta-capi', {
+        body: {
+          event_name: 'Purchase',
+          event_id: eventId,
+          custom_data: {
+            value: order.total,
+            currency: settings.currency_code,
+            order_id: order.order_number,
+            contents: order.order_items?.map((item: any) => ({
+              id: item.product_id,
+              quantity: item.quantity,
+              item_price: item.price,
+            })) || [],
+            content_type: 'product',
+          },
+          user_data: {
+            em: order.customer_email || undefined,
+            ph: order.customer_phone || undefined,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success && !data?.skipped) {
+        // Mark as sent
+        await supabase
+          .from('orders')
+          .update({ fb_purchase_sent: true })
+          .eq('id', order.id);
+        refetch();
+        toast.success('Purchase event sent to Meta');
+      } else if (data?.skipped) {
+        toast.info(`Purchase event skipped: ${data.reason}`);
+      } else {
+        toast.error('Failed to send Purchase event');
+      }
+    } catch (err: any) {
+      toast.error('Failed to send Purchase event: ' + (err.message || 'Unknown error'));
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'confirmed': return 'bg-teal-100 text-teal-800';
       case 'processing': return 'bg-blue-100 text-blue-800';
       case 'shipped': return 'bg-purple-100 text-purple-800';
       case 'delivered': return 'bg-green-100 text-green-800';
@@ -346,6 +398,29 @@ export default function AdminOrders() {
                   setPrintModal({ open: true, type: 'courier-label', order: selectedOrder });
                 }}
               />
+
+              {/* Meta Purchase Event */}
+              {selectedOrder.status === 'confirmed' && (
+                <div className="border-t border-border pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-sm">Meta Purchase Event</h4>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedOrder.fb_purchase_sent ? '✅ Purchase event already sent' : '⚠️ Purchase event not sent yet'}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={selectedOrder.fb_purchase_sent ? 'outline' : 'default'}
+                      onClick={() => sendPurchaseEvent(selectedOrder)}
+                      className="gap-2"
+                    >
+                      <Send className="h-4 w-4" />
+                      {selectedOrder.fb_purchase_sent ? 'Resend' : 'Send'} Purchase Event
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Print Actions */}
               <div className="flex gap-3 pt-4 border-t border-border">

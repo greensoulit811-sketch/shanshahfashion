@@ -380,6 +380,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           due_amount: number
+          fb_purchase_sent: boolean
           id: string
           notes: string | null
           order_number: string
@@ -415,6 +416,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           due_amount?: number
+          fb_purchase_sent?: boolean
           id?: string
           notes?: string | null
           order_number: string
@@ -450,6 +452,7 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           due_amount?: number
+          fb_purchase_sent?: boolean
           id?: string
           notes?: string | null
           order_number?: string
@@ -938,6 +941,7 @@ export type Database = {
       app_role: "admin" | "customer" | "manager" | "order_handler"
       order_status:
         | "pending"
+        | "confirmed"
         | "processing"
         | "shipped"
         | "delivered"
@@ -1072,6 +1076,7 @@ export const Constants = {
       app_role: ["admin", "customer", "manager", "order_handler"],
       order_status: [
         "pending",
+        "confirmed",
         "processing",
         "shipped",
         "delivered",
