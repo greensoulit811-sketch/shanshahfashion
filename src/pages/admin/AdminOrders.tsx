@@ -456,7 +456,7 @@ export default function AdminOrders() {
         onClose={() => setPrintModal({ open: false, type: 'invoice', order: null })}
         type={printModal.type}
         order={printModal.order}
-        storeSettings={storeSettings || {
+        storeSettings={storeSettings as any || {
           store_name: 'My Store',
           store_logo: '',
           store_tagline: '',

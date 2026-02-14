@@ -43,6 +43,7 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import AdminCheckoutLeads from "./pages/admin/AdminCheckoutLeads";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPaymentMethods from "./pages/admin/AdminPaymentMethods";
+import AdminPages from "./pages/admin/AdminPages";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 
@@ -104,6 +105,7 @@ const App = () => (
                         <Route path="leads" element={<AdminCheckoutLeads />} />
                         <Route path="users" element={<AdminUsers />} />
                         <Route path="payment-methods" element={<AdminPaymentMethods />} />
+                        <Route path="pages" element={<AdminPages />} />
                       </Route>
                     </Route>
 

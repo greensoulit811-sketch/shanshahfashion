@@ -36,6 +36,9 @@ export default function ContactPage() {
   const storeAddress = storeSettings?.store_address || '';
   const storeCity = storeSettings?.store_city || '';
   const whatsappNumber = storeSettings?.whatsapp_number || '';
+  const contactSubtitle = storeSettings?.contact_subtitle || 'Have a question or need help? We\'re here for you. Reach out and we\'ll get back to you as soon as possible.';
+  const contactHours = storeSettings?.contact_hours || 'Sat–Thu: 10am–8pm';
+  const contactMapEmbed = storeSettings?.contact_map_embed || '';
 
   const fullAddress = [storeAddress, storeCity].filter(Boolean).join(', ');
 
@@ -46,8 +49,7 @@ export default function ContactPage() {
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('nav.contact')}</h1>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Have a question or need help? We're here for you. Reach out and
-              we'll get back to you as soon as possible.
+              {contactSubtitle}
             </p>
           </div>
 
@@ -83,7 +85,7 @@ export default function ContactPage() {
                 <Clock className="h-5 w-5 text-accent" />
               </div>
               <h3 className="font-semibold mb-2">Hours</h3>
-              <p className="text-muted-foreground">Sat–Thu: 10am–8pm</p>
+              <p className="text-muted-foreground">{contactHours}</p>
             </div>
           </div>
 
@@ -130,9 +132,7 @@ export default function ContactPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Subject
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Subject</label>
                   <input
                     type="text"
                     name="subject"
@@ -143,9 +143,7 @@ export default function ContactPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Message
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Message</label>
                   <textarea
                     name="message"
                     value={formData.message}
@@ -163,17 +161,19 @@ export default function ContactPage() {
 
             {/* Map/Address */}
             <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <div className="h-64 bg-secondary">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233668.38703692678!2d90.27923994863282!3d23.780573258035967!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka!5e0!3m2!1sen!2sbd!4v1706601234567!5m2!1sen!2sbd"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
+              {contactMapEmbed && (
+                <div className="h-64 bg-secondary">
+                  <iframe
+                    src={contactMapEmbed}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+              )}
               <div className="p-6">
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-accent mt-0.5" />
