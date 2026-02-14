@@ -222,18 +222,7 @@ export default function CheckoutPage() {
       }
 
       clearCart();
-      navigate(`/order-success?orderId=${orderNumber}`, {
-        state: {
-          orderData: {
-            total,
-            items: items.map((item) => ({
-              id: item.id,
-              quantity: item.quantity,
-              price: item.salePrice ?? item.price,
-            })),
-          },
-        },
-      });
+      navigate(`/order-success?orderId=${orderNumber}`);
     } catch (error) {
       // Error is handled by the mutation
     }

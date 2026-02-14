@@ -16,7 +16,8 @@ export interface Order {
   payment_method: string;
   subtotal: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  fb_purchase_sent?: boolean;
   notes: string | null;
   created_at: string;
   updated_at: string;

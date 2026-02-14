@@ -1,34 +1,13 @@
-import { useEffect } from 'react';
-import { useSearchParams, Link, useLocation } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, Package, ArrowRight } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
-import { trackPurchase } from '@/lib/facebook-pixel';
 
 export default function OrderSuccessPage() {
   const [searchParams] = useSearchParams();
-  const location = useLocation();
   const orderId = searchParams.get('orderId') || 'N/A';
-  const { t, settings } = useSiteSettings();
-
-  // Track Purchase event
-  useEffect(() => {
-    // Get order data from location state (passed from checkout)
-    const orderData = location.state?.orderData;
-    if (orderData && orderId !== 'N/A') {
-      trackPurchase({
-        orderId: orderId,
-        value: orderData.total,
-        currency: settings.currency_code,
-        contents: orderData.items.map((item: any) => ({
-          id: item.id,
-          quantity: item.quantity,
-          item_price: item.price,
-        })),
-      });
-    }
-  }, [orderId, location.state, settings.currency_code]);
+  const { t } = useSiteSettings();
 
   return (
     <Layout>
