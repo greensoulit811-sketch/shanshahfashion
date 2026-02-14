@@ -40,7 +40,7 @@ export function Header() {
   return (
     <header className="header-sticky">
       <div className="container-shop">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-18 md:h-24">
           {/* Mobile menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
@@ -55,7 +55,7 @@ export function Header() {
                   <Link
                     key={item.href}
                     to={item.href}
-                    className={`text-lg font-medium transition-colors hover:text-accent ${
+                    className={`text-xl font-semibold transition-colors hover:text-accent ${
                       location.pathname === item.href
                         ? 'text-accent'
                         : 'text-foreground'
@@ -81,10 +81,10 @@ export function Header() {
               <img 
                 src={storeLogo} 
                 alt={storeName} 
-                className="h-8 md:h-10 w-auto object-contain"
+                className="h-10 md:h-12 w-auto object-contain"
               />
             ) : (
-              <span className="text-xl md:text-2xl font-bold tracking-tight">
+              <span className="text-2xl md:text-3xl font-bold tracking-tight">
                 {storeName}
               </span>
             )}
@@ -96,7 +96,7 @@ export function Header() {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-accent ${
+                className={`text-base font-semibold transition-colors hover:text-accent ${
                   location.pathname === item.href
                     ? 'text-accent'
                     : 'text-foreground'
