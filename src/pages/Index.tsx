@@ -8,9 +8,12 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useNewArrivals } from '@/hooks/useShopData';
 import { ProductCard } from '@/components/products/ProductCard';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const Index = () => {
   const { data: newArrivals = [], isLoading } = useNewArrivals();
+  const { ref: newArrivalsRef, isVisible: newArrivalsVisible } = useScrollReveal();
+  const { ref: newsletterRef, isVisible: newsletterVisible } = useScrollReveal();
 
   return (
     <Layout>
@@ -25,9 +28,9 @@ const Index = () => {
 
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
-        <section className="section-padding">
+        <section className="section-padding" ref={newArrivalsRef}>
           <div className="container-shop">
-            <div className="flex items-center justify-between mb-8">
+            <div className={`flex items-center justify-between mb-8 reveal-left ${newArrivalsVisible ? 'reveal-visible' : ''}`}>
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold">New Arrivals</h2>
                 <p className="text-muted-foreground mt-1">Fresh styles just landed</p>
@@ -41,8 +44,10 @@ const Index = () => {
             </div>
 
             <div className="product-grid">
-              {newArrivals.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {newArrivals.map((product, index) => (
+                <div key={product.id} className={`reveal-base stagger-${index + 1} ${newArrivalsVisible ? 'reveal-visible' : ''}`}>
+                  <ProductCard product={product} />
+                </div>
               ))}
             </div>
           </div>
@@ -56,9 +61,9 @@ const Index = () => {
       <CustomerReviews />
 
       {/* Newsletter CTA */}
-      <section className="section-padding bg-secondary/50">
+      <section className="section-padding bg-secondary/50" ref={newsletterRef}>
         <div className="container-shop">
-          <div className="max-w-2xl mx-auto text-center">
+          <div className={`max-w-2xl mx-auto text-center reveal-scale ${newsletterVisible ? 'reveal-visible' : ''}`}>
             <h2 className="text-2xl md:text-3xl font-bold mb-4">Stay in the Loop</h2>
             <p className="text-muted-foreground mb-8">
               Subscribe to our newsletter for exclusive offers and new arrivals

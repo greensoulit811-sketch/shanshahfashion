@@ -1,15 +1,17 @@
 import { Star, Quote } from 'lucide-react';
 import { useReviews } from '@/hooks/useShopData';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 export function CustomerReviews() {
   const { data: reviews = [], isLoading } = useReviews();
+  const { ref, isVisible } = useScrollReveal();
 
   if (isLoading || reviews.length === 0) return null;
 
   return (
-    <section className="section-padding bg-primary text-primary-foreground">
+    <section className="section-padding bg-primary text-primary-foreground" ref={ref}>
       <div className="container-shop">
-        <div className="text-center mb-12">
+        <div className={`text-center mb-12 reveal-base ${isVisible ? 'reveal-visible' : ''}`}>
           <h2 className="text-2xl md:text-3xl font-bold">What Our Customers Say</h2>
           <p className="text-primary-foreground/70 mt-2">
             Real reviews from real customers
@@ -17,10 +19,10 @@ export function CustomerReviews() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {reviews.slice(0, 3).map((review) => (
+          {reviews.slice(0, 3).map((review, index) => (
             <div
               key={review.id}
-              className="bg-primary-foreground/5 backdrop-blur-sm rounded-xl p-6 border border-primary-foreground/10"
+              className={`bg-primary-foreground/5 backdrop-blur-sm rounded-xl p-6 border border-primary-foreground/10 reveal-base stagger-${index + 1} ${isVisible ? 'reveal-visible' : ''}`}
             >
               <Quote className="h-8 w-8 text-accent mb-4" />
               <p className="text-primary-foreground/90 mb-6 leading-relaxed">
