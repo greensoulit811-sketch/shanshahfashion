@@ -68,6 +68,7 @@ export default function AdminSettings() {
     twitter_url: '',
     youtube_url: '',
     whatsapp_number: '',
+    whatsapp_order_enabled: 'false',
     footer_text: '',
   });
 
@@ -602,6 +603,18 @@ export default function AdminSettings() {
                   <p className="text-xs text-muted-foreground mt-1">
                     Include country code for WhatsApp click-to-chat
                   </p>
+                </div>
+                <div className="md:col-span-2 flex items-center justify-between p-4 border border-border rounded-lg">
+                  <div>
+                    <label className="text-sm font-medium">Order on WhatsApp Button</label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Show "Order on WhatsApp" button on product pages
+                    </p>
+                  </div>
+                  <Switch
+                    checked={storeData.whatsapp_order_enabled === 'true'}
+                    onCheckedChange={(checked) => setStoreData({ ...storeData, whatsapp_order_enabled: checked ? 'true' : 'false' })}
+                  />
                 </div>
               </div>
             </div>

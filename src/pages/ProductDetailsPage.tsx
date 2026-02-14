@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check, Loader2 } from 'lucide-react';
+import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check, Loader2, MessageCircle } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { VariantSelector } from '@/components/products/VariantSelector';
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { trackViewContent, trackAddToCart } from '@/lib/facebook-pixel';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -33,6 +34,9 @@ export default function ProductDetailsPage() {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const isMobile = useIsMobile();
+  const { data: storeSettings } = useStoreSettings();
+
+  const whatsappEnabled = storeSettings?.whatsapp_order_enabled === 'true' && !!storeSettings?.whatsapp_number;
 
   // Track ViewContent when product loads
   useEffect(() => {
@@ -359,6 +363,19 @@ export default function ProductDetailsPage() {
               </Button>
             </div>
 
+            {/* WhatsApp Order Button */}
+            {whatsappEnabled && (
+              <a
+                href={`https://wa.me/${storeSettings!.whatsapp_number.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi, I want to order:\n\n*${product.name}*\nPrice: ${formatCurrency(effectivePrice)}\nQuantity: ${quantity}${selectedVariant ? `\nVariant: ${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')}` : ''}\n\nPlease confirm my order.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:flex items-center justify-center gap-3 w-full py-3 px-6 bg-[#25D366] hover:bg-[#1fb855] text-white rounded-lg font-medium transition-colors"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Order on WhatsApp
+              </a>
+            )}
+
             {/* SKU */}
             <p className="text-sm text-muted-foreground">
               {t('product.sku')}: {product.sku}
@@ -417,34 +434,45 @@ export default function ProductDetailsPage() {
       {/* Mobile Sticky Action Bar */}
       {isMobile && product && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden">
-          <div className="flex gap-3 max-w-7xl mx-auto">
+          <div className="flex gap-2 max-w-7xl mx-auto">
             <Button
               variant="outline"
-              className="flex-1 h-14 text-sm font-medium"
+              className="flex-1 h-12 text-sm font-medium"
               onClick={handleAddToCart}
               disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.addToCart')}
             >
               {isAddingToCart ? (
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                <Loader2 className="h-5 w-5 mr-1 animate-spin" />
               ) : (
-                <ShoppingBag className="h-5 w-5 mr-2" />
+                <ShoppingBag className="h-5 w-5 mr-1" />
               )}
               {t('product.addToCart')}
             </Button>
             <Button
-              className="btn-accent flex-1 h-14 text-sm font-medium"
+              className="btn-accent flex-1 h-12 text-sm font-medium"
               onClick={handleBuyNow}
               disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.buyNow')}
             >
               {isBuyingNow ? (
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                <Loader2 className="h-5 w-5 mr-1 animate-spin" />
               ) : (
-                <Zap className="h-5 w-5 mr-2" />
+                <Zap className="h-5 w-5 mr-1" />
               )}
               {t('product.buyNow')}
             </Button>
+            {whatsappEnabled && (
+              <a
+                href={`https://wa.me/${storeSettings!.whatsapp_number.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi, I want to order:\n\n*${product.name}*\nPrice: ${formatCurrency(effectivePrice)}\nQuantity: ${quantity}${selectedVariant ? `\nVariant: ${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')}` : ''}\n\nPlease confirm my order.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-12 w-12 shrink-0 flex items-center justify-center bg-[#25D366] hover:bg-[#1fb855] text-white rounded-lg transition-colors"
+                aria-label="Order on WhatsApp"
+              >
+                <MessageCircle className="h-5 w-5" />
+              </a>
+            )}
           </div>
         </div>
       )}
