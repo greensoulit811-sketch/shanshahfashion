@@ -3,10 +3,12 @@ import { ArrowRight } from 'lucide-react';
 import { useFeaturedProducts } from '@/hooks/useShopData';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { ProductCard } from '@/components/products/ProductCard';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 export function FeaturedProducts() {
   const { data: products = [], isLoading } = useFeaturedProducts();
   const { t } = useSiteSettings();
+  const { ref, isVisible } = useScrollReveal();
 
   if (isLoading) {
     return (
@@ -31,9 +33,9 @@ export function FeaturedProducts() {
   if (products.length === 0) return null;
 
   return (
-    <section className="section-padding bg-secondary/50">
+    <section className="section-padding bg-secondary/50" ref={ref}>
       <div className="container-shop">
-        <div className="flex items-center justify-between mb-8">
+        <div className={`flex items-center justify-between mb-8 reveal-left ${isVisible ? 'reveal-visible' : ''}`}>
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">{t('home.featuredProducts')}</h2>
             <p className="text-muted-foreground mt-1">Handpicked just for you</p>
@@ -47,8 +49,10 @@ export function FeaturedProducts() {
         </div>
 
         <div className="product-grid">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product, index) => (
+            <div key={product.id} className={`reveal-base stagger-${index + 1} ${isVisible ? 'reveal-visible' : ''}`}>
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
 
