@@ -300,6 +300,54 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_pages: {
+        Row: {
+          created_at: string
+          hero_cta_text: string
+          hero_image: string | null
+          hero_subtitle: string | null
+          hero_title: string
+          how_to_use_cards: Json
+          id: string
+          is_active: boolean
+          product_ids: string[]
+          show_reviews: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hero_cta_text?: string
+          hero_image?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string
+          how_to_use_cards?: Json
+          id?: string
+          is_active?: boolean
+          product_ids?: string[]
+          show_reviews?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hero_cta_text?: string
+          hero_image?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string
+          how_to_use_cards?: Json
+          id?: string
+          is_active?: boolean
+          product_ids?: string[]
+          show_reviews?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
