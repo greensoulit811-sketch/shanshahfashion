@@ -29,9 +29,13 @@
     "seeMore": "আরো দেখুন",
     "showLess": "কম দেখুন",
     "noResults": "কোন ফলাফল পাওয়া যায়নি",
-    "language": "ভাষা"
+    "language": "ভাষা",
+    "howToUse": "কিভাবে ব্যবহার করবেন",
+    "ordering": "অর্ডার করছেন",
+    "ourProducts": "আমাদের পণ্যসমূহ"
   },
   "nav": {
+    "products": "আমাদের পণ্যসমূহ",
     "home": "হোম",
     "shop": "শপ",
     "categories": "ক্যাটাগরি",
@@ -133,6 +137,9 @@
     "customerReviews": "গ্রাহক রিভিউ",
     "newsletter": "নিউজলেটার",
     "subscribeText": "বিশেষ অফার এবং আপডেট পেতে সাবস্ক্রাইব করুন"
+  },
+  "reviews": {
+    "title": "গ্রাহকদের মতামত"
   },
   "footer": {
     "aboutUs": "আমাদের সম্পর্কে",
