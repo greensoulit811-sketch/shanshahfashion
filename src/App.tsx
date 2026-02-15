@@ -44,7 +44,9 @@ import AdminCheckoutLeads from "./pages/admin/AdminCheckoutLeads";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPaymentMethods from "./pages/admin/AdminPaymentMethods";
 import AdminPages from "./pages/admin/AdminPages";
+import AdminLandingPages from "./pages/admin/AdminLandingPages";
 import TrackOrderPage from "./pages/TrackOrderPage";
+import LandingPageView from "./pages/LandingPageView";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 
 const queryClient = new QueryClient({
@@ -83,6 +85,7 @@ const App = () => (
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FAQPage />} />
                     <Route path="/track-order" element={<TrackOrderPage />} />
+                    <Route path="/lp/:slug" element={<LandingPageView />} />
 
                     {/* Admin Auth Routes - No protection */}
                     <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -106,6 +109,7 @@ const App = () => (
                         <Route path="users" element={<AdminUsers />} />
                         <Route path="payment-methods" element={<AdminPaymentMethods />} />
                         <Route path="pages" element={<AdminPages />} />
+                        <Route path="landing-pages" element={<AdminLandingPages />} />
                       </Route>
                     </Route>
 
