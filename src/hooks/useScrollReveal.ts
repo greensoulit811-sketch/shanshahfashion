@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface UseScrollRevealOptions {
   threshold?: number;
@@ -10,18 +10,22 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
   options: UseScrollRevealOptions = {}
 ) {
   const { threshold = 0.15, rootMargin = '0px 0px -40px 0px', triggerOnce = true } = options;
-  const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [node, setNode] = useState<T | null>(null);
+
+  // Use a callback ref so we detect when the DOM element actually mounts
+  const ref = useCallback((el: T | null) => {
+    setNode(el);
+  }, []);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    if (!node) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          if (triggerOnce) observer.unobserve(el);
+          if (triggerOnce) observer.unobserve(node);
         } else if (!triggerOnce) {
           setIsVisible(false);
         }
@@ -29,9 +33,9 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
       { threshold, rootMargin }
     );
 
-    observer.observe(el);
+    observer.observe(node);
     return () => observer.disconnect();
-  }, [threshold, rootMargin, triggerOnce]);
+  }, [node, threshold, rootMargin, triggerOnce]);
 
   return { ref, isVisible };
 }
