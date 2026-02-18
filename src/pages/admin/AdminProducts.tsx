@@ -52,6 +52,8 @@ export default function AdminProducts() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -101,6 +103,32 @@ export default function AdminProducts() {
     if (!deleteId) return;
     await deleteProduct.mutateAsync(deleteId);
     setDeleteId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      await deleteProduct.mutateAsync(id);
+    }
+    setSelectedIds(new Set());
+    setShowBulkDelete(false);
+    toast.success(`${selectedIds.size} product(s) deleted`);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredProducts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredProducts.map((p) => p.id)));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -367,16 +395,28 @@ export default function AdminProducts() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          type="search"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="input-shop pl-10 max-w-md"
-        />
+      {/* Search & Bulk Actions */}
+      <div className="flex items-center gap-4 mb-6 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input-shop pl-10 w-full"
+          />
+        </div>
+        {selectedIds.size > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkDelete(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete {selectedIds.size} Selected
+          </Button>
+        )}
       </div>
 
       {/* Products Table */}
@@ -390,6 +430,14 @@ export default function AdminProducts() {
             <table className="w-full">
               <thead className="bg-secondary/50">
                 <tr>
+                  <th className="px-3 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded"
+                      checked={filteredProducts.length > 0 && selectedIds.size === filteredProducts.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Product</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">SKU</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Price</th>
@@ -400,7 +448,15 @@ export default function AdminProducts() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-secondary/30 transition-colors">
+                  <tr key={product.id} className={`hover:bg-secondary/30 transition-colors ${selectedIds.has(product.id) ? 'bg-accent/10' : ''}`}>
+                    <td className="px-3 py-4">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 rounded"
+                        checked={selectedIds.has(product.id)}
+                        onChange={() => toggleSelect(product.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <img
@@ -468,6 +524,24 @@ export default function AdminProducts() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={showBulkDelete} onOpenChange={setShowBulkDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} Product(s)</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedIds.size} selected product(s)? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground">
+              Delete All
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
