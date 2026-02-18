@@ -41,22 +41,6 @@ export default function AdminUsers() {
   const [createOpen, setCreateOpen] = useState(false);
   const [newUser, setNewUser] = useState({ email: '', password: '', full_name: '', role: 'order_handler' });
 
-  const { data: users = [], isLoading } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('manage-users', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: undefined,
-      });
-      if (error) throw error;
-      return (data?.users || []) as StaffUser[];
-    },
-  });
-
-  // Override the default GET behavior by passing action as query param
-  // Since supabase.functions.invoke doesn't support query params easily,
-  // we'll use fetch directly
   const fetchUsers = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch(
