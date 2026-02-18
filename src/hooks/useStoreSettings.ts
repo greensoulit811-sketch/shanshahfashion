@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 export interface StoreSettings {
   store_name: string;
   store_logo: string;
+  store_favicon: string;
   store_tagline: string;
   store_email: string;
   store_phone: string;
@@ -52,6 +53,7 @@ export interface StoreSettings {
 const DEFAULT_STORE_SETTINGS: StoreSettings = {
   store_name: 'My Store',
   store_logo: '',
+  store_favicon: '',
   store_tagline: 'Your one-stop shop',
   store_email: '',
   store_phone: '',
