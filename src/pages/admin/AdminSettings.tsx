@@ -57,6 +57,7 @@ export default function AdminSettings() {
   const [storeData, setStoreData] = useState({
     store_name: '',
     store_logo: '',
+    store_favicon: '',
     store_tagline: '',
     store_email: '',
     store_phone: '',
@@ -431,6 +432,19 @@ export default function AdminSettings() {
                     onChange={(url) => setStoreData({ ...storeData, store_logo: url })}
                     folder="branding"
                   />
+                </div>
+
+                {/* Favicon Upload */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Favicon</label>
+                  <ImageUpload
+                    value={storeData.store_favicon}
+                    onChange={(url) => setStoreData({ ...storeData, store_favicon: url })}
+                    folder="branding"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Recommended: 32×32 or 64×64 PNG/ICO. This icon appears in browser tabs.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
