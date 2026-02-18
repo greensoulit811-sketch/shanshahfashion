@@ -68,8 +68,8 @@ export default function AdminLayout() {
   };
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-border">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="p-6 border-b border-border shrink-0">
         <Link to="/admin" className="flex items-center gap-2">
           <span className="text-xl font-bold">STORE</span>
           <span className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded">
@@ -78,7 +78,7 @@ export default function AdminLayout() {
         </Link>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto min-h-0">
         {sidebarItems.map((item) => {
           const isActive = location.pathname === item.href;
           return (
@@ -100,7 +100,7 @@ export default function AdminLayout() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-border space-y-1">
+      <div className="p-4 border-t border-border space-y-1 shrink-0">
         {user && (
           <div className="px-4 py-2 text-xs text-muted-foreground">
             <p className="truncate">{user.email}</p>
