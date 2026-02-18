@@ -70,6 +70,8 @@ export default function AdminSettings() {
     whatsapp_number: '',
     whatsapp_order_enabled: 'false',
     footer_text: '',
+    topbar_text: '',
+    topbar_enabled: 'true',
   });
 
   const [pixelData, setPixelData] = useState({
@@ -463,6 +465,42 @@ export default function AdminSettings() {
                     className="input-shop"
                     placeholder="© 2024 My Store. All rights reserved."
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Top Bar Settings */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Megaphone className="h-5 w-5 text-accent" />
+                <h2 className="text-lg font-semibold">Top Bar / Announcement</h2>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                  <div>
+                    <label className="text-sm font-medium">Enable Top Bar</label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Show an announcement bar above the header
+                    </p>
+                  </div>
+                  <Switch
+                    checked={storeData.topbar_enabled === 'true'}
+                    onCheckedChange={(checked) => setStoreData({ ...storeData, topbar_enabled: checked ? 'true' : 'false' })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Top Bar Text</label>
+                  <input
+                    type="text"
+                    value={storeData.topbar_text}
+                    onChange={(e) => setStoreData({ ...storeData, topbar_text: e.target.value })}
+                    className="input-shop"
+                    placeholder="Free Shipping on Orders Over ৳500!"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Background color uses your Primary brand color from Theme settings
+                  </p>
                 </div>
               </div>
             </div>

@@ -45,6 +45,8 @@ export interface StoreSettings {
   contact_map_embed: string;
   // WhatsApp order button
   whatsapp_order_enabled: string;
+  topbar_text: string;
+  topbar_enabled: string;
 }
 
 const DEFAULT_STORE_SETTINGS: StoreSettings = {
@@ -87,6 +89,8 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   contact_hours: 'Sat–Thu: 10am–8pm',
   contact_map_embed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233668.38703692678!2d90.27923994863282!3d23.780573258035967!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka!5e0!3m2!1sen!2sbd!4v1706601234567!5m2!1sen!2sbd',
   whatsapp_order_enabled: 'false',
+  topbar_text: 'Free Shipping on Orders Over ৳500!',
+  topbar_enabled: 'true',
 };
 
 export const STORE_SETTINGS_QUERY_KEY = ['store-settings'];
