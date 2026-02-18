@@ -35,6 +35,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { MultiImageUpload } from '@/components/admin/ImageUpload';
+import { CsvProductUpload } from '@/components/admin/CsvProductUpload';
 
 const generateSlug = (name: string) => {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -178,7 +179,9 @@ export default function AdminProducts() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">Products</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <div className="flex gap-2">
+          <CsvProductUpload />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button
               className="btn-accent"
@@ -361,6 +364,7 @@ export default function AdminProducts() {
             )}
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Search */}
