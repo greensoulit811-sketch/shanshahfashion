@@ -46,6 +46,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPaymentMethods from "./pages/admin/AdminPaymentMethods";
 import AdminPages from "./pages/admin/AdminPages";
 import AdminLandingPages from "./pages/admin/AdminLandingPages";
+import AdminHomepage from "./pages/admin/AdminHomepage";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import LandingPageView from "./pages/LandingPageView";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
@@ -112,6 +113,7 @@ const App = () => (
                         <Route path="payment-methods" element={<AdminPaymentMethods />} />
                         <Route path="pages" element={<AdminPages />} />
                         <Route path="landing-pages" element={<AdminLandingPages />} />
+                        <Route path="homepage" element={<AdminHomepage />} />
                       </Route>
                     </Route>
 
