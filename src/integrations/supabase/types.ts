@@ -300,6 +300,136 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_banners: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          id: string
+          image: string
+          is_active: boolean
+          link: string | null
+          sort_order: number
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          image?: string
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          image?: string
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homepage_banners_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "homepage_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homepage_sections: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          layout_style: string
+          product_source: string | null
+          product_source_value: string | null
+          section_type: string
+          settings_json: Json
+          sort_order: number
+          subtitle: string | null
+          template_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          layout_style?: string
+          product_source?: string | null
+          product_source_value?: string | null
+          section_type: string
+          settings_json?: Json
+          sort_order?: number
+          subtitle?: string | null
+          template_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          layout_style?: string
+          product_source?: string | null
+          product_source_value?: string | null
+          section_type?: string
+          settings_json?: Json
+          sort_order?: number
+          subtitle?: string | null
+          template_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homepage_sections_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "homepage_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homepage_templates: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          name: string
+          preview_image: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          name: string
+          preview_image?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          name?: string
+          preview_image?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           created_at: string

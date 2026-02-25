@@ -20,6 +20,7 @@ import {
   CreditCard,
   FileText,
   Megaphone,
+  LayoutTemplate,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -55,6 +56,7 @@ export default function AdminLayout() {
     { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard, roles: ['admin'] },
     { name: 'Pages', href: '/admin/pages', icon: FileText, roles: ['admin'] },
     { name: 'Landing Pages', href: '/admin/landing-pages', icon: Megaphone, roles: ['admin'] },
+    { name: 'Homepage', href: '/admin/homepage', icon: LayoutTemplate, roles: ['admin'] },
     { name: 'Users', href: '/admin/users', icon: ShieldCheck, roles: ['admin'] },
     { name: t('admin.settings'), href: '/admin/settings', icon: Settings, roles: ['admin'] },
   ];
