@@ -35,11 +35,7 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    email: '',
     address: '',
-    city: '',
-    country: settings.default_country_name,
-    notes: '',
     shippingMethodId: '',
     paymentMethodId: '',
   });
@@ -83,11 +79,11 @@ export default function CheckoutPage() {
   const buildLeadData = useCallback(() => ({
     customer_name: formData.fullName,
     phone: formData.phone,
-    email: formData.email,
+    email: '',
     address: formData.address,
-    city: formData.city,
-    country: formData.country,
-    notes: formData.notes,
+    city: '',
+    country: settings.default_country_name,
+    notes: '',
     items: items.map((item) => ({
       product_id: item.id,
       product_name: item.name,
@@ -146,7 +142,7 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.phone || !formData.address || !formData.city) {
+    if (!formData.fullName || !formData.phone || !formData.address) {
       toast.error(t('validation.fillRequired'));
       return;
     }
@@ -178,16 +174,16 @@ export default function CheckoutPage() {
           user_id: user?.id || null,
           customer_name: formData.fullName,
           customer_phone: formData.phone,
-          customer_email: formData.email || null,
+          customer_email: null,
           shipping_address: formData.address,
-          shipping_city: formData.city,
+          shipping_city: '-',
           shipping_method: selectedShipping?.name || 'Standard',
           shipping_cost: shippingCost,
           payment_method: selectedPayment?.code || 'cod',
           subtotal,
           total,
           status: 'pending',
-          notes: formData.notes || null,
+          notes: null,
           payment_method_id: selectedPayment?.id || null,
           payment_method_name: selectedPayment?.name || 'Cash on Delivery',
           payment_status: hasPartial ? 'partial_paid' : 'unpaid',
@@ -250,11 +246,11 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Contact Information */}
+              {/* Customer Information */}
               <div className="bg-card rounded-xl border border-border p-6">
                 <h2 className="text-lg font-semibold mb-4">{t('checkout.contactInfo')}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
+                <div className="space-y-4">
+                  <div>
                     <label className="block text-sm font-medium mb-2">
                       {t('checkout.fullName')} <span className="text-destructive">*</span>
                     </label>
@@ -267,35 +263,10 @@ export default function CheckoutPage() {
                     <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="input-shop" required />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">{t('checkout.emailOptional')}</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="input-shop" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Shipping Address */}
-              <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="text-lg font-semibold mb-4">{t('checkout.shippingAddress')}</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">{t('checkout.country')}</label>
-                    <input type="text" name="country" value={formData.country} readOnly className="input-shop bg-muted cursor-not-allowed" />
-                  </div>
-                  <div>
                     <label className="block text-sm font-medium mb-2">
                       {t('checkout.address')} <span className="text-destructive">*</span>
                     </label>
                     <input type="text" name="address" value={formData.address} onChange={handleChange} className="input-shop" placeholder={t('checkout.addressPlaceholder')} required />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      {t('checkout.city')} <span className="text-destructive">*</span>
-                    </label>
-                    <input type="text" name="city" value={formData.city} onChange={handleChange} className="input-shop" required />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">{t('checkout.orderNotes')}</label>
-                    <textarea name="notes" value={formData.notes} onChange={handleChange} className="input-shop min-h-[100px]" placeholder={t('checkout.orderNotesPlaceholder')} />
                   </div>
                 </div>
               </div>
