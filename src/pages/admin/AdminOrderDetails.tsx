@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { PrintModal } from '@/components/admin/PrintModal';
 import { OrderCourierSection } from '@/components/admin/OrderCourierSection';
-import { CourierHistoryCard } from '@/components/admin/CourierHistoryCard';
+
 import { useState } from 'react';
 
 const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
@@ -372,10 +372,6 @@ export default function AdminOrderDetails() {
               )}
             </div>
           </div>
-
-          {/* Courier History */}
-          <CourierHistoryCard phone={order.customer_phone} />
-
 
           {/* Shipping Address */}
           <div className="bg-card rounded-xl border border-border p-6">
