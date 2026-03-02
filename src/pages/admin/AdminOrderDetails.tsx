@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Printer, CheckCircle, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, FileText, Printer, CheckCircle, Send, Loader2, MessageCircle } from 'lucide-react';
 import { useOrder, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
@@ -99,6 +99,29 @@ export default function AdminOrderDetails() {
       .eq('id', order.id);
     refetch();
     toast.success('Marked as paid');
+  };
+
+  const getWhatsAppStatusMessage = (status: string) => {
+    const storeName = storeSettings?.store_name || 'Our Store';
+    const orderNo = order?.order_number || '';
+    const name = order?.customer_name || 'Customer';
+
+    const messages: Record<string, string> = {
+      pending: `Hello ${name},\n\nThank you for your order *${orderNo}* from *${storeName}*! 🛍️\n\nYour order is currently *Pending*. We will confirm it shortly.\n\nThank you! 🙏`,
+      confirmed: `Hello ${name},\n\nGreat news! Your order *${orderNo}* from *${storeName}* has been *Confirmed* ✅\n\nWe are preparing your order now.\n\nThank you for shopping with us! 🙏`,
+      processing: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* is now being *Processed* 📦\n\nWe'll notify you once it's shipped.\n\nThank you! 🙏`,
+      shipped: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* has been *Shipped* 🚚\n\n${(order as any)?.courier_tracking_id ? `Tracking ID: *${(order as any).courier_tracking_id}*\n` : ''}Your order is on the way!\n\nThank you! 🙏`,
+      delivered: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* has been *Delivered* ✅🎉\n\nWe hope you enjoy your purchase! If you have any questions, feel free to reach out.\n\nThank you! 🙏`,
+      cancelled: `Hello ${name},\n\nWe're sorry to inform you that your order *${orderNo}* from *${storeName}* has been *Cancelled* ❌\n\nIf you have any questions, please contact us.\n\nThank you! 🙏`,
+    };
+    return messages[status] || messages.pending;
+  };
+
+  const sendWhatsAppStatus = () => {
+    if (!order) return;
+    const phone = order.customer_phone.replace(/[^0-9]/g, '');
+    const message = encodeURIComponent(getWhatsAppStatusMessage(order.status));
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
   if (isLoading) {
@@ -334,6 +357,21 @@ export default function AdminOrderDetails() {
             <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setPrintModal({ open: true, type: 'courier-slip' })}>
               <Printer className="h-4 w-4" />
               Print Courier Slip
+            </Button>
+          </div>
+
+          {/* WhatsApp Status */}
+          <div className="bg-card rounded-xl border border-border p-6">
+            <h2 className="font-semibold mb-3">Send Status via WhatsApp</h2>
+            <p className="text-xs text-muted-foreground mb-3">
+              Send current order status ({order.status}) to {order.customer_name} on WhatsApp
+            </p>
+            <Button
+              className="w-full gap-2 bg-[#25D366] hover:bg-[#1da851] text-white"
+              onClick={sendWhatsAppStatus}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Send on WhatsApp
             </Button>
           </div>
         </div>
