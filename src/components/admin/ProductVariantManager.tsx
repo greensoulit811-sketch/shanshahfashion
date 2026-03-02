@@ -151,28 +151,40 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Color (Optional)</label>
+                <label className="block text-sm font-medium mb-2">Color (Optional) — tap multiple to combine</label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow', 'Pink', 'Orange', 'Purple', 'Brown', 'Grey', 'Navy'].map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color })}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                        formData.color === color
-                          ? 'border-accent bg-accent text-accent-foreground'
-                          : 'border-border hover:border-accent/50'
-                      }`}
-                    >
-                      {color}
-                    </button>
-                  ))}
+                  {['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow', 'Pink', 'Orange', 'Purple', 'Brown', 'Grey', 'Navy'].map((color) => {
+                    const selectedColors = formData.color ? formData.color.split(', ').map(c => c.trim()).filter(Boolean) : [];
+                    const isSelected = selectedColors.includes(color);
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => {
+                          let updated: string[];
+                          if (isSelected) {
+                            updated = selectedColors.filter(c => c !== color);
+                          } else {
+                            updated = [...selectedColors, color];
+                          }
+                          setFormData({ ...formData, color: updated.join(', ') });
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          isSelected
+                            ? 'border-accent bg-accent text-accent-foreground'
+                            : 'border-border hover:border-accent/50'
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    );
+                  })}
                 </div>
                 <input
                   type="text"
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  placeholder="Or type a custom color name"
+                  placeholder="Or type custom colors (comma-separated)"
                   className="input-shop"
                 />
               </div>
