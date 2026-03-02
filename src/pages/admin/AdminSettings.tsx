@@ -52,6 +52,7 @@ export default function AdminSettings() {
     brand_border: settings.brand_border || '#e5e7eb',
     brand_card: settings.brand_card || '#ffffff',
     brand_radius: settings.brand_radius || '0.5',
+    show_stock_to_visitors: settings.show_stock_to_visitors ?? true,
   });
 
   const [storeData, setStoreData] = useState({
@@ -171,6 +172,7 @@ export default function AdminSettings() {
         brand_border: settings.brand_border || '#e5e7eb',
         brand_card: settings.brand_card || '#ffffff',
         brand_radius: settings.brand_radius || '0.5',
+        show_stock_to_visitors: settings.show_stock_to_visitors ?? true,
       });
       setPixelData({
         fb_pixel_enabled: settings.fb_pixel_enabled,
@@ -230,6 +232,7 @@ export default function AdminSettings() {
       brand_border: '#e5e7eb',
       brand_card: '#ffffff',
       brand_radius: '0.5',
+      show_stock_to_visitors: true,
     });
   };
 
@@ -259,6 +262,7 @@ export default function AdminSettings() {
         brand_border: formData.brand_border,
         brand_card: formData.brand_card,
         brand_radius: formData.brand_radius,
+        show_stock_to_visitors: formData.show_stock_to_visitors,
       } as any);
       toast.success(t('admin.settingsSaved'));
     } catch (error) {
@@ -828,6 +832,27 @@ export default function AdminSettings() {
                     </div>
                   </label>
                 ))}
+              </div>
+            </div>
+
+            {/* Product Display Settings */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Eye className="h-5 w-5 text-accent" />
+                <h2 className="text-lg font-semibold">Product Display</h2>
+              </div>
+
+              <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                <div>
+                  <label className="text-sm font-medium">Show Stock to Visitors</label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Display available stock quantity on product pages
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.show_stock_to_visitors}
+                  onCheckedChange={(checked) => setFormData({ ...formData, show_stock_to_visitors: checked })}
+                />
               </div>
             </div>
 

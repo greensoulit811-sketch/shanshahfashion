@@ -301,19 +301,21 @@ export default function ProductDetailsPage() {
             )}
 
             {/* Stock */}
-            <div className="flex items-center gap-2">
-              {effectiveStock > 0 ? (
-                <>
-                  <Check className="h-4 w-4 text-success" />
-                  <span className="text-success font-medium">{t('product.inStock')}</span>
-                  <span className="text-muted-foreground">
-                    ({effectiveStock} available)
-                  </span>
-                </>
-              ) : (
-                <span className="text-destructive font-medium">{t('product.outOfStock')}</span>
-              )}
-            </div>
+            {settings.show_stock_to_visitors && (
+              <div className="flex items-center gap-2">
+                {effectiveStock > 0 ? (
+                  <>
+                    <Check className="h-4 w-4 text-success" />
+                    <span className="text-success font-medium">{t('product.inStock')}</span>
+                    <span className="text-muted-foreground">
+                      ({effectiveStock} available)
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-destructive font-medium">{t('product.outOfStock')}</span>
+                )}
+              </div>
+            )}
 
             {/* Short Description */}
             {product.short_description && (

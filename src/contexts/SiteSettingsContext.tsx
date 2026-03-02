@@ -83,6 +83,8 @@ export interface SiteSettings {
   fb_capi_dataset_id: string | null;
   fb_capi_test_event_code: string | null;
   fb_capi_api_version: string;
+  // Stock visibility
+  show_stock_to_visitors: boolean;
 }
 
 type TranslationsType = typeof enTranslations;
@@ -120,6 +122,7 @@ const defaultSettings: SiteSettings = {
   fb_capi_dataset_id: null,
   fb_capi_test_event_code: null,
   fb_capi_api_version: 'v20.0',
+  show_stock_to_visitors: true,
 };
 
 interface SiteSettingsContextType {
