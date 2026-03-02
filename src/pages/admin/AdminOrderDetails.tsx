@@ -165,9 +165,12 @@ export default function AdminOrderDetails() {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm line-clamp-1">{item.product_name}</p>
-                    {item.variant_info && (
+                    {item.variant_info && typeof item.variant_info === 'object' && (
                       <p className="text-xs text-muted-foreground">
-                        {[item.variant_info.size, item.variant_info.color].filter(Boolean).join(' / ')}
+                        {Object.entries(item.variant_info as Record<string, any>)
+                          .filter(([_, v]) => v != null && v !== '')
+                          .map(([k, v]) => `${k}: ${v}`)
+                          .join(' · ')}
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
