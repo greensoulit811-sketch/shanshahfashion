@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface CustomerFraudData {
   totalOrders: number;
+  courierOrders: number;
   deliveredOrders: number;
   cancelledOrders: number;
   pendingOrders: number;
@@ -16,35 +17,39 @@ export const useCustomerFraudCheck = (phone: string, currentOrderId?: string) =>
   return useQuery({
     queryKey: ['customer_fraud_check', phone],
     queryFn: async (): Promise<CustomerFraudData> => {
-      // Clean phone - get last 10 digits for matching
       const cleanPhone = phone.replace(/[^0-9]/g, '');
       const phoneSuffix = cleanPhone.slice(-10);
 
-      // Fetch all orders with this phone number
+      // Fetch all orders that have courier data (sent via Steadfast)
       const { data: orders, error } = await supabase
         .from('orders')
-        .select('id, status, courier_status, customer_phone')
+        .select('id, status, courier_status, courier_provider, customer_phone')
+        .not('courier_provider', 'is', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Filter by phone match (last 10 digits)
+      // Filter by phone match (last 10 digits) and exclude current order
       const matchedOrders = (orders || []).filter((o) => {
         const oPhone = o.customer_phone.replace(/[^0-9]/g, '');
         return oPhone.slice(-10) === phoneSuffix && o.id !== currentOrderId;
       });
 
       const totalOrders = matchedOrders.length;
-      const deliveredOrders = matchedOrders.filter((o) => o.status === 'delivered').length;
+      // Only count orders that went through courier (Steadfast)
+      const courierOrders = matchedOrders.filter((o) => o.courier_provider === 'steadfast').length;
+      const deliveredOrders = matchedOrders.filter(
+        (o) => o.courier_status === 'delivered'
+      ).length;
       const cancelledOrders = matchedOrders.filter(
-        (o) => o.status === 'cancelled' || o.courier_status === 'cancelled'
+        (o) => o.courier_status === 'cancelled' || o.status === 'cancelled'
       ).length;
       const pendingOrders = totalOrders - deliveredOrders - cancelledOrders;
 
       const completedOrders = deliveredOrders + cancelledOrders;
       const receivingPercentage = completedOrders > 0
         ? Math.round((deliveredOrders / completedOrders) * 100)
-        : totalOrders === 0 ? -1 : 100; // -1 means new customer
+        : totalOrders === 0 ? -1 : 100;
       const cancelPercentage = completedOrders > 0
         ? Math.round((cancelledOrders / completedOrders) * 100)
         : 0;
@@ -58,6 +63,7 @@ export const useCustomerFraudCheck = (phone: string, currentOrderId?: string) =>
 
       return {
         totalOrders,
+        courierOrders,
         deliveredOrders,
         cancelledOrders,
         pendingOrders,
