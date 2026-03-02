@@ -109,7 +109,8 @@
     "codDescription": "অর্ডার পেলে পেমেন্ট করুন",
     "cardPayment": "কার্ড পেমেন্ট",
     "comingSoon": "শীঘ্রই আসছে",
-    "required": "আবশ্যক"
+    "required": "আবশ্যক",
+    "formHeading": "অর্ডার করতে নিচের ফর্ম পূরণ করুন"
   },
   "order": {
     "success": "অর্ডার সফলভাবে সম্পন্ন!",

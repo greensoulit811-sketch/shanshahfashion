@@ -105,7 +105,8 @@
     "codDescription": "Pay when you receive your order",
     "cardPayment": "Card Payment",
     "comingSoon": "Coming soon",
-    "required": "Required"
+    "required": "Required",
+    "formHeading": "Fill out the form below to place your order"
   },
   "order": {
     "success": "Order Placed Successfully!",

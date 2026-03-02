@@ -240,7 +240,8 @@ export default function CheckoutPage() {
   return (
     <Layout>
       <div className="container-shop section-padding">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8">{t('checkout.title')}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('checkout.title')}</h1>
+        <p className="text-muted-foreground mb-8">{t('checkout.formHeading')}</p>
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
