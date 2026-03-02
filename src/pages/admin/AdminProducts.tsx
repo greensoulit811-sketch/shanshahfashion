@@ -148,7 +148,7 @@ export default function AdminProducts() {
       sale_price: formData.sale_price ? parseFloat(formData.sale_price) : null,
       category_id: formData.category_id || null,
       stock: parseInt(formData.stock),
-      sku: formData.sku,
+      sku: formData.sku || `SKU-${Date.now()}`,
       short_description: formData.short_description || null,
       description: formData.description || null,
       images: formData.images,
@@ -304,13 +304,12 @@ export default function AdminProducts() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium mb-2">SKU *</label>
+                  <label className="block text-sm font-medium mb-2">SKU</label>
                   <input
                     type="text"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                     className="input-shop"
-                    required
                   />
                 </div>
               </div>
