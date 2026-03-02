@@ -166,14 +166,18 @@ export default function AdminOrderDetails() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm line-clamp-1">{item.product_name}</p>
                     {item.variant_info && typeof item.variant_info === 'object' && (
-                      <p className="text-xs text-muted-foreground">
+                      <div className="flex flex-wrap gap-1.5 mt-1">
                         {Object.entries(item.variant_info as Record<string, any>)
                           .filter(([_, v]) => v != null && v !== '')
-                          .map(([k, v]) => `${k}: ${v}`)
-                          .join(' · ')}
-                      </p>
+                          .map(([key, value]) => (
+                            <span key={key} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs">
+                              <span className="font-medium capitalize text-muted-foreground">{key}:</span>
+                              <span className="font-semibold">{String(value)}</span>
+                            </span>
+                          ))}
+                      </div>
                     )}
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-1">
                       {formatCurrency(item.price)} × {item.quantity}
                     </p>
                   </div>
