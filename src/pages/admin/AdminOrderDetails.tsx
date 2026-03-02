@@ -105,16 +105,38 @@ export default function AdminOrderDetails() {
     const storeName = storeSettings?.store_name || 'Our Store';
     const orderNo = order?.order_number || '';
     const name = order?.customer_name || 'Customer';
+    const lang = settings.language || 'en';
+    const trackingId = (order as any)?.courier_tracking_id;
 
-    const messages: Record<string, string> = {
-      pending: `Hello ${name},\n\nThank you for your order *${orderNo}* from *${storeName}*! 🛍️\n\nYour order is currently *Pending*. We will confirm it shortly.\n\nThank you! 🙏`,
-      confirmed: `Hello ${name},\n\nGreat news! Your order *${orderNo}* from *${storeName}* has been *Confirmed* ✅\n\nWe are preparing your order now.\n\nThank you for shopping with us! 🙏`,
-      processing: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* is now being *Processed* 📦\n\nWe'll notify you once it's shipped.\n\nThank you! 🙏`,
-      shipped: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* has been *Shipped* 🚚\n\n${(order as any)?.courier_tracking_id ? `Tracking ID: *${(order as any).courier_tracking_id}*\n` : ''}Your order is on the way!\n\nThank you! 🙏`,
-      delivered: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* has been *Delivered* ✅🎉\n\nWe hope you enjoy your purchase! If you have any questions, feel free to reach out.\n\nThank you! 🙏`,
-      cancelled: `Hello ${name},\n\nWe're sorry to inform you that your order *${orderNo}* from *${storeName}* has been *Cancelled* ❌\n\nIf you have any questions, please contact us.\n\nThank you! 🙏`,
+    const templates: Record<string, Record<string, string>> = {
+      en: {
+        pending: `Hello ${name},\n\nThank you for your order *${orderNo}* from *${storeName}*! 🛍️\n\nYour order is currently *Pending*. We will confirm it shortly.\n\nThank you! 🙏`,
+        confirmed: `Hello ${name},\n\nGreat news! Your order *${orderNo}* from *${storeName}* has been *Confirmed* ✅\n\nWe are preparing your order now.\n\nThank you for shopping with us! 🙏`,
+        processing: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* is now being *Processed* 📦\n\nWe'll notify you once it's shipped.\n\nThank you! 🙏`,
+        shipped: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* has been *Shipped* 🚚\n\n${trackingId ? `Tracking ID: *${trackingId}*\n` : ''}Your order is on the way!\n\nThank you! 🙏`,
+        delivered: `Hello ${name},\n\nYour order *${orderNo}* from *${storeName}* has been *Delivered* ✅🎉\n\nWe hope you enjoy your purchase! If you have any questions, feel free to reach out.\n\nThank you! 🙏`,
+        cancelled: `Hello ${name},\n\nWe're sorry to inform you that your order *${orderNo}* from *${storeName}* has been *Cancelled* ❌\n\nIf you have any questions, please contact us.\n\nThank you! 🙏`,
+      },
+      bn: {
+        pending: `প্রিয় ${name},\n\n*${storeName}* থেকে আপনার অর্ডার *${orderNo}* এর জন্য ধন্যবাদ! 🛍️\n\nআপনার অর্ডার বর্তমানে *পেন্ডিং* আছে। আমরা শীঘ্রই নিশ্চিত করব।\n\nধন্যবাদ! 🙏`,
+        confirmed: `প্রিয় ${name},\n\nশুভ সংবাদ! *${storeName}* থেকে আপনার অর্ডার *${orderNo}* *কনফার্ম* হয়েছে ✅\n\nআমরা আপনার অর্ডার প্রস্তুত করছি।\n\nআমাদের সাথে কেনাকাটার জন্য ধন্যবাদ! 🙏`,
+        processing: `প্রিয় ${name},\n\n*${storeName}* থেকে আপনার অর্ডার *${orderNo}* এখন *প্রসেসিং* হচ্ছে 📦\n\nশিপমেন্ট হলে আমরা আপনাকে জানাব।\n\nধন্যবাদ! 🙏`,
+        shipped: `প্রিয় ${name},\n\n*${storeName}* থেকে আপনার অর্ডার *${orderNo}* *শিপ* করা হয়েছে 🚚\n\n${trackingId ? `ট্র্যাকিং আইডি: *${trackingId}*\n` : ''}আপনার অর্ডার পথে আছে!\n\nধন্যবাদ! 🙏`,
+        delivered: `প্রিয় ${name},\n\n*${storeName}* থেকে আপনার অর্ডার *${orderNo}* *ডেলিভারি* হয়েছে ✅🎉\n\nআশা করি আপনি পণ্যটি পছন্দ করবেন! কোনো প্রশ্ন থাকলে যোগাযোগ করুন।\n\nধন্যবাদ! 🙏`,
+        cancelled: `প্রিয় ${name},\n\nদুঃখিত, *${storeName}* থেকে আপনার অর্ডার *${orderNo}* *বাতিল* করা হয়েছে ❌\n\nকোনো প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।\n\nধন্যবাদ! 🙏`,
+      },
+      hi: {
+        pending: `नमस्ते ${name},\n\n*${storeName}* से आपके ऑर्डर *${orderNo}* के लिए धन्यवाद! 🛍️\n\nआपका ऑर्डर अभी *पेंडिंग* है। हम जल्द ही इसे कन्फर्म करेंगे।\n\nधन्यवाद! 🙏`,
+        confirmed: `नमस्ते ${name},\n\nबधाई हो! *${storeName}* से आपका ऑर्डर *${orderNo}* *कन्फर्म* हो गया है ✅\n\nहम आपका ऑर्डर तैयार कर रहे हैं।\n\nहमसे खरीदारी के लिए धन्यवाद! 🙏`,
+        processing: `नमस्ते ${name},\n\n*${storeName}* से आपका ऑर्डर *${orderNo}* अब *प्रोसेसिंग* में है 📦\n\nशिप होने पर हम आपको सूचित करेंगे।\n\nधन्यवाद! 🙏`,
+        shipped: `नमस्ते ${name},\n\n*${storeName}* से आपका ऑर्डर *${orderNo}* *शिप* कर दिया गया है 🚚\n\n${trackingId ? `ट्रैकिंग आईडी: *${trackingId}*\n` : ''}आपका ऑर्डर रास्ते में है!\n\nधन्यवाद! 🙏`,
+        delivered: `नमस्ते ${name},\n\n*${storeName}* से आपका ऑर्डर *${orderNo}* *डिलीवर* हो गया है ✅🎉\n\nहमें उम्मीद है कि आपको प्रोडक्ट पसंद आएगा! कोई सवाल हो तो संपर्क करें।\n\nधन्यवाद! 🙏`,
+        cancelled: `नमस्ते ${name},\n\nक्षमा करें, *${storeName}* से आपका ऑर्डर *${orderNo}* *रद्द* कर दिया गया है ❌\n\nकोई सवाल हो तो हमसे संपर्क करें।\n\nधन्यवाद! 🙏`,
+      },
     };
-    return messages[status] || messages.pending;
+
+    const msgs = templates[lang] || templates.en;
+    return msgs[status] || msgs.pending;
   };
 
   const getDialCode = (countryCode: string): string => {
