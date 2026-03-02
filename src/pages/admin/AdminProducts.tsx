@@ -70,6 +70,7 @@ export default function AdminProducts() {
     is_best_seller: false,
     is_featured: false,
     is_active: true,
+    is_variable: false,
   });
 
   const filteredProducts = products.filter(
@@ -95,6 +96,7 @@ export default function AdminProducts() {
       is_best_seller: product.is_best_seller || false,
       is_featured: product.is_featured || false,
       is_active: (product as any).is_active ?? true,
+      is_variable: (product as any).is_variable ?? false,
     });
     setIsDialogOpen(true);
   };
@@ -153,6 +155,7 @@ export default function AdminProducts() {
       is_new: formData.is_new,
       is_best_seller: formData.is_best_seller,
       is_featured: formData.is_featured,
+      is_variable: formData.is_variable,
     };
 
     try {
@@ -185,6 +188,7 @@ export default function AdminProducts() {
       is_best_seller: false,
       is_featured: false,
       is_active: true,
+      is_variable: false,
     });
   };
 
@@ -342,6 +346,15 @@ export default function AdminProducts() {
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
+                    checked={formData.is_variable}
+                    onChange={(e) => setFormData({ ...formData, is_variable: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm font-medium">Variable Product</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
                     checked={formData.is_new}
                     onChange={(e) => setFormData({ ...formData, is_new: e.target.checked })}
                     className="w-4 h-4"
@@ -381,8 +394,8 @@ export default function AdminProducts() {
               </div>
             </form>
 
-            {/* Product Variants Manager */}
-            {editingProduct && (
+            {/* Product Variants Manager - only for variable products */}
+            {editingProduct && formData.is_variable && (
               <div className="mt-8 pt-8 border-t border-border">
                 <ProductVariantManager
                   productId={editingProduct.id}

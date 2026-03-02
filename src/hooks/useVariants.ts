@@ -9,6 +9,7 @@ export interface ProductVariant {
   color: string | null;
   sku: string;
   price_adjustment: number;
+  variant_price: number | null;
   stock: number;
   is_active: boolean;
   created_at: string;

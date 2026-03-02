@@ -724,6 +724,7 @@ export type Database = {
           sku: string
           stock: number
           updated_at: string | null
+          variant_price: number | null
         }
         Insert: {
           color?: string | null
@@ -736,6 +737,7 @@ export type Database = {
           sku: string
           stock?: number
           updated_at?: string | null
+          variant_price?: number | null
         }
         Update: {
           color?: string | null
@@ -748,6 +750,7 @@ export type Database = {
           sku?: string
           stock?: number
           updated_at?: string | null
+          variant_price?: number | null
         }
         Relationships: [
           {
@@ -770,6 +773,7 @@ export type Database = {
           is_best_seller: boolean | null
           is_featured: boolean | null
           is_new: boolean | null
+          is_variable: boolean
           name: string
           price: number
           sale_price: number | null
@@ -789,6 +793,7 @@ export type Database = {
           is_best_seller?: boolean | null
           is_featured?: boolean | null
           is_new?: boolean | null
+          is_variable?: boolean
           name: string
           price: number
           sale_price?: number | null
@@ -808,6 +813,7 @@ export type Database = {
           is_best_seller?: boolean | null
           is_featured?: boolean | null
           is_new?: boolean | null
+          is_variable?: boolean
           name?: string
           price?: number
           sale_price?: number | null

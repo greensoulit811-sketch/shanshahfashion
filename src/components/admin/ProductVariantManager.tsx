@@ -39,7 +39,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
     size: '',
     color: '',
     sku: '',
-    price_adjustment: '0',
+    variant_price: '',
     stock: '0',
   });
 
@@ -49,7 +49,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
       size: variant.size || '',
       color: variant.color || '',
       sku: variant.sku,
-      price_adjustment: (variant.price_adjustment || 0).toString(),
+      variant_price: variant.variant_price?.toString() || '',
       stock: variant.stock.toString(),
     });
     setIsDialogOpen(true);
@@ -63,11 +63,17 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
       return;
     }
 
+    if (!formData.variant_price.trim()) {
+      alert('Price is required');
+      return;
+    }
+
     const variantData = {
       size: formData.size || null,
       color: formData.color || null,
       sku: formData.sku,
-      price_adjustment: parseFloat(formData.price_adjustment) || 0,
+      variant_price: parseFloat(formData.variant_price) || 0,
+      price_adjustment: 0,
       stock: parseInt(formData.stock) || 0,
       is_active: true,
     };
@@ -97,7 +103,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
       size: '',
       color: '',
       sku: '',
-      price_adjustment: '0',
+      variant_price: '',
       stock: '0',
     });
   };
@@ -167,14 +173,15 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Price Adjustment</label>
+                <label className="block text-sm font-medium mb-2">Price *</label>
                 <input
                   type="number"
                   step="0.01"
-                  value={formData.price_adjustment}
-                  onChange={(e) => setFormData({ ...formData, price_adjustment: e.target.value })}
-                  placeholder="e.g., 10.00 or -5.00"
+                  value={formData.variant_price}
+                  onChange={(e) => setFormData({ ...formData, variant_price: e.target.value })}
+                  placeholder="e.g., 299.00"
                   className="input-shop"
+                  required
                 />
               </div>
 
@@ -220,7 +227,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
                   <th className="px-4 py-3 text-left font-medium">Size</th>
                   <th className="px-4 py-3 text-left font-medium">Color</th>
                   <th className="px-4 py-3 text-left font-medium">SKU</th>
-                  <th className="px-4 py-3 text-left font-medium">Adjustment</th>
+                  <th className="px-4 py-3 text-left font-medium">Price</th>
                   <th className="px-4 py-3 text-left font-medium">Stock</th>
                   <th className="px-4 py-3 text-left font-medium">Actions</th>
                 </tr>
@@ -231,14 +238,8 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
                     <td className="px-4 py-3">{variant.size || '-'}</td>
                     <td className="px-4 py-3">{variant.color || '-'}</td>
                     <td className="px-4 py-3 font-mono text-xs">{variant.sku}</td>
-                    <td className="px-4 py-3">
-                      {variant.price_adjustment ? (
-                        <span className={variant.price_adjustment > 0 ? 'text-accent' : 'text-green-600'}>
-                          {variant.price_adjustment > 0 ? '+' : ''}{variant.price_adjustment.toFixed(2)}
-                        </span>
-                      ) : (
-                        '-'
-                      )}
+                    <td className="px-4 py-3 font-medium">
+                      {variant.variant_price != null ? variant.variant_price.toFixed(2) : '-'}
                     </td>
                     <td className="px-4 py-3">
                       <span
