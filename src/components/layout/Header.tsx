@@ -45,7 +45,7 @@ export function Header() {
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon" className="shrink-0">
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
                 <span className="sr-only">{t('nav.openMenu')}</span>
               </Button>
             </SheetTrigger>
@@ -115,7 +115,7 @@ export function Header() {
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="hidden sm:flex"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-6 w-6" />
               <span className="sr-only">{t('common.search')}</span>
             </Button>
 
@@ -123,7 +123,7 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="hidden sm:flex">
-                  <Globe className="h-5 w-5" />
+                  <Globe className="h-6 w-6" />
                   <span className="sr-only">{t('common.language')}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -142,14 +142,14 @@ export function Header() {
 
             <Link to="/admin">
               <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <User className="h-5 w-5" />
+                <User className="h-6 w-6" />
                 <span className="sr-only">{t('common.admin')}</span>
               </Button>
             </Link>
 
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon">
-                <ShoppingBag className="h-5 w-5" />
+                <ShoppingBag className="h-6 w-6" />
                 {totalItems > 0 && (
                   <span className="cart-badge">{totalItems}</span>
                 )}
