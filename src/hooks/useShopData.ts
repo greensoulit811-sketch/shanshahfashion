@@ -18,6 +18,7 @@ export interface Product {
   is_new: boolean;
   is_best_seller: boolean;
   is_featured: boolean;
+  is_variable: boolean;
   created_at: string;
   updated_at: string;
   has_variants?: boolean;
@@ -69,7 +70,7 @@ export const useProducts = () => {
       return (data || []).map((p: any) => ({
         ...p,
         product_variants: undefined,
-        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+        has_variants: p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
   });
@@ -106,7 +107,7 @@ export const useFeaturedProducts = () => {
       return (data || []).map((p: any) => ({
         ...p,
         product_variants: undefined,
-        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+        has_variants: p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
   });
@@ -126,7 +127,7 @@ export const useBestSellers = () => {
       return (data || []).map((p: any) => ({
         ...p,
         product_variants: undefined,
-        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+        has_variants: p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
   });
@@ -146,7 +147,7 @@ export const useNewArrivals = () => {
       return (data || []).map((p: any) => ({
         ...p,
         product_variants: undefined,
-        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+        has_variants: p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
   });
@@ -175,7 +176,7 @@ export const useProductsByCategory = (categorySlug: string) => {
       return (data || []).map((p: any) => ({
         ...p,
         product_variants: undefined,
-        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+        has_variants: p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
     enabled: !!categorySlug,
@@ -199,7 +200,7 @@ export const useRelatedProducts = (product: Product | null, limit = 4) => {
       return (data || []).map((p: any) => ({
         ...p,
         product_variants: undefined,
-        has_variants: (p.product_variants?.[0]?.count || 0) > 0,
+        has_variants: p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
     enabled: !!product,

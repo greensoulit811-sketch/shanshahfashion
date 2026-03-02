@@ -60,15 +60,14 @@ export default function ProductDetailsPage() {
 
   // Calculate effective price and stock based on selected variant
   const effectivePrice = useMemo(() => {
-    if (selectedVariant) {
-      const basePrice = product?.sale_price || product?.price || 0;
-      return basePrice + (selectedVariant.price_adjustment || 0);
+    if (selectedVariant && selectedVariant.variant_price != null) {
+      return selectedVariant.variant_price;
     }
     return product?.sale_price || product?.price || 0;
   }, [product, selectedVariant]);
 
   const effectiveStock = selectedVariant?.stock ?? product?.stock ?? 0;
-  const hasVariants = variants.length > 0;
+  const hasVariants = variants.length > 0 && (product as any)?.is_variable;
 
   if (isLoading) {
     return (
@@ -118,10 +117,10 @@ export default function ProductDetailsPage() {
       name: selectedVariant
         ? `${product.name} (${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')})`
         : product.name,
-      price: product.price + (selectedVariant?.price_adjustment || 0),
-      salePrice: product.sale_price
-        ? product.sale_price + (selectedVariant?.price_adjustment || 0)
-        : undefined,
+      price: selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price,
+      salePrice: selectedVariant?.variant_price != null
+        ? undefined
+        : product.sale_price || undefined,
       image: product.images[0] || '/placeholder.svg',
       quantity,
       stock: effectiveStock,
@@ -160,10 +159,10 @@ export default function ProductDetailsPage() {
       name: selectedVariant
         ? `${product.name} (${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')})`
         : product.name,
-      price: product.price + (selectedVariant?.price_adjustment || 0),
-      salePrice: product.sale_price
-        ? product.sale_price + (selectedVariant?.price_adjustment || 0)
-        : undefined,
+      price: selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price,
+      salePrice: selectedVariant?.variant_price != null
+        ? undefined
+        : product.sale_price || undefined,
       image: product.images[0] || '/placeholder.svg',
       quantity,
       stock: effectiveStock,
@@ -274,7 +273,7 @@ export default function ProductDetailsPage() {
                       {formatCurrency(effectivePrice)}
                     </span>
                     <span className="text-xl text-muted-foreground line-through">
-                      {formatCurrency(product.price + (selectedVariant?.price_adjustment || 0))}
+                      {formatCurrency(selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price)}
                     </span>
                     <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
                       Save {formatCurrency(product.price - product.sale_price!)}
