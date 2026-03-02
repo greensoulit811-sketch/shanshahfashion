@@ -25,14 +25,12 @@ interface CourierMetrics {
   }>
 }
 
-function normalizeStatus(courierStatus: string | null, orderStatus: string): string {
-  const cs = (courierStatus || '').toLowerCase()
-  if (cs === 'delivered' || orderStatus === 'delivered') return 'delivered'
-  if (cs === 'cancelled' || cs === 'cancelled_delivery' || orderStatus === 'cancelled') return 'cancelled'
-  if (cs === 'partial_delivered' || cs === 'unknown') return 'returned'
-  if (cs === 'in_review' || cs === 'pending' || cs === 'picked' || cs === 'in_transit') return 'in_transit'
-  if (orderStatus === 'shipped') return 'in_transit'
-  if (orderStatus === 'pending' || orderStatus === 'confirmed' || orderStatus === 'processing') return 'pending'
+function normalizeSteadfastStatus(deliveryStatus: string | null): string {
+  const ds = (deliveryStatus || '').toLowerCase()
+  if (ds === 'delivered') return 'delivered'
+  if (ds === 'cancelled' || ds === 'cancelled_delivery') return 'cancelled'
+  if (ds === 'partial_delivered' || ds === 'unknown') return 'returned'
+  if (ds === 'in_review' || ds === 'pending' || ds === 'picked' || ds === 'in_transit') return 'in_transit'
   return 'pending'
 }
 
@@ -79,7 +77,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Normalize phone: keep last 10 digits for matching
     const normalizedPhone = phone.replace(/[^0-9]/g, '').slice(-10)
 
     // Check cache first (unless force refresh)
@@ -92,8 +89,7 @@ Deno.serve(async (req) => {
 
       if (cached && new Date(cached.cache_expire_at) > new Date()) {
         return new Response(JSON.stringify({
-          success: true,
-          cached: true,
+          success: true, cached: true,
           data: {
             total_parcels: cached.total_parcels,
             delivered_count: cached.delivered_count,
@@ -111,36 +107,65 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Query all orders for this phone number (match last 10 digits)
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select('id, order_number, status, courier_status, courier_tracking_id, courier_provider, created_at, total, updated_at')
-      .order('created_at', { ascending: false })
+    // Get Steadfast settings
+    const { data: settings } = await supabase
+      .from('courier_settings')
+      .select('*')
+      .eq('provider', 'steadfast')
+      .maybeSingle()
 
-    if (ordersError) {
-      return new Response(JSON.stringify({ error: 'Failed to fetch orders' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    const steadfastEnabled = settings?.enabled && settings?.api_key && settings?.api_secret && settings?.api_base_url
 
-    // Filter by phone (match last 10 digits) - we need to fetch phone separately
+    // Get all orders for this phone
     const { data: allOrders } = await supabase
       .from('orders')
-      .select('id, order_number, status, courier_status, courier_tracking_id, courier_provider, created_at, total, updated_at, customer_phone')
+      .select('id, order_number, status, courier_status, courier_tracking_id, courier_consignment_id, courier_provider, created_at, total, updated_at, customer_phone')
       .order('created_at', { ascending: false })
       .limit(500)
 
     const matchedOrders = (allOrders || []).filter(o => {
-      const orderPhone = o.customer_phone.replace(/[^0-9]/g, '').slice(-10)
+      const orderPhone = (o.customer_phone || '').replace(/[^0-9]/g, '').slice(-10)
       return orderPhone === normalizedPhone
     })
 
-    // Compute metrics
+    // For orders with consignment IDs, fetch live status from Steadfast API
+    if (steadfastEnabled) {
+      const ordersWithConsignment = matchedOrders.filter(o => o.courier_consignment_id && o.courier_provider === 'steadfast')
+      
+      // Batch fetch statuses (max 10 concurrent to avoid rate limits)
+      const batchSize = 10
+      for (let i = 0; i < ordersWithConsignment.length; i += batchSize) {
+        const batch = ordersWithConsignment.slice(i, i + batchSize)
+        const statusPromises = batch.map(async (order) => {
+          try {
+            const res = await fetch(`${settings.api_base_url}/status_by_cid/${order.courier_consignment_id}`, {
+              headers: {
+                'Api-Key': settings.api_key,
+                'Secret-Key': settings.api_secret,
+                'Content-Type': 'application/json',
+              },
+            })
+            if (res.ok) {
+              const data = await res.json()
+              if (data.status === 200 && data.delivery_status) {
+                // Update the order's courier_status with live data
+                order.courier_status = data.delivery_status
+              }
+            }
+          } catch (e) {
+            console.error(`Failed to fetch status for consignment ${order.courier_consignment_id}:`, e)
+          }
+        })
+        await Promise.all(statusPromises)
+      }
+    }
+
+    // Compute metrics using (now live) statuses
     let delivered = 0, returned = 0, cancelled = 0, inTransit = 0
     let lastDeliveryDate: string | null = null
 
     for (const o of matchedOrders) {
-      const normalized = normalizeStatus(o.courier_status, o.status)
+      const normalized = normalizeSteadfastStatus(o.courier_status || o.status)
       if (normalized === 'delivered') {
         delivered++
         if (!lastDeliveryDate || o.updated_at > lastDeliveryDate) {
@@ -178,7 +203,7 @@ Deno.serve(async (req) => {
       recent_parcels: recentParcels,
     }
 
-    // Upsert cache
+    // Upsert cache (24h)
     const cacheExpire = new Date()
     cacheExpire.setHours(cacheExpire.getHours() + 24)
 
@@ -196,11 +221,13 @@ Deno.serve(async (req) => {
       recent_parcels: recentParcels,
       last_checked_at: new Date().toISOString(),
       cache_expire_at: cacheExpire.toISOString(),
+      source: steadfastEnabled ? 'steadfast' : 'internal',
     }, { onConflict: 'phone' })
 
     return new Response(JSON.stringify({
       success: true,
       cached: false,
+      source: steadfastEnabled ? 'steadfast' : 'internal',
       data: metrics,
       last_checked_at: new Date().toISOString(),
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
