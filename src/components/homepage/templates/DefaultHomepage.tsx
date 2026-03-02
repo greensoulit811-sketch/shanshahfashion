@@ -3,7 +3,7 @@ import { HeroSlider } from '@/components/home/HeroSlider';
 import { FeaturedCategories } from '@/components/home/FeaturedCategories';
 import { FeaturedProducts } from '@/components/home/FeaturedProducts';
 import { BestSellers } from '@/components/home/BestSellers';
-import { CustomerReviews } from '@/components/home/CustomerReviews';
+
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useNewArrivals } from '@/hooks/useShopData';
@@ -16,7 +16,7 @@ const SECTION_COMPONENTS: Record<string, React.ComponentType<{ section: Homepage
   featured_categories: () => <FeaturedCategories />,
   featured_products: () => <FeaturedProducts />,
   best_sellers: () => <BestSellers />,
-  customer_reviews: () => <CustomerReviews />,
+  
 };
 
 function NewArrivalsSection({ section }: { section: HomepageSection }) {
