@@ -49,33 +49,12 @@ function NewArrivalsSection({ section }: { section: HomepageSection }) {
   );
 }
 
-function NewsletterSection({ section }: { section: HomepageSection }) {
-  const { ref, isVisible } = useScrollReveal();
-  return (
-    <section className="section-padding bg-secondary/50" ref={ref}>
-      <div className="container-shop">
-        <div className={`max-w-2xl mx-auto text-center reveal-scale ${isVisible ? 'reveal-visible' : ''}`}>
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">{section.title || 'Stay in the Loop'}</h2>
-          <p className="text-muted-foreground mb-8">{section.subtitle || 'Subscribe to our newsletter for exclusive offers and new arrivals'}</p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input type="email" placeholder="Enter your email" className="input-shop flex-1" />
-            <button type="submit" className="btn-accent px-6 py-3 rounded-lg font-medium">Subscribe</button>
-          </form>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function DefaultHomepage({ sections }: { sections: HomepageSection[] }) {
   return (
     <Layout>
       {sections.map((section) => {
         if (section.section_type === 'new_arrivals') {
           return <NewArrivalsSection key={section.id} section={section} />;
-        }
-        if (section.section_type === 'newsletter') {
-          return <NewsletterSection key={section.id} section={section} />;
         }
         const Component = SECTION_COMPONENTS[section.section_type];
         if (Component) return <Component key={section.id} section={section} />;
