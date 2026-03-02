@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ProductVariant } from '@/hooks/useVariants';
 import { cn } from '@/lib/utils';
 
@@ -8,37 +9,63 @@ interface VariantSelectorProps {
 }
 
 export function VariantSelector({ variants, selectedVariant, onSelect }: VariantSelectorProps) {
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
   const sizes = [...new Set(variants.filter(v => v.size).map(v => v.size))];
-  
-  // Split comma-separated colors into individual options
-  const colors = [...new Set(
+  const selectedSize = selectedVariant?.size || null;
+
+  // Get colors available for the currently selected variant
+  const colorsForSelectedVariant = selectedVariant?.color
+    ? selectedVariant.color.split(',').map(c => c.trim()).filter(Boolean)
+    : [];
+
+  // Get all unique colors across all variants
+  const allColors = [...new Set(
     variants
       .filter(v => v.color)
       .flatMap(v => v.color!.split(',').map(c => c.trim()))
       .filter(Boolean)
   )];
-  
-  const selectedSize = selectedVariant?.size || null;
-  const selectedColors = selectedVariant?.color?.split(',').map(c => c.trim()) || [];
 
   const handleSizeSelect = (size: string) => {
-    const variant = variants.find(
-      v => v.size === size && (colors.length === 0 || (selectedColors.length > 0 && v.color?.split(',').map(c => c.trim()).some(c => selectedColors.includes(c))) || selectedColors.length === 0)
-    );
-    if (variant) onSelect(variant);
+    // Find variant matching the size, prefer one that also has the selected color
+    const variantWithColor = selectedColor
+      ? variants.find(v => v.size === size && v.color?.split(',').map(c => c.trim()).includes(selectedColor) && v.is_active && v.stock > 0)
+      : null;
+    const variant = variantWithColor || variants.find(v => v.size === size && v.is_active && v.stock > 0)
+      || variants.find(v => v.size === size);
+    
+    if (variant) {
+      onSelect(variant);
+      // Reset color selection if the new variant doesn't have the selected color
+      const newColors = variant.color?.split(',').map(c => c.trim()) || [];
+      if (selectedColor && !newColors.includes(selectedColor)) {
+        setSelectedColor(newColors.length > 0 ? newColors[0] : null);
+      }
+    }
   };
 
   const handleColorSelect = (color: string) => {
-    // Find variant that contains this color
-    const variant = variants.find(
-      v => v.color?.split(',').map(c => c.trim()).includes(color) && (sizes.length === 0 || v.size === selectedSize || !selectedSize)
-    );
+    setSelectedColor(color);
+    // Find variant that contains this color, prefer one matching selected size
+    const variantWithSize = selectedSize
+      ? variants.find(v => v.color?.split(',').map(c => c.trim()).includes(color) && v.size === selectedSize && v.is_active && v.stock > 0)
+      : null;
+    const variant = variantWithSize
+      || variants.find(v => v.color?.split(',').map(c => c.trim()).includes(color) && v.is_active && v.stock > 0)
+      || variants.find(v => v.color?.split(',').map(c => c.trim()).includes(color));
+    
     if (variant) onSelect(variant);
   };
 
-  const isVariantAvailable = (size?: string | null, color?: string | null) => {
+  const isSizeAvailable = (size: string) => {
+    return variants.some(v => v.size === size && v.stock > 0 && v.is_active);
+  };
+
+  const isColorAvailable = (color: string) => {
     return variants.some(
-      v => (!size || v.size === size) && (!color || v.color?.split(',').map(c => c.trim()).includes(color)) && v.stock > 0 && v.is_active
+      v => v.color?.split(',').map(c => c.trim()).includes(color) && v.stock > 0 && v.is_active
+        && (!selectedSize || v.size === selectedSize || !v.size)
     );
   };
 
@@ -50,7 +77,7 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
           <label className="text-sm font-medium mb-2 block">Size</label>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
-              const available = isVariantAvailable(size, null);
+              const available = isSizeAvailable(size!);
               return (
                 <button
                   key={size}
@@ -73,16 +100,17 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
         </div>
       )}
 
-      {/* Color Selector */}
-      {colors.length > 0 && (
+      {/* Color Selector - show colors available for current context */}
+      {allColors.length > 0 && (
         <div>
           <label className="text-sm font-medium mb-2 block">
-            Color{selectedColors.length > 0 && <span className="text-muted-foreground ml-2">({selectedColors.join(', ')})</span>}
+            Color{selectedColor && <span className="text-muted-foreground ml-2">({selectedColor})</span>}
           </label>
           <div className="flex flex-wrap gap-2">
-            {colors.map((color) => {
-              const available = isVariantAvailable(selectedSize, color);
-              const isSelected = selectedColors.includes(color);
+            {allColors.map((color) => {
+              const available = isColorAvailable(color);
+              const isSelected = selectedColor === color || 
+                (!selectedColor && colorsForSelectedVariant.includes(color) && colorsForSelectedVariant.length > 0);
               return (
                 <button
                   key={color}
