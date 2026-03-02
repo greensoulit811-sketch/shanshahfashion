@@ -208,12 +208,23 @@ export default function ProductDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Gallery */}
           <div className="space-y-4">
-            {/* Main Image */}
-            <div className="aspect-square rounded-2xl overflow-hidden bg-secondary">
+            {/* Main Image with Zoom */}
+            <div
+              className="aspect-square rounded-2xl overflow-hidden bg-secondary group cursor-zoom-in relative"
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                const img = e.currentTarget.querySelector('img');
+                if (img) {
+                  img.style.transformOrigin = `${x}% ${y}%`;
+                }
+              }}
+            >
               <img
                 src={product.images[selectedImage] || '/placeholder.svg'}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[2]"
               />
             </div>
             {/* Thumbnails */}
