@@ -955,6 +955,7 @@ export type Database = {
           fb_pixel_test_event_code: string | null
           id: string
           language: string
+          show_stock_to_visitors: boolean
           theme_accent_color: string | null
           updated_at: string
         }
@@ -983,6 +984,7 @@ export type Database = {
           fb_pixel_test_event_code?: string | null
           id?: string
           language?: string
+          show_stock_to_visitors?: boolean
           theme_accent_color?: string | null
           updated_at?: string
         }
@@ -1011,6 +1013,7 @@ export type Database = {
           fb_pixel_test_event_code?: string | null
           id?: string
           language?: string
+          show_stock_to_visitors?: boolean
           theme_accent_color?: string | null
           updated_at?: string
         }
