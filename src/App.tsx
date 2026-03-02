@@ -12,6 +12,7 @@ import { FacebookPixelProvider } from "@/components/FacebookPixelProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
+import { WhatsAppWidget } from "@/components/WhatsAppWidget";
 // Store pages
 import Index from "./pages/Index";
 import ShopPage from "./pages/ShopPage";
@@ -123,6 +124,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <CookieConsentBanner />
+                  <WhatsAppWidget />
                   <DebugPanel />
                 </FacebookPixelProvider>
               </BrowserRouter>
