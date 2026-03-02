@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Printer, CheckCircle, Send, Loader2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, FileText, Printer, CheckCircle, Send, Loader2, MessageCircle, ShieldAlert, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useOrder, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
@@ -16,6 +16,8 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { PrintModal } from '@/components/admin/PrintModal';
 import { OrderCourierSection } from '@/components/admin/OrderCourierSection';
+import { useCustomerFraudCheck } from '@/hooks/useCustomerFraudCheck';
+import { Progress } from '@/components/ui/progress';
 import { useState } from 'react';
 
 const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
@@ -31,6 +33,7 @@ export default function AdminOrderDetails() {
     open: false,
     type: 'invoice',
   });
+  const { data: fraudData } = useCustomerFraudCheck(order?.customer_phone || '', order?.id);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -370,6 +373,78 @@ export default function AdminOrderDetails() {
               )}
             </div>
           </div>
+
+          {/* Fraud Detection */}
+          {fraudData && (
+            <div className={`rounded-xl border p-6 ${
+              fraudData.riskLevel === 'high' ? 'bg-red-50 border-red-200' :
+              fraudData.riskLevel === 'medium' ? 'bg-yellow-50 border-yellow-200' :
+              'bg-green-50 border-green-200'
+            }`}>
+              <div className="flex items-center gap-2 mb-3">
+                {fraudData.riskLevel === 'high' ? (
+                  <ShieldAlert className="h-5 w-5 text-red-600" />
+                ) : fraudData.riskLevel === 'medium' ? (
+                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                ) : (
+                  <ShieldCheck className="h-5 w-5 text-green-600" />
+                )}
+                <h2 className={`font-semibold text-sm ${
+                  fraudData.riskLevel === 'high' ? 'text-red-800' :
+                  fraudData.riskLevel === 'medium' ? 'text-yellow-800' :
+                  'text-green-800'
+                }`}>
+                  {fraudData.riskLevel === 'high' ? '⚠️ High Risk Customer' :
+                   fraudData.riskLevel === 'medium' ? '⚠️ Medium Risk' :
+                   fraudData.receivingPercentage === -1 ? '🆕 New Customer' : '✅ Trusted Customer'}
+                </h2>
+              </div>
+
+              {fraudData.receivingPercentage === -1 ? (
+                <p className="text-xs text-muted-foreground">No previous order history found for this phone number.</p>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-medium">Receiving Rate</span>
+                      <span className={`font-bold ${
+                        fraudData.receivingPercentage >= 70 ? 'text-green-700' :
+                        fraudData.receivingPercentage >= 40 ? 'text-yellow-700' : 'text-red-700'
+                      }`}>{fraudData.receivingPercentage}%</span>
+                    </div>
+                    <Progress 
+                      value={fraudData.receivingPercentage} 
+                      className={`h-2 ${
+                        fraudData.receivingPercentage >= 70 ? '[&>div]:bg-green-500' :
+                        fraudData.receivingPercentage >= 40 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-red-500'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-white/70 rounded-lg p-2">
+                      <p className="text-lg font-bold text-foreground">{fraudData.totalOrders}</p>
+                      <p className="text-[10px] text-muted-foreground">Total Orders</p>
+                    </div>
+                    <div className="bg-white/70 rounded-lg p-2">
+                      <p className="text-lg font-bold text-green-600">{fraudData.deliveredOrders}</p>
+                      <p className="text-[10px] text-muted-foreground">Delivered</p>
+                    </div>
+                    <div className="bg-white/70 rounded-lg p-2">
+                      <p className="text-lg font-bold text-red-600">{fraudData.cancelledOrders}</p>
+                      <p className="text-[10px] text-muted-foreground">Cancelled</p>
+                    </div>
+                  </div>
+
+                  {fraudData.pendingOrders > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {fraudData.pendingOrders} order(s) still in progress
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Shipping Address */}
           <div className="bg-card rounded-xl border border-border p-6">
