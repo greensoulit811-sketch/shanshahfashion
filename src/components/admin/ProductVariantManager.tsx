@@ -58,11 +58,6 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.sku.trim()) {
-      alert('SKU is required');
-      return;
-    }
-
     if (!formData.variant_price.trim()) {
       alert('Price is required');
       return;
@@ -71,7 +66,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
     const variantData = {
       size: formData.size || null,
       color: formData.color || null,
-      sku: formData.sku,
+      sku: formData.sku || `VAR-${Date.now()}`,
       variant_price: parseFloat(formData.variant_price) || 0,
       price_adjustment: 0,
       stock: parseInt(formData.stock) || 0,
@@ -190,13 +185,13 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">SKU *</label>
+                <label className="block text-sm font-medium mb-2">SKU (Optional)</label>
                 <input
                   type="text"
                   value={formData.sku}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                  placeholder="Auto-generated if empty"
                   className="input-shop"
-                  required
                 />
               </div>
 
