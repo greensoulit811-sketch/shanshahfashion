@@ -303,7 +303,7 @@ export default function ProductDetailsPage() {
             )}
 
             {/* Stock */}
-            {settings.show_stock_to_visitors && (
+            {settings.show_stock_to_visitors && !(product as any)?.hide_stock && (
               <div className="flex items-center gap-2">
                 {effectiveStock > 0 ? (
                   <>
