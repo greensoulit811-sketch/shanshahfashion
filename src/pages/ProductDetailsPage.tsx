@@ -32,6 +32,7 @@ export default function ProductDetailsPage() {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const isMobile = useIsMobile();
   const { data: storeSettings } = useStoreSettings();
@@ -115,7 +116,7 @@ export default function ProductDetailsPage() {
     addItem({
       id: selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id,
       name: selectedVariant
-        ? `${product.name} (${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')})`
+        ? `${product.name} (${[selectedVariant.size, selectedColor || selectedVariant.color].filter(Boolean).join(' / ')})`
         : product.name,
       price: selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price,
       salePrice: selectedVariant?.variant_price != null
@@ -126,7 +127,7 @@ export default function ProductDetailsPage() {
       stock: effectiveStock,
       variantId: selectedVariant?.id,
       variantInfo: selectedVariant
-        ? { size: selectedVariant.size, color: selectedVariant.color }
+        ? { size: selectedVariant.size, color: selectedColor || selectedVariant.color }
         : undefined,
     });
     
@@ -157,7 +158,7 @@ export default function ProductDetailsPage() {
     addItem({
       id: selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id,
       name: selectedVariant
-        ? `${product.name} (${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')})`
+        ? `${product.name} (${[selectedVariant.size, selectedColor || selectedVariant.color].filter(Boolean).join(' / ')})`
         : product.name,
       price: selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price,
       salePrice: selectedVariant?.variant_price != null
@@ -168,7 +169,7 @@ export default function ProductDetailsPage() {
       stock: effectiveStock,
       variantId: selectedVariant?.id,
       variantInfo: selectedVariant
-        ? { size: selectedVariant.size, color: selectedVariant.color }
+        ? { size: selectedVariant.size, color: selectedColor || selectedVariant.color }
         : undefined,
     });
     
@@ -297,6 +298,7 @@ export default function ProductDetailsPage() {
                 variants={variants.filter(v => v.is_active)}
                 selectedVariant={selectedVariant}
                 onSelect={setSelectedVariant}
+                onColorSelect={setSelectedColor}
               />
             )}
 

@@ -6,9 +6,10 @@ interface VariantSelectorProps {
   variants: ProductVariant[];
   selectedVariant: ProductVariant | null;
   onSelect: (variant: ProductVariant) => void;
+  onColorSelect?: (color: string | null) => void;
 }
 
-export function VariantSelector({ variants, selectedVariant, onSelect }: VariantSelectorProps) {
+export function VariantSelector({ variants, selectedVariant, onSelect, onColorSelect }: VariantSelectorProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
@@ -87,6 +88,7 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
+    onColorSelect?.(color);
     const variant = findVariant(selectedSize, color);
     if (variant) {
       onSelect(variant);
