@@ -267,13 +267,17 @@ export default function ProductDetailsPage() {
 
               {/* Price */}
               <div className="flex items-center gap-3">
-                {hasDiscount ? (
+                {selectedVariant?.variant_price != null ? (
+                  <span className="text-3xl font-bold text-accent">
+                    {formatCurrency(selectedVariant.variant_price)}
+                  </span>
+                ) : hasDiscount ? (
                   <>
                     <span className="text-3xl font-bold text-accent">
-                      {formatCurrency(effectivePrice)}
+                      {formatCurrency(product.sale_price!)}
                     </span>
                     <span className="text-xl text-muted-foreground line-through">
-                      {formatCurrency(selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price)}
+                      {formatCurrency(product.price)}
                     </span>
                     <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
                       Save {formatCurrency(product.price - product.sale_price!)}
@@ -281,7 +285,7 @@ export default function ProductDetailsPage() {
                   </>
                 ) : (
                   <span className="text-3xl font-bold">
-                    {formatCurrency(effectivePrice)}
+                    {formatCurrency(product.price)}
                   </span>
                 )}
               </div>
