@@ -152,11 +152,27 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
 
               <div>
                 <label className="block text-sm font-medium mb-2">Color (Optional)</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow', 'Pink', 'Orange', 'Purple', 'Brown', 'Grey', 'Navy'].map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, color })}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        formData.color === color
+                          ? 'border-accent bg-accent text-accent-foreground'
+                          : 'border-border hover:border-accent/50'
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
                 <input
                   type="text"
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  placeholder="e.g., Red, Blue"
+                  placeholder="Or type a custom color name"
                   className="input-shop"
                 />
               </div>
