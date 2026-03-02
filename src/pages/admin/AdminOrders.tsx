@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { PrintModal } from '@/components/admin/PrintModal';
-import { CourierHistoryBadge } from '@/components/admin/CourierHistoryBadge';
+
 
 const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
 
@@ -185,7 +185,7 @@ export default function AdminOrders() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">{t('order.orderNumber')}</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Customer</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">{t('checkout.phone')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">History</th>
+                  
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">{t('cart.total')}</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Date</th>
@@ -195,7 +195,7 @@ export default function AdminOrders() {
               <tbody className="divide-y divide-border">
                 {filteredOrders.length === 0 ? (
                   <tr>
-                   <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">
+                   <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                       {t('common.noResults')}
                     </td>
                   </tr>
@@ -205,9 +205,6 @@ export default function AdminOrders() {
                       <td className="px-6 py-4 font-medium">{order.order_number}</td>
                       <td className="px-6 py-4">{order.customer_name}</td>
                       <td className="px-6 py-4 text-muted-foreground">{order.customer_phone}</td>
-                      <td className="px-6 py-4">
-                        <CourierHistoryBadge phone={order.customer_phone} />
-                      </td>
                       <td className="px-6 py-4 font-medium">{formatCurrency(order.total)}</td>
                       <td className="px-6 py-4">
                         <Select
