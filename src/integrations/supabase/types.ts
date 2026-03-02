@@ -300,6 +300,66 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_courier_history: {
+        Row: {
+          cache_expire_at: string
+          cancelled_count: number
+          created_at: string
+          delivered_count: number
+          id: string
+          in_transit_count: number
+          last_checked_at: string
+          last_delivery_date: string | null
+          last_status: string | null
+          phone: string
+          recent_parcels: Json
+          return_rate: number
+          returned_count: number
+          source: string
+          success_rate: number
+          total_parcels: number
+          updated_at: string
+        }
+        Insert: {
+          cache_expire_at?: string
+          cancelled_count?: number
+          created_at?: string
+          delivered_count?: number
+          id?: string
+          in_transit_count?: number
+          last_checked_at?: string
+          last_delivery_date?: string | null
+          last_status?: string | null
+          phone: string
+          recent_parcels?: Json
+          return_rate?: number
+          returned_count?: number
+          source?: string
+          success_rate?: number
+          total_parcels?: number
+          updated_at?: string
+        }
+        Update: {
+          cache_expire_at?: string
+          cancelled_count?: number
+          created_at?: string
+          delivered_count?: number
+          id?: string
+          in_transit_count?: number
+          last_checked_at?: string
+          last_delivery_date?: string | null
+          last_status?: string | null
+          phone?: string
+          recent_parcels?: Json
+          return_rate?: number
+          returned_count?: number
+          source?: string
+          success_rate?: number
+          total_parcels?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       homepage_banners: {
         Row: {
           alt_text: string | null
