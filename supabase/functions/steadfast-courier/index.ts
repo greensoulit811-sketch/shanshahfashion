@@ -61,7 +61,13 @@ Deno.serve(async (req) => {
       const res = await fetch(`${settings.api_base_url}/get_balance`, {
         headers: { 'Api-Key': settings.api_key, 'Secret-Key': settings.api_secret, 'Content-Type': 'application/json' },
       });
-      const data = await res.json();
+      const resText = await res.text();
+      let data: any;
+      try { data = JSON.parse(resText); } catch { 
+        return new Response(JSON.stringify({ success: false, error: 'Invalid response from Steadfast API: ' + resText.substring(0, 200) }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       
       if (res.ok && data.status === 200) {
         return new Response(JSON.stringify({ success: true, balance: data.current_balance }), {
@@ -95,7 +101,13 @@ Deno.serve(async (req) => {
         headers: { 'Api-Key': settings.api_key, 'Secret-Key': settings.api_secret, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
+      const resText = await res.text();
+      let data: any;
+      try { data = JSON.parse(resText); } catch {
+        return new Response(JSON.stringify({ success: false, error: 'Invalid response from Steadfast API: ' + resText.substring(0, 200) }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
       await supabase.from('courier_logs').insert({
         order_id: body.order_id, provider: 'steadfast', action: 'create_parcel',
@@ -139,7 +151,13 @@ Deno.serve(async (req) => {
       const res = await fetch(`${settings.api_base_url}/status_by_cid/${consignment_id}`, {
         headers: { 'Api-Key': settings.api_key, 'Secret-Key': settings.api_secret, 'Content-Type': 'application/json' },
       });
-      const data = await res.json();
+      const resText = await res.text();
+      let data: any;
+      try { data = JSON.parse(resText); } catch {
+        return new Response(JSON.stringify({ success: false, error: 'Invalid response from Steadfast API: ' + resText.substring(0, 200) }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
       await supabase.from('courier_logs').insert({
         order_id, provider: 'steadfast', action: 'track_status',
