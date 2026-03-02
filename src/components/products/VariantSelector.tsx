@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductVariant } from '@/hooks/useVariants';
 import { cn } from '@/lib/utils';
 
@@ -9,17 +9,13 @@ interface VariantSelectorProps {
 }
 
 export function VariantSelector({ variants, selectedVariant, onSelect }: VariantSelectorProps) {
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  const sizes = [...new Set(variants.filter(v => v.size).map(v => v.size))];
-  const selectedSize = selectedVariant?.size || null;
+  // Extract unique sizes
+  const sizes = [...new Set(variants.filter(v => v.size).map(v => v.size!))];
 
-  // Get colors available for the currently selected variant
-  const colorsForSelectedVariant = selectedVariant?.color
-    ? selectedVariant.color.split(',').map(c => c.trim()).filter(Boolean)
-    : [];
-
-  // Get all unique colors across all variants
+  // Extract unique colors (split comma-separated)
   const allColors = [...new Set(
     variants
       .filter(v => v.color)
@@ -27,47 +23,99 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
       .filter(Boolean)
   )];
 
+  // Sync local state from selectedVariant on mount/change
+  useEffect(() => {
+    if (selectedVariant) {
+      setSelectedSize(selectedVariant.size || null);
+      // Pick first color from variant's color list
+      if (selectedVariant.color) {
+        const colors = selectedVariant.color.split(',').map(c => c.trim()).filter(Boolean);
+        if (colors.length > 0 && !selectedColor) {
+          setSelectedColor(colors[0]);
+        }
+      }
+    }
+  }, [selectedVariant]);
+
+  // Find best matching variant for given size + color
+  const findVariant = (size: string | null, color: string | null): ProductVariant | null => {
+    // Try exact match (size + color)
+    if (size && color) {
+      const match = variants.find(v =>
+        v.size === size &&
+        v.color?.split(',').map(c => c.trim()).includes(color) &&
+        v.is_active && v.stock > 0
+      );
+      if (match) return match;
+    }
+
+    // Try size only
+    if (size) {
+      const match = variants.find(v => v.size === size && v.is_active && v.stock > 0)
+        || variants.find(v => v.size === size);
+      if (match) return match;
+    }
+
+    // Try color only
+    if (color) {
+      const match = variants.find(v =>
+        v.color?.split(',').map(c => c.trim()).includes(color) &&
+        v.is_active && v.stock > 0
+      ) || variants.find(v =>
+        v.color?.split(',').map(c => c.trim()).includes(color)
+      );
+      if (match) return match;
+    }
+
+    return null;
+  };
+
   const handleSizeSelect = (size: string) => {
-    // Find variant matching the size, prefer one that also has the selected color
-    const variantWithColor = selectedColor
-      ? variants.find(v => v.size === size && v.color?.split(',').map(c => c.trim()).includes(selectedColor) && v.is_active && v.stock > 0)
-      : null;
-    const variant = variantWithColor || variants.find(v => v.size === size && v.is_active && v.stock > 0)
-      || variants.find(v => v.size === size);
-    
+    setSelectedSize(size);
+    const variant = findVariant(size, selectedColor);
     if (variant) {
       onSelect(variant);
-      // Reset color selection if the new variant doesn't have the selected color
-      const newColors = variant.color?.split(',').map(c => c.trim()) || [];
-      if (selectedColor && !newColors.includes(selectedColor)) {
-        setSelectedColor(newColors.length > 0 ? newColors[0] : null);
+      // If new variant doesn't have the selected color, reset
+      if (selectedColor) {
+        const variantColors = variant.color?.split(',').map(c => c.trim()) || [];
+        if (!variantColors.includes(selectedColor)) {
+          setSelectedColor(variantColors.length > 0 ? variantColors[0] : null);
+        }
       }
     }
   };
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
-    // Find variant that contains this color, prefer one matching selected size
-    const variantWithSize = selectedSize
-      ? variants.find(v => v.color?.split(',').map(c => c.trim()).includes(color) && v.size === selectedSize && v.is_active && v.stock > 0)
-      : null;
-    const variant = variantWithSize
-      || variants.find(v => v.color?.split(',').map(c => c.trim()).includes(color) && v.is_active && v.stock > 0)
-      || variants.find(v => v.color?.split(',').map(c => c.trim()).includes(color));
-    
-    if (variant) onSelect(variant);
+    const variant = findVariant(selectedSize, color);
+    if (variant) {
+      onSelect(variant);
+      // Sync size if variant has a different size
+      if (variant.size) {
+        setSelectedSize(variant.size);
+      }
+    }
   };
 
-  const isSizeAvailable = (size: string) => {
-    return variants.some(v => v.size === size && v.stock > 0 && v.is_active);
-  };
+  const isSizeAvailable = (size: string) =>
+    variants.some(v => v.size === size && v.stock > 0 && v.is_active);
 
-  const isColorAvailable = (color: string) => {
-    return variants.some(
-      v => v.color?.split(',').map(c => c.trim()).includes(color) && v.stock > 0 && v.is_active
-        && (!selectedSize || v.size === selectedSize || !v.size)
+  const isColorAvailable = (color: string) =>
+    variants.some(v =>
+      v.color?.split(',').map(c => c.trim()).includes(color) &&
+      v.stock > 0 && v.is_active &&
+      (!selectedSize || v.size === selectedSize || !v.size)
     );
-  };
+
+  // Get colors relevant to the current size selection
+  const visibleColors = selectedSize
+    ? [...new Set(
+        variants
+          .filter(v => v.size === selectedSize && v.color)
+          .flatMap(v => v.color!.split(',').map(c => c.trim()))
+          .filter(Boolean)
+      )]
+    : allColors;
 
   return (
     <div className="space-y-4">
@@ -77,11 +125,11 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
           <label className="text-sm font-medium mb-2 block">Size</label>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
-              const available = isSizeAvailable(size!);
+              const available = isSizeAvailable(size);
               return (
                 <button
                   key={size}
-                  onClick={() => handleSizeSelect(size!)}
+                  onClick={() => handleSizeSelect(size)}
                   disabled={!available}
                   className={cn(
                     "min-w-[44px] h-11 px-4 rounded-lg border text-sm font-medium transition-colors",
@@ -100,17 +148,15 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
         </div>
       )}
 
-      {/* Color Selector - show colors available for current context */}
-      {allColors.length > 0 && (
+      {/* Color Selector */}
+      {visibleColors.length > 0 && (
         <div>
           <label className="text-sm font-medium mb-2 block">
             Color{selectedColor && <span className="text-muted-foreground ml-2">({selectedColor})</span>}
           </label>
           <div className="flex flex-wrap gap-2">
-            {allColors.map((color) => {
+            {visibleColors.map((color) => {
               const available = isColorAvailable(color);
-              const isSelected = selectedColor === color || 
-                (!selectedColor && colorsForSelectedVariant.includes(color) && colorsForSelectedVariant.length > 0);
               return (
                 <button
                   key={color}
@@ -119,7 +165,7 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
                   title={color}
                   className={cn(
                     "min-w-[44px] h-11 px-4 rounded-lg border text-sm font-medium transition-colors",
-                    isSelected
+                    selectedColor === color
                       ? "border-accent bg-accent text-accent-foreground"
                       : available
                       ? "border-border hover:border-accent"
