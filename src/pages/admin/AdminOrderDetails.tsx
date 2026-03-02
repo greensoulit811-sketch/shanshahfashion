@@ -117,9 +117,28 @@ export default function AdminOrderDetails() {
     return messages[status] || messages.pending;
   };
 
+  const getDialCode = (countryCode: string): string => {
+    const dialCodes: Record<string, string> = {
+      BD: '880', IN: '91', PK: '92', US: '1', GB: '44', AE: '971', SA: '966',
+      MY: '60', SG: '65', AU: '61', CA: '1', DE: '49', FR: '33', IT: '39',
+      ES: '34', NL: '31', TR: '90', EG: '20', NG: '234', KE: '254', ZA: '27',
+      BR: '55', MX: '52', JP: '81', KR: '82', CN: '86', ID: '62', TH: '66',
+      PH: '63', VN: '84', NP: '977', LK: '94', MM: '95', QA: '974', KW: '965',
+      BH: '973', OM: '968', JO: '962', LB: '961', IQ: '964',
+    };
+    return dialCodes[countryCode] || '880';
+  };
+
   const sendWhatsAppStatus = () => {
     if (!order) return;
-    const phone = order.customer_phone.replace(/[^0-9]/g, '');
+    let phone = order.customer_phone.replace(/[^0-9]/g, '');
+    const dialCode = getDialCode(settings.default_country_code);
+    // If phone doesn't already start with the country dial code, prepend it
+    if (!phone.startsWith(dialCode)) {
+      // Remove leading zero if present (local format)
+      phone = phone.replace(/^0+/, '');
+      phone = dialCode + phone;
+    }
     const message = encodeURIComponent(getWhatsAppStatusMessage(order.status));
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
