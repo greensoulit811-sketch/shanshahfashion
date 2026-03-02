@@ -15,7 +15,7 @@ export default function AdminCourierSettings() {
 
   const [formData, setFormData] = useState({
     enabled: false,
-    api_base_url: 'https://portal.steadfast.com.bd/api/v1',
+    api_base_url: 'https://portal.packzy.com/api/v1',
     api_key: '',
     api_secret: '',
     merchant_id: '',
@@ -32,7 +32,7 @@ export default function AdminCourierSettings() {
     if (settings) {
       setFormData({
         enabled: settings.enabled,
-        api_base_url: settings.api_base_url || 'https://portal.steadfast.com.bd/api/v1',
+        api_base_url: settings.api_base_url || 'https://portal.packzy.com/api/v1',
         api_key: settings.api_key || '',
         api_secret: settings.api_secret || '',
         merchant_id: settings.merchant_id || '',
@@ -129,7 +129,7 @@ export default function AdminCourierSettings() {
                 id="api_base_url"
                 value={formData.api_base_url}
                 onChange={(e) => setFormData({ ...formData, api_base_url: e.target.value })}
-                placeholder="https://portal.steadfast.com.bd/api/v1"
+                placeholder="https://portal.packzy.com/api/v1"
               />
             </div>
 
