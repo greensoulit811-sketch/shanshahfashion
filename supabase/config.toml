@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.manage-users]
 verify_jwt = false
+
+[functions.customer-courier-history]
+verify_jwt = false
