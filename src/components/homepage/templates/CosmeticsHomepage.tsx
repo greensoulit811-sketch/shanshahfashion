@@ -1,7 +1,7 @@
 import { Layout } from '@/components/layout/Layout';
 import { useFeaturedProducts, useBestSellers, useCategories } from '@/hooks/useShopData';
 import { ProductCard } from '@/components/products/ProductCard';
-import { CustomerReviews } from '@/components/home/CustomerReviews';
+
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Droplets, Heart, Leaf } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
