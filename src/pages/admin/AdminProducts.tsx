@@ -71,6 +71,7 @@ export default function AdminProducts() {
     is_featured: false,
     is_active: true,
     is_variable: false,
+    hide_stock: false,
   });
 
   const filteredProducts = products.filter(
@@ -97,6 +98,7 @@ export default function AdminProducts() {
       is_featured: product.is_featured || false,
       is_active: (product as any).is_active ?? true,
       is_variable: (product as any).is_variable ?? false,
+      hide_stock: (product as any).hide_stock ?? false,
     });
     setIsDialogOpen(true);
   };
@@ -156,6 +158,7 @@ export default function AdminProducts() {
       is_best_seller: formData.is_best_seller,
       is_featured: formData.is_featured,
       is_variable: formData.is_variable,
+      hide_stock: formData.hide_stock,
     };
 
     try {
@@ -189,6 +192,7 @@ export default function AdminProducts() {
       is_featured: false,
       is_active: true,
       is_variable: false,
+      hide_stock: false,
     });
   };
 
@@ -377,6 +381,15 @@ export default function AdminProducts() {
                     className="w-4 h-4"
                   />
                   <span className="text-sm">Featured</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.hide_stock}
+                    onChange={(e) => setFormData({ ...formData, hide_stock: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Hide Stock</span>
                 </label>
               </div>
               <div className="flex gap-3 pt-4">
