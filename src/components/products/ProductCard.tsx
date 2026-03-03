@@ -137,33 +137,33 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       {/* Action Buttons */}
-      <div className="px-4 pb-4 mt-auto flex flex-col gap-2">
+      <div className="px-3 pb-3 mt-auto flex flex-col gap-1.5 sm:px-4 sm:pb-4 sm:gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="w-full h-11 text-sm font-medium rounded-lg border-border hover:border-primary hover:bg-primary/5 transition-all gap-2"
+          className="w-full h-9 sm:h-11 text-xs sm:text-sm font-medium rounded-lg border-border hover:border-primary hover:bg-primary/5 transition-all gap-1.5 sm:gap-2"
           onClick={handleAddToCart}
           disabled={isAddingToCart || product.stock === 0}
           aria-label={product.has_variants ? 'Select Options' : t('product.addToCart')}
         >
           {isAddingToCart ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
           ) : (
-            <ShoppingBag className="h-4 w-4" />
+            <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           )}
-          {product.has_variants ? t('product.selectOptions') || 'Select Options' : t('product.addToCart')}
+          {product.has_variants ? 'Options' : t('product.addToCart')}
         </Button>
         <Button
           size="sm"
-          className="btn-accent w-full h-11 text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all gap-2"
+          className="btn-accent w-full h-9 sm:h-11 text-xs sm:text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all gap-1.5 sm:gap-2"
           onClick={handleBuyNow}
           disabled={isBuyingNow || product.stock === 0}
           aria-label={t('product.buyNow')}
         >
           {isBuyingNow ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
           ) : (
-            <Zap className="h-4 w-4" />
+            <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           )}
           {t('product.buyNow')}
         </Button>
