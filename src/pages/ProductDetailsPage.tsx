@@ -422,11 +422,11 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Desktop Actions */}
-              <div className="hidden md:flex gap-3">
+              <div className="hidden md:grid grid-cols-2 gap-3">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="flex-1 h-13 rounded-xl font-semibold text-[0.938rem] border-2 hover:border-primary/50"
+                  className="h-12 rounded-full font-semibold text-sm border-2 border-border hover:border-primary hover:bg-primary/5 transition-all"
                   onClick={handleAddToCart}
                   disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
                 >
@@ -439,7 +439,7 @@ export default function ProductDetailsPage() {
                 </Button>
                 <Button
                   size="lg"
-                  className="btn-accent flex-1 h-13 rounded-xl font-semibold text-[0.938rem]"
+                  className="btn-accent h-12 rounded-full font-semibold text-sm shadow-md hover:shadow-lg transition-all"
                   onClick={handleBuyNow}
                   disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
                 >
@@ -577,7 +577,7 @@ export default function ProductDetailsPage() {
           <div className="flex gap-2 max-w-7xl mx-auto">
             <Button
               variant="outline"
-              className="flex-1 h-12 text-sm font-semibold rounded-xl"
+              className="flex-1 h-12 text-sm font-semibold rounded-full border-2"
               onClick={handleAddToCart}
               disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.addToCart')}
@@ -590,7 +590,7 @@ export default function ProductDetailsPage() {
               {t('product.addToCart')}
             </Button>
             <Button
-              className="btn-accent flex-1 h-12 text-sm font-semibold rounded-xl"
+              className="btn-accent flex-1 h-12 text-sm font-semibold rounded-full shadow-md"
               onClick={handleBuyNow}
               disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.buyNow')}
