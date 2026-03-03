@@ -204,7 +204,7 @@ export default function AdminOrders() {
                     <tr key={order.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-6 py-4 font-medium">{order.order_number}</td>
                       <td className="px-6 py-4">{order.customer_name}</td>
-                      <td className="px-6 py-4 text-muted-foreground">{order.customer_phone}</td>
+                      <td className="px-6 py-4"><a href={`tel:${order.customer_phone}`} className="text-primary hover:underline">{order.customer_phone}</a></td>
                       <td className="px-6 py-4 font-medium">{formatCurrency(order.total)}</td>
                       <td className="px-6 py-4">
                         <Select
