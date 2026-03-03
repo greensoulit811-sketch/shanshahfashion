@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, FileText, Info, Phone } from 'lucide-react';
+import { Save, FileText, Info, Phone, Shield, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useStoreSettings, useUpdateStoreSettings } from '@/hooks/useStoreSettings';
@@ -40,6 +40,16 @@ export default function AdminPages() {
     contact_map_embed: '',
   });
 
+  const [privacyData, setPrivacyData] = useState({
+    privacy_title: '',
+    privacy_content: '',
+  });
+
+  const [termsData, setTermsData] = useState({
+    terms_title: '',
+    terms_content: '',
+  });
+
   useEffect(() => {
     if (storeSettings) {
       setAboutData({
@@ -70,6 +80,14 @@ export default function AdminPages() {
         contact_hours: storeSettings.contact_hours || '',
         contact_map_embed: storeSettings.contact_map_embed || '',
       });
+      setPrivacyData({
+        privacy_title: storeSettings.privacy_title || 'Privacy Policy',
+        privacy_content: storeSettings.privacy_content || '',
+      });
+      setTermsData({
+        terms_title: storeSettings.terms_title || 'Terms & Conditions',
+        terms_content: storeSettings.terms_content || '',
+      });
     }
   }, [storeSettings]);
 
@@ -93,6 +111,26 @@ export default function AdminPages() {
     }
   };
 
+  const handlePrivacySave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateStoreSettings.mutateAsync(privacyData);
+      toast.success('Privacy policy saved successfully');
+    } catch {
+      toast.error('Failed to save privacy policy');
+    }
+  };
+
+  const handleTermsSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateStoreSettings.mutateAsync(termsData);
+      toast.success('Terms & conditions saved successfully');
+    } catch {
+      toast.error('Failed to save terms & conditions');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-6">
@@ -110,7 +148,7 @@ export default function AdminPages() {
       <h1 className="text-2xl md:text-3xl font-bold mb-6">Page Content</h1>
 
       <Tabs defaultValue="about" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
           <TabsTrigger value="about" className="gap-2">
             <Info className="h-4 w-4" />
             About Us
@@ -118,6 +156,14 @@ export default function AdminPages() {
           <TabsTrigger value="contact" className="gap-2">
             <Phone className="h-4 w-4" />
             Contact
+          </TabsTrigger>
+          <TabsTrigger value="privacy" className="gap-2">
+            <Shield className="h-4 w-4" />
+            Privacy
+          </TabsTrigger>
+          <TabsTrigger value="terms" className="gap-2">
+            <ScrollText className="h-4 w-4" />
+            Terms
           </TabsTrigger>
         </TabsList>
 
@@ -290,6 +336,82 @@ export default function AdminPages() {
             <Button type="submit" className="btn-accent" disabled={updateStoreSettings.isPending}>
               <Save className="h-4 w-4 mr-2" />
               {updateStoreSettings.isPending ? 'Saving...' : 'Save Contact Page'}
+            </Button>
+          </form>
+        </TabsContent>
+
+        {/* Privacy Policy Tab */}
+        <TabsContent value="privacy">
+          <form onSubmit={handlePrivacySave} className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-lg font-semibold mb-4">Privacy Policy</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Page Title</label>
+                  <input
+                    type="text"
+                    value={privacyData.privacy_title}
+                    onChange={(e) => setPrivacyData({ ...privacyData, privacy_title: e.target.value })}
+                    className="input-shop"
+                    placeholder="Privacy Policy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Content</label>
+                  <textarea
+                    value={privacyData.privacy_content}
+                    onChange={(e) => setPrivacyData({ ...privacyData, privacy_content: e.target.value })}
+                    className="input-shop min-h-[400px] font-mono text-sm"
+                    placeholder="Write your privacy policy content here. You can use line breaks for formatting."
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Line breaks will be preserved. You can use basic HTML tags for formatting (e.g., &lt;b&gt;, &lt;h2&gt;, &lt;ul&gt;).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Button type="submit" className="btn-accent" disabled={updateStoreSettings.isPending}>
+              <Save className="h-4 w-4 mr-2" />
+              {updateStoreSettings.isPending ? 'Saving...' : 'Save Privacy Policy'}
+            </Button>
+          </form>
+        </TabsContent>
+
+        {/* Terms & Conditions Tab */}
+        <TabsContent value="terms">
+          <form onSubmit={handleTermsSave} className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-lg font-semibold mb-4">Terms & Conditions</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Page Title</label>
+                  <input
+                    type="text"
+                    value={termsData.terms_title}
+                    onChange={(e) => setTermsData({ ...termsData, terms_title: e.target.value })}
+                    className="input-shop"
+                    placeholder="Terms & Conditions"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Content</label>
+                  <textarea
+                    value={termsData.terms_content}
+                    onChange={(e) => setTermsData({ ...termsData, terms_content: e.target.value })}
+                    className="input-shop min-h-[400px] font-mono text-sm"
+                    placeholder="Write your terms & conditions content here. You can use line breaks for formatting."
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Line breaks will be preserved. You can use basic HTML tags for formatting (e.g., &lt;b&gt;, &lt;h2&gt;, &lt;ul&gt;).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Button type="submit" className="btn-accent" disabled={updateStoreSettings.isPending}>
+              <Save className="h-4 w-4 mr-2" />
+              {updateStoreSettings.isPending ? 'Saving...' : 'Save Terms & Conditions'}
             </Button>
           </form>
         </TabsContent>
