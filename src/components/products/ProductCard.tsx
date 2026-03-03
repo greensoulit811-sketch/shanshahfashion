@@ -137,35 +137,35 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       {/* Action Buttons */}
-      <div className="px-4 pb-4 mt-auto flex gap-2">
+      <div className="px-4 pb-4 mt-auto grid grid-cols-2 gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 h-9 text-xs font-semibold rounded-lg"
+          className="h-10 text-[11px] font-semibold rounded-full border-border/80 hover:border-primary hover:bg-primary/5 transition-all gap-1.5 px-2"
           onClick={handleAddToCart}
           disabled={isAddingToCart || product.stock === 0}
-          aria-label={product.has_variants ? t('product.selectOptions') || 'Select Options' : t('product.addToCart')}
+          aria-label={product.has_variants ? 'Select Options' : t('product.addToCart')}
         >
           {isAddingToCart ? (
-            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
           ) : (
-            <ShoppingBag className="h-3.5 w-3.5 mr-1" />
+            <ShoppingBag className="h-3.5 w-3.5 shrink-0" />
           )}
-          {product.has_variants ? 'Options' : <><span className="hidden sm:inline">{t('product.addToCart')}</span><span className="sm:hidden">Cart</span></>}
+          <span>{product.has_variants ? 'Options' : 'Add to Cart'}</span>
         </Button>
         <Button
           size="sm"
-          className="btn-accent flex-1 h-9 text-xs font-semibold rounded-lg"
+          className="btn-accent h-10 text-[11px] font-semibold rounded-full shadow-sm hover:shadow-md transition-all gap-1.5 px-2"
           onClick={handleBuyNow}
           disabled={isBuyingNow || product.stock === 0}
           aria-label={t('product.buyNow')}
         >
           {isBuyingNow ? (
-            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
           ) : (
-            <Zap className="h-3.5 w-3.5 mr-1" />
+            <Zap className="h-3.5 w-3.5 shrink-0" />
           )}
-          {t('product.buyNow')}
+          <span>Buy Now</span>
         </Button>
       </div>
     </div>
