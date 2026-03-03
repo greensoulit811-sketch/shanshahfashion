@@ -137,33 +137,33 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       {/* Action Buttons */}
-      <div className="px-4 pb-4 mt-auto space-y-2">
+      <div className="px-4 pb-4 mt-auto flex gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="w-full h-10 text-xs font-semibold rounded-xl"
+          className="flex-1 h-9 text-xs font-semibold rounded-lg"
           onClick={handleAddToCart}
           disabled={isAddingToCart || product.stock === 0}
           aria-label={product.has_variants ? t('product.selectOptions') || 'Select Options' : t('product.addToCart')}
         >
           {isAddingToCart ? (
-            <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
           ) : (
-            <ShoppingBag className="h-3.5 w-3.5 mr-1.5" />
+            <ShoppingBag className="h-3.5 w-3.5 mr-1" />
           )}
-          {product.has_variants ? 'Select Options' : t('product.addToCart')}
+          {product.has_variants ? 'Options' : <><span className="hidden sm:inline">{t('product.addToCart')}</span><span className="sm:hidden">Cart</span></>}
         </Button>
         <Button
           size="sm"
-          className="btn-accent w-full h-10 text-xs font-semibold rounded-xl"
+          className="btn-accent flex-1 h-9 text-xs font-semibold rounded-lg"
           onClick={handleBuyNow}
           disabled={isBuyingNow || product.stock === 0}
           aria-label={t('product.buyNow')}
         >
           {isBuyingNow ? (
-            <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
           ) : (
-            <Zap className="h-3.5 w-3.5 mr-1.5" />
+            <Zap className="h-3.5 w-3.5 mr-1" />
           )}
           {t('product.buyNow')}
         </Button>
