@@ -44,8 +44,8 @@ export function Header() {
           {/* Mobile menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" className="shrink-0">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="shrink-0 h-10 w-10">
+                <Menu className="h-7 w-7" />
                 <span className="sr-only">{t('nav.openMenu')}</span>
               </Button>
             </SheetTrigger>
@@ -81,7 +81,7 @@ export function Header() {
               <img 
                 src={storeLogo} 
                 alt={storeName} 
-                className="h-10 md:h-14 w-auto object-contain"
+                className="h-12 md:h-14 w-auto object-contain"
               />
             ) : (
               <span className="text-2xl md:text-4xl font-bold tracking-tight">
@@ -148,8 +148,8 @@ export function Header() {
             </Link>
 
             <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon">
-                <ShoppingBag className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="h-10 w-10">
+                <ShoppingBag className="h-7 w-7" />
                 {totalItems > 0 && (
                   <span className="cart-badge">{totalItems}</span>
                 )}
