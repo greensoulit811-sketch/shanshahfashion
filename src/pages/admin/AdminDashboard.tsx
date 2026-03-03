@@ -1,4 +1,4 @@
-import { Package, FolderOpen, ShoppingCart, TrendingUp, DollarSign, Users } from 'lucide-react';
+import { Package, FolderOpen, ShoppingCart, TrendingUp, Banknote, Users } from 'lucide-react';
 import { useProducts, useCategories } from '@/hooks/useShopData';
 import { useOrders } from '@/hooks/useOrders';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
         <div className="bg-card rounded-xl border border-border p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-              <DollarSign className="h-5 w-5 text-emerald-600" />
+              <Banknote className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
               <p className="text-2xl font-bold">{formatCurrency(revenue)}</p>
