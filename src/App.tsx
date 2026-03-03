@@ -25,6 +25,8 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import ContactPage from "./pages/ContactPage";
 import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -89,6 +91,8 @@ const App = () => (
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FAQPage />} />
+                    <Route path="/privacy" element={<PrivacyPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
                     <Route path="/track-order" element={<TrackOrderPage />} />
                     <Route path="/lp/:slug" element={<LandingPageView />} />
 

@@ -48,6 +48,11 @@ export interface StoreSettings {
   whatsapp_order_enabled: string;
   topbar_text: string;
   topbar_enabled: string;
+  // Legal pages
+  privacy_title: string;
+  privacy_content: string;
+  terms_title: string;
+  terms_content: string;
 }
 
 const DEFAULT_STORE_SETTINGS: StoreSettings = {
@@ -93,6 +98,10 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   whatsapp_order_enabled: 'false',
   topbar_text: 'Free Shipping on Orders Over ৳500!',
   topbar_enabled: 'true',
+  privacy_title: 'Privacy Policy',
+  privacy_content: '',
+  terms_title: 'Terms & Conditions',
+  terms_content: '',
 };
 
 export const STORE_SETTINGS_QUERY_KEY = ['store-settings'];
