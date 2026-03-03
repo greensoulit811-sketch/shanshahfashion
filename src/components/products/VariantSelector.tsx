@@ -120,26 +120,30 @@ export function VariantSelector({ variants, selectedVariant, onSelect, onColorSe
     : allColors;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Size Selector */}
       {sizes.length > 0 && (
         <div>
-          <label className="text-sm font-medium mb-2 block">Size</label>
-          <div className="flex flex-wrap gap-2">
+          <label className="text-sm font-semibold mb-3 block tracking-wide">
+            Size
+            {selectedSize && <span className="text-muted-foreground font-normal ml-1.5">({selectedSize})</span>}
+          </label>
+          <div className="flex flex-wrap gap-2.5">
             {sizes.map((size) => {
               const available = isSizeAvailable(size);
+              const isSelected = selectedSize === size;
               return (
                 <button
                   key={size}
                   onClick={() => handleSizeSelect(size)}
                   disabled={!available}
                   className={cn(
-                    "min-w-[44px] h-11 px-4 rounded-lg border text-sm font-medium transition-colors",
-                    selectedSize === size
-                      ? "border-accent bg-accent text-accent-foreground"
+                    "min-w-[48px] h-11 px-5 rounded-full border-2 text-sm font-semibold transition-all duration-200",
+                    isSelected
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
                       : available
-                      ? "border-border hover:border-accent"
-                      : "border-border opacity-40 cursor-not-allowed line-through"
+                      ? "border-border bg-background text-foreground hover:border-primary/60 hover:shadow-sm"
+                      : "border-border/50 bg-muted/30 text-muted-foreground/50 cursor-not-allowed line-through"
                   )}
                 >
                   {size}
@@ -153,12 +157,14 @@ export function VariantSelector({ variants, selectedVariant, onSelect, onColorSe
       {/* Color Selector */}
       {visibleColors.length > 0 && (
         <div>
-          <label className="text-sm font-medium mb-2 block">
-            Color{selectedColor && <span className="text-muted-foreground ml-2">({selectedColor})</span>}
+          <label className="text-sm font-semibold mb-3 block tracking-wide">
+            Color
+            {selectedColor && <span className="text-muted-foreground font-normal ml-1.5">({selectedColor})</span>}
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {visibleColors.map((color) => {
               const available = isColorAvailable(color);
+              const isSelected = selectedColor === color;
               return (
                 <button
                   key={color}
@@ -166,12 +172,12 @@ export function VariantSelector({ variants, selectedVariant, onSelect, onColorSe
                   disabled={!available}
                   title={color}
                   className={cn(
-                    "min-w-[44px] h-11 px-4 rounded-lg border text-sm font-medium transition-colors",
-                    selectedColor === color
-                      ? "border-accent bg-accent text-accent-foreground"
+                    "min-w-[48px] h-11 px-5 rounded-full border-2 text-sm font-semibold transition-all duration-200",
+                    isSelected
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
                       : available
-                      ? "border-border hover:border-accent"
-                      : "border-border opacity-40 cursor-not-allowed line-through"
+                      ? "border-border bg-background text-foreground hover:border-primary/60 hover:shadow-sm"
+                      : "border-border/50 bg-muted/30 text-muted-foreground/50 cursor-not-allowed line-through"
                   )}
                 >
                   {color}
