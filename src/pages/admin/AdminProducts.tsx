@@ -72,6 +72,7 @@ export default function AdminProducts() {
     is_active: true,
     is_variable: false,
     hide_stock: false,
+    specifications: [] as { label: string; value: string }[],
   });
 
   const filteredProducts = products.filter(
@@ -99,6 +100,7 @@ export default function AdminProducts() {
       is_active: (product as any).is_active ?? true,
       is_variable: (product as any).is_variable ?? false,
       hide_stock: (product as any).hide_stock ?? false,
+      specifications: (product as any).specifications || [],
     });
     setIsDialogOpen(true);
   };
@@ -159,6 +161,7 @@ export default function AdminProducts() {
       is_featured: formData.is_featured,
       is_variable: formData.is_variable,
       hide_stock: formData.hide_stock,
+      specifications: formData.specifications.filter(s => s.label.trim()).length > 0 ? formData.specifications.filter(s => s.label.trim()) : null,
     };
 
     try {
@@ -193,6 +196,7 @@ export default function AdminProducts() {
       is_active: true,
       is_variable: false,
       hide_stock: false,
+      specifications: [],
     });
   };
 
@@ -333,6 +337,56 @@ export default function AdminProducts() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="input-shop min-h-[100px]"
                 />
+              </div>
+              {/* Specifications */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Specifications (optional)</label>
+                {formData.specifications.map((spec, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Label (e.g. Material)"
+                      value={spec.label}
+                      onChange={(e) => {
+                        const updated = [...formData.specifications];
+                        updated[index] = { ...updated[index], label: e.target.value };
+                        setFormData({ ...formData, specifications: updated });
+                      }}
+                      className="input-shop flex-1"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Value (e.g. Cotton)"
+                      value={spec.value}
+                      onChange={(e) => {
+                        const updated = [...formData.specifications];
+                        updated[index] = { ...updated[index], value: e.target.value };
+                        setFormData({ ...formData, specifications: updated });
+                      }}
+                      className="input-shop flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const updated = formData.specifications.filter((_, i) => i !== index);
+                        setFormData({ ...formData, specifications: updated });
+                      }}
+                      className="shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFormData({ ...formData, specifications: [...formData.specifications, { label: '', value: '' }] })}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add Spec
+                </Button>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">

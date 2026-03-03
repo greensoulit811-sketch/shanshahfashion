@@ -435,6 +435,25 @@ export default function ProductDetailsPage() {
                   </p>
                 </AccordionContent>
               </AccordionItem>
+              {(product as any).specifications && Array.isArray((product as any).specifications) && (product as any).specifications.length > 0 && (
+                <AccordionItem value="specifications" className="border-b border-border">
+                  <AccordionTrigger className="px-5 py-4 text-sm font-bold uppercase tracking-wide hover:no-underline">
+                    SPECIFICATIONS
+                  </AccordionTrigger>
+                  <AccordionContent className="px-5 pb-5">
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {((product as any).specifications as { label: string; value: string }[]).map((spec, i) => (
+                          <tr key={i} className={i % 2 === 0 ? 'bg-secondary/30' : ''}>
+                            <td className="py-2 px-3 font-medium text-foreground">{spec.label}</td>
+                            <td className="py-2 px-3 text-muted-foreground">{spec.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
               <AccordionItem value="reviews" className="border-b-0">
                 <AccordionTrigger className="px-5 py-4 text-sm font-bold uppercase tracking-wide hover:no-underline">
                   REVIEWS ({reviews.length})
