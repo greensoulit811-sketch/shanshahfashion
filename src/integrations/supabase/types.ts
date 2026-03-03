@@ -785,6 +785,7 @@ export type Database = {
           stock: number
           updated_at: string | null
           variant_price: number | null
+          variant_sale_price: number | null
         }
         Insert: {
           color?: string | null
@@ -798,6 +799,7 @@ export type Database = {
           stock?: number
           updated_at?: string | null
           variant_price?: number | null
+          variant_sale_price?: number | null
         }
         Update: {
           color?: string | null
@@ -811,6 +813,7 @@ export type Database = {
           stock?: number
           updated_at?: string | null
           variant_price?: number | null
+          variant_sale_price?: number | null
         }
         Relationships: [
           {

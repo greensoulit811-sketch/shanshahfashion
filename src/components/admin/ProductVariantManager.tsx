@@ -40,6 +40,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
     color: '',
     sku: '',
     variant_price: '',
+    variant_sale_price: '',
     stock: '0',
   });
 
@@ -50,6 +51,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
       color: variant.color || '',
       sku: variant.sku,
       variant_price: variant.variant_price?.toString() || '',
+      variant_sale_price: (variant as any).variant_sale_price?.toString() || '',
       stock: variant.stock.toString(),
     });
     setIsDialogOpen(true);
@@ -68,6 +70,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
       color: formData.color || null,
       sku: formData.sku || `VAR-${Date.now()}`,
       variant_price: parseFloat(formData.variant_price) || 0,
+      variant_sale_price: formData.variant_sale_price ? parseFloat(formData.variant_sale_price) : null,
       price_adjustment: 0,
       stock: parseInt(formData.stock) || 0,
       is_active: true,
@@ -99,6 +102,7 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
       color: '',
       sku: '',
       variant_price: '',
+      variant_sale_price: '',
       stock: '0',
     });
   };
@@ -195,17 +199,30 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Price *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.variant_price}
-                  onChange={(e) => setFormData({ ...formData, variant_price: e.target.value })}
-                  placeholder="e.g., 299.00"
-                  className="input-shop"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Regular Price *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.variant_price}
+                    onChange={(e) => setFormData({ ...formData, variant_price: e.target.value })}
+                    placeholder="e.g., 399.00"
+                    className="input-shop"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Sale Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.variant_sale_price}
+                    onChange={(e) => setFormData({ ...formData, variant_sale_price: e.target.value })}
+                    placeholder="e.g., 299.00"
+                    className="input-shop"
+                  />
+                </div>
               </div>
 
               <div>
@@ -250,7 +267,8 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
                   <th className="px-4 py-3 text-left font-medium">Size</th>
                   <th className="px-4 py-3 text-left font-medium">Color</th>
                   <th className="px-4 py-3 text-left font-medium">SKU</th>
-                  <th className="px-4 py-3 text-left font-medium">Price</th>
+                  <th className="px-4 py-3 text-left font-medium">Regular Price</th>
+                  <th className="px-4 py-3 text-left font-medium">Sale Price</th>
                   <th className="px-4 py-3 text-left font-medium">Stock</th>
                   <th className="px-4 py-3 text-left font-medium">Actions</th>
                 </tr>
@@ -263,6 +281,9 @@ export function ProductVariantManager({ productId, productName }: ProductVariant
                     <td className="px-4 py-3 font-mono text-xs">{variant.sku}</td>
                     <td className="px-4 py-3 font-medium">
                       {variant.variant_price != null ? variant.variant_price.toFixed(2) : '-'}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-accent">
+                      {(variant as any).variant_sale_price != null ? (variant as any).variant_sale_price.toFixed(2) : '-'}
                     </td>
                     <td className="px-4 py-3">
                       <span

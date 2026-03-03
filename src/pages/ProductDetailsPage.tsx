@@ -61,8 +61,13 @@ export default function ProductDetailsPage() {
 
   // Calculate effective price and stock based on selected variant
   const effectivePrice = useMemo(() => {
-    if (selectedVariant && selectedVariant.variant_price != null) {
-      return selectedVariant.variant_price;
+    if (selectedVariant) {
+      if (selectedVariant.variant_sale_price != null) {
+        return selectedVariant.variant_sale_price;
+      }
+      if (selectedVariant.variant_price != null) {
+        return selectedVariant.variant_price;
+      }
     }
     return product?.sale_price || product?.price || 0;
   }, [product, selectedVariant]);
@@ -119,7 +124,9 @@ export default function ProductDetailsPage() {
         ? `${product.name} (${[selectedVariant.size, selectedColor || selectedVariant.color].filter(Boolean).join(' / ')})`
         : product.name,
       price: selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price,
-      salePrice: selectedVariant?.variant_price != null
+      salePrice: selectedVariant?.variant_sale_price != null
+        ? selectedVariant.variant_sale_price
+        : selectedVariant?.variant_price != null
         ? undefined
         : product.sale_price || undefined,
       image: product.images[0] || '/placeholder.svg',
@@ -161,7 +168,9 @@ export default function ProductDetailsPage() {
         ? `${product.name} (${[selectedVariant.size, selectedColor || selectedVariant.color].filter(Boolean).join(' / ')})`
         : product.name,
       price: selectedVariant?.variant_price != null ? selectedVariant.variant_price : product.price,
-      salePrice: selectedVariant?.variant_price != null
+      salePrice: selectedVariant?.variant_sale_price != null
+        ? selectedVariant.variant_sale_price
+        : selectedVariant?.variant_price != null
         ? undefined
         : product.sale_price || undefined,
       image: product.images[0] || '/placeholder.svg',
@@ -269,9 +278,23 @@ export default function ProductDetailsPage() {
               {/* Price */}
               <div className="flex items-center gap-3">
                 {selectedVariant?.variant_price != null ? (
-                  <span className="text-3xl font-bold text-accent">
-                    {formatCurrency(selectedVariant.variant_price)}
-                  </span>
+                  selectedVariant.variant_sale_price != null && selectedVariant.variant_sale_price < selectedVariant.variant_price ? (
+                    <>
+                      <span className="text-3xl font-bold text-accent">
+                        {formatCurrency(selectedVariant.variant_sale_price)}
+                      </span>
+                      <span className="text-xl text-muted-foreground line-through">
+                        {formatCurrency(selectedVariant.variant_price)}
+                      </span>
+                      <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
+                        Save {formatCurrency(selectedVariant.variant_price - selectedVariant.variant_sale_price)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-3xl font-bold text-accent">
+                      {formatCurrency(selectedVariant.variant_price)}
+                    </span>
+                  )
                 ) : hasDiscount ? (
                   <>
                     <span className="text-3xl font-bold text-accent">
