@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Minus, Plus, ShoppingBag, Zap, Check, Loader2, MessageCircle } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { VariantSelector } from '@/components/products/VariantSelector';
@@ -422,15 +423,45 @@ export default function ProductDetailsPage() {
               {t('product.sku')}: {product.sku}
             </p>
 
-            {/* Description */}
-            {product.description && (
-              <div className="pt-6 border-t border-border">
-                <h3 className="font-semibold mb-3">{t('product.description')}</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
-            )}
+            {/* Description & Reviews Accordion */}
+            <Accordion type="single" collapsible defaultValue="description" className="border border-border rounded-lg">
+              <AccordionItem value="description" className="border-b border-border last:border-b-0">
+                <AccordionTrigger className="px-5 py-4 text-sm font-bold uppercase tracking-wide hover:no-underline">
+                  {t('product.description')}
+                </AccordionTrigger>
+                <AccordionContent className="px-5 pb-5">
+                  <p className="text-muted-foreground leading-relaxed">
+                    {product.description || 'No description available.'}
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="reviews" className="border-b-0">
+                <AccordionTrigger className="px-5 py-4 text-sm font-bold uppercase tracking-wide hover:no-underline">
+                  REVIEWS ({reviews.length})
+                </AccordionTrigger>
+                <AccordionContent className="px-5 pb-5">
+                  <div className="mb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowReviewForm(!showReviewForm)}
+                    >
+                      {showReviewForm ? 'Cancel' : 'Write a Review'}
+                    </Button>
+                  </div>
+                  {showReviewForm && (
+                    <div className="bg-secondary/50 rounded-lg p-4 mb-4">
+                      <ReviewForm
+                        productId={product.id}
+                        productName={product.name}
+                        onSuccess={() => setShowReviewForm(false)}
+                      />
+                    </div>
+                  )}
+                  <ReviewList reviews={reviews} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
 
@@ -445,31 +476,6 @@ export default function ProductDetailsPage() {
             </div>
           </section>
         )}
-
-        {/* Customer Reviews Section */}
-        <section className="mt-16 pt-12 border-t border-border">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">Customer Reviews</h2>
-            <Button
-              variant="outline"
-              onClick={() => setShowReviewForm(!showReviewForm)}
-            >
-              {showReviewForm ? 'Cancel' : 'Write a Review'}
-            </Button>
-          </div>
-
-          {showReviewForm && (
-            <div className="bg-card rounded-xl border border-border p-6 mb-8">
-              <ReviewForm
-                productId={product.id}
-                productName={product.name}
-                onSuccess={() => setShowReviewForm(false)}
-              />
-            </div>
-          )}
-
-          <ReviewList reviews={reviews} />
-        </section>
       </div>
 
       {/* Mobile Sticky Action Bar */}
