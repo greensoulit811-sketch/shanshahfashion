@@ -422,31 +422,31 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Desktop Actions */}
-              <div className="hidden md:grid grid-cols-2 gap-3">
+              <div className="hidden md:flex flex-col gap-3">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-12 rounded-full font-semibold text-sm border-2 border-border hover:border-primary hover:bg-primary/5 transition-all"
+                  className="w-full h-12 rounded-lg font-medium text-sm border-border hover:border-primary hover:bg-primary/5 transition-all gap-2"
                   onClick={handleAddToCart}
                   disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
                 >
                   {isAddingToCart ? (
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    <ShoppingBag className="h-5 w-5 mr-2" />
+                    <ShoppingBag className="h-5 w-5" />
                   )}
                   {t('product.addToCart')}
                 </Button>
                 <Button
                   size="lg"
-                  className="btn-accent h-12 rounded-full font-semibold text-sm shadow-md hover:shadow-lg transition-all"
+                  className="btn-accent w-full h-12 rounded-lg font-semibold text-sm shadow-sm hover:shadow-md transition-all gap-2"
                   onClick={handleBuyNow}
                   disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
                 >
                   {isBuyingNow ? (
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    <Zap className="h-5 w-5 mr-2" />
+                    <Zap className="h-5 w-5" />
                   )}
                   {t('product.buyNow')}
                 </Button>
@@ -574,31 +574,31 @@ export default function ProductDetailsPage() {
       {/* Mobile Sticky Action Bar */}
       {isMobile && product && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden">
-          <div className="flex gap-2 max-w-7xl mx-auto">
+          <div className="flex flex-col gap-2 max-w-7xl mx-auto">
             <Button
               variant="outline"
-              className="flex-1 h-12 text-sm font-semibold rounded-full border-2"
+              className="w-full h-11 text-sm font-medium rounded-lg border-border hover:border-primary gap-2"
               onClick={handleAddToCart}
               disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.addToCart')}
             >
               {isAddingToCart ? (
-                <Loader2 className="h-5 w-5 mr-1 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <ShoppingBag className="h-5 w-5 mr-1" />
+                <ShoppingBag className="h-5 w-5" />
               )}
               {t('product.addToCart')}
             </Button>
             <Button
-              className="btn-accent flex-1 h-12 text-sm font-semibold rounded-full shadow-md"
+              className="btn-accent w-full h-11 text-sm font-semibold rounded-lg shadow-sm gap-2"
               onClick={handleBuyNow}
               disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.buyNow')}
             >
               {isBuyingNow ? (
-                <Loader2 className="h-5 w-5 mr-1 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <Zap className="h-5 w-5 mr-1" />
+                <Zap className="h-5 w-5" />
               )}
               {t('product.buyNow')}
             </Button>

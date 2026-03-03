@@ -137,35 +137,35 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       {/* Action Buttons */}
-      <div className="px-4 pb-4 mt-auto grid grid-cols-2 gap-2">
+      <div className="px-4 pb-4 mt-auto flex flex-col gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="h-10 text-[11px] font-semibold rounded-full border-border/80 hover:border-primary hover:bg-primary/5 transition-all gap-1.5 px-2"
+          className="w-full h-11 text-sm font-medium rounded-lg border-border hover:border-primary hover:bg-primary/5 transition-all gap-2"
           onClick={handleAddToCart}
           disabled={isAddingToCart || product.stock === 0}
           aria-label={product.has_variants ? 'Select Options' : t('product.addToCart')}
         >
           {isAddingToCart ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <ShoppingBag className="h-3.5 w-3.5 shrink-0" />
+            <ShoppingBag className="h-4 w-4" />
           )}
-          <span>{product.has_variants ? 'Options' : 'Add to Cart'}</span>
+          {product.has_variants ? t('product.selectOptions') || 'Select Options' : t('product.addToCart')}
         </Button>
         <Button
           size="sm"
-          className="btn-accent h-10 text-[11px] font-semibold rounded-full shadow-sm hover:shadow-md transition-all gap-1.5 px-2"
+          className="btn-accent w-full h-11 text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all gap-2"
           onClick={handleBuyNow}
           disabled={isBuyingNow || product.stock === 0}
           aria-label={t('product.buyNow')}
         >
           {isBuyingNow ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Zap className="h-3.5 w-3.5 shrink-0" />
+            <Zap className="h-4 w-4" />
           )}
-          <span>Buy Now</span>
+          {t('product.buyNow')}
         </Button>
       </div>
     </div>
