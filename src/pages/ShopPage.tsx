@@ -77,14 +77,14 @@ export default function ShopPage() {
     <div className="space-y-6">
       {/* Categories */}
       <div>
-        <h3 className="font-semibold mb-3">Categories</h3>
-        <div className="space-y-2">
+        <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-foreground">Categories</h3>
+        <div className="space-y-1">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
+            className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
               selectedCategory === 'all'
-                ? 'bg-accent text-accent-foreground'
-                : 'hover:bg-secondary'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
             All Products
@@ -93,10 +93,10 @@ export default function ShopPage() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.slug)}
-              className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
+              className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 selectedCategory === cat.slug
-                  ? 'bg-accent text-accent-foreground'
-                  : 'hover:bg-secondary'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
               }`}
             >
               {cat.name}
@@ -108,7 +108,7 @@ export default function ShopPage() {
       {/* Clear Filters */}
       <Button
         variant="outline"
-        className="w-full"
+        className="w-full rounded-xl"
         onClick={() => {
           setSelectedCategory('all');
           setSearchQuery('');
@@ -124,9 +124,9 @@ export default function ShopPage() {
     <Layout>
       <div className="container-shop section-padding">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Shop</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold mb-1">Shop</h1>
+          <p className="text-muted-foreground text-sm">
             {isLoading ? 'Loading...' : `${filteredProducts.length} products found`}
           </p>
         </div>
@@ -145,13 +145,13 @@ export default function ShopPage() {
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               {/* Search */}
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="search"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input-shop pl-10"
+                  className="input-shop pl-11 rounded-xl"
                 />
                 {searchQuery && (
                   <button

@@ -23,7 +23,6 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    // If product has variants, redirect to product page for selection
     if (product.has_variants) {
       toast.info('Please select size/color options');
       navigate(`/product/${product.slug}`);
@@ -54,7 +53,6 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    // If product has variants, redirect to product page for selection
     if (product.has_variants) {
       toast.info('Please select size/color options');
       navigate(`/product/${product.slug}`);
@@ -82,67 +80,68 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="product-card group bg-card rounded-xl border border-border flex flex-col h-full">
+    <div className="group bg-card rounded-2xl border border-border/60 flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 hover:border-border">
       <Link to={`/product/${product.slug}`} className="block flex-1">
         {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-secondary rounded-t-xl">
+        <div className="relative aspect-[4/5] overflow-hidden bg-secondary/50">
           <img
             src={product.images[0] || '/placeholder.svg'}
             alt={product.name}
-            className="product-image-zoom w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            loading="lazy"
           />
 
           {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
             {product.is_new && (
-              <span className="badge-new px-2 py-0.5 text-[10px] font-semibold rounded">
+              <span className="bg-primary text-primary-foreground px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md">
                 {t('product.new')}
               </span>
             )}
             {hasDiscount && (
-              <span className="badge-sale px-2 py-0.5 text-[10px] font-semibold rounded">
+              <span className="bg-destructive text-destructive-foreground px-2.5 py-1 text-[10px] font-bold rounded-md">
                 -{discountPercent}%
               </span>
             )}
           </div>
           
           {/* Wishlist Button */}
-          <div className="absolute top-2 right-2 z-10">
-            <WishlistButton productId={product.id} size="sm" className="bg-background/80 backdrop-blur-sm" />
+          <div className="absolute top-3 right-3 z-10">
+            <WishlistButton productId={product.id} size="sm" className="bg-background/90 backdrop-blur-sm shadow-sm border-0" />
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-3">
-          <p className="text-[10px] text-muted-foreground mb-0.5 uppercase tracking-wide">
+        <div className="p-4">
+          <p className="text-[11px] text-muted-foreground mb-1 uppercase tracking-widest font-medium">
             {product.category?.name || t('product.uncategorized')}
           </p>
-          <h3 className="font-medium text-sm line-clamp-2 mb-1.5 group-hover:text-accent transition-colors leading-tight">
+          <h3 className="font-semibold text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">
             {product.name}
           </h3>
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-baseline gap-2">
             {hasDiscount ? (
               <>
-                <span className="font-bold text-accent text-sm">
+                <span className="font-bold text-primary text-base">
                   {formatCurrency(product.sale_price!)}
                 </span>
-                <span className="text-[10px] text-muted-foreground line-through">
+                <span className="text-xs text-muted-foreground line-through">
                   {formatCurrency(product.price)}
                 </span>
               </>
             ) : (
-              <span className="font-bold text-sm">{formatCurrency(product.price)}</span>
+              <span className="font-bold text-base">{formatCurrency(product.price)}</span>
             )}
           </div>
         </div>
       </Link>
 
       {/* Action Buttons */}
-      <div className="p-3 pt-0 mt-auto space-y-2">
+      <div className="px-4 pb-4 mt-auto space-y-2">
         <Button
           variant="outline"
           size="sm"
-          className="w-full h-9 text-xs font-medium"
+          className="w-full h-10 text-xs font-semibold rounded-xl"
           onClick={handleAddToCart}
           disabled={isAddingToCart || product.stock === 0}
           aria-label={product.has_variants ? t('product.selectOptions') || 'Select Options' : t('product.addToCart')}
@@ -156,7 +155,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </Button>
         <Button
           size="sm"
-          className="btn-accent w-full h-9 text-xs font-medium"
+          className="btn-accent w-full h-10 text-xs font-semibold rounded-xl"
           onClick={handleBuyNow}
           disabled={isBuyingNow || product.stock === 0}
           aria-label={t('product.buyNow')}

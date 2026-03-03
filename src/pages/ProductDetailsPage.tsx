@@ -262,14 +262,14 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* Details */}
-          <div className="space-y-6">
+          <div className="space-y-6 lg:space-y-7">
             <div>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-widest font-medium">
                     {product.category?.name || t('product.uncategorized')}
                   </p>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
                     {product.name}
                   </h1>
                 </div>
@@ -277,39 +277,39 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Price */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-baseline gap-3 mt-4">
                 {selectedVariant?.variant_price != null ? (
                   selectedVariant.variant_sale_price != null && selectedVariant.variant_sale_price < selectedVariant.variant_price ? (
                     <>
-                      <span className="text-3xl font-bold text-accent">
+                      <span className="text-2xl md:text-3xl font-bold text-primary">
                         {formatCurrency(selectedVariant.variant_sale_price)}
                       </span>
-                      <span className="text-xl text-muted-foreground line-through">
+                      <span className="text-lg text-muted-foreground line-through">
                         {formatCurrency(selectedVariant.variant_price)}
                       </span>
-                      <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
+                      <span className="bg-destructive text-destructive-foreground px-2.5 py-1 text-xs font-bold rounded-md">
                         Save {formatCurrency(selectedVariant.variant_price - selectedVariant.variant_sale_price)}
                       </span>
                     </>
                   ) : (
-                    <span className="text-3xl font-bold text-accent">
+                    <span className="text-2xl md:text-3xl font-bold text-primary">
                       {formatCurrency(selectedVariant.variant_price)}
                     </span>
                   )
                 ) : hasDiscount ? (
                   <>
-                    <span className="text-3xl font-bold text-accent">
+                    <span className="text-2xl md:text-3xl font-bold text-primary">
                       {formatCurrency(product.sale_price!)}
                     </span>
-                    <span className="text-xl text-muted-foreground line-through">
+                    <span className="text-lg text-muted-foreground line-through">
                       {formatCurrency(product.price)}
                     </span>
-                    <span className="badge-sale px-2 py-1 text-sm font-semibold rounded">
+                    <span className="bg-destructive text-destructive-foreground px-2.5 py-1 text-xs font-bold rounded-md">
                       Save {formatCurrency(product.price - product.sale_price!)}
                     </span>
                   </>
                 ) : (
-                  <span className="text-3xl font-bold">
+                  <span className="text-2xl md:text-3xl font-bold">
                     {formatCurrency(product.price)}
                   </span>
                 )}
@@ -331,41 +331,46 @@ export default function ProductDetailsPage() {
               <div className="flex items-center gap-2">
                 {effectiveStock > 0 ? (
                   <>
-                    <Check className="h-4 w-4 text-success" />
-                    <span className="text-success font-medium">{t('product.inStock')}</span>
-                    <span className="text-muted-foreground">
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    <span className="text-sm font-medium text-primary">{t('product.inStock')}</span>
+                    <span className="text-sm text-muted-foreground">
                       ({effectiveStock} available)
                     </span>
                   </>
                 ) : (
-                  <span className="text-destructive font-medium">{t('product.outOfStock')}</span>
+                  <>
+                    <div className="h-2 w-2 rounded-full bg-destructive" />
+                    <span className="text-sm font-medium text-destructive">{t('product.outOfStock')}</span>
+                  </>
                 )}
               </div>
             )}
 
             {/* Short Description */}
             {product.short_description && (
-              <p className="text-muted-foreground">{product.short_description}</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">{product.short_description}</p>
             )}
 
             {/* Quantity */}
             <div>
-              <label className="text-sm font-medium mb-2 block">{t('product.quantity')}</label>
-              <div className="flex items-center gap-3">
+              <label className="text-sm font-semibold mb-3 block tracking-wide">{t('product.quantity')}</label>
+              <div className="flex items-center">
                 <Button
                   variant="outline"
                   size="icon"
+                  className="h-11 w-11 rounded-l-xl rounded-r-none border-r-0"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={quantity <= 1}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="text-lg font-medium w-12 text-center">
+                <div className="h-11 w-14 flex items-center justify-center border border-border text-base font-semibold">
                   {quantity}
-                </span>
+                </div>
                 <Button
                   variant="outline"
                   size="icon"
+                  className="h-11 w-11 rounded-r-xl rounded-l-none border-l-0"
                   onClick={() => setQuantity(Math.min(effectiveStock, quantity + 1))}
                   disabled={quantity >= effectiveStock}
                 >
@@ -375,11 +380,11 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Actions - Hidden on mobile since we use sticky bar */}
-            <div className="hidden md:flex flex-col sm:flex-row gap-4">
+            <div className="hidden md:flex gap-3">
               <Button
                 size="lg"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-12 rounded-xl font-semibold"
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               >
@@ -392,7 +397,7 @@ export default function ProductDetailsPage() {
               </Button>
               <Button
                 size="lg"
-                className="btn-accent flex-1"
+                className="btn-accent flex-1 h-12 rounded-xl font-semibold"
                 onClick={handleBuyNow}
                 disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               >
@@ -411,7 +416,7 @@ export default function ProductDetailsPage() {
                 href={`https://wa.me/${storeSettings!.whatsapp_number.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi, I want to order:\n\n*${product.name}*\nPrice: ${formatCurrency(effectivePrice)}\nQuantity: ${quantity}${selectedVariant ? `\nVariant: ${[selectedVariant.size, selectedVariant.color].filter(Boolean).join(' / ')}` : ''}\n\nPlease confirm my order.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden md:flex items-center justify-center gap-3 w-full py-3 px-6 bg-[#25D366] hover:bg-[#1fb855] text-white rounded-lg font-medium transition-colors"
+                className="hidden md:flex items-center justify-center gap-3 w-full py-3.5 px-6 bg-[#25D366] hover:bg-[#1fb855] text-white rounded-xl font-semibold transition-colors shadow-sm"
               >
                 <MessageCircle className="h-5 w-5" />
                 Order on WhatsApp
@@ -419,7 +424,7 @@ export default function ProductDetailsPage() {
             )}
 
             {/* SKU */}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground tracking-wide">
               {t('product.sku')}: {product.sku}
             </p>
 
