@@ -766,8 +766,9 @@ export default function AdminSettings() {
                       <input
                         type="text"
                         value={formData.currencyCode}
-                        readOnly
-                        className="input-shop bg-muted cursor-not-allowed"
+                        onChange={(e) => setFormData({ ...formData, currencyCode: e.target.value })}
+                        className="input-shop"
+                        placeholder="e.g., USD, BDT, INR"
                       />
                     </div>
                     <div>
@@ -777,8 +778,9 @@ export default function AdminSettings() {
                       <input
                         type="text"
                         value={formData.currencySymbol}
-                        readOnly
-                        className="input-shop bg-muted cursor-not-allowed"
+                        onChange={(e) => setFormData({ ...formData, currencySymbol: e.target.value })}
+                        className="input-shop"
+                        placeholder="e.g., $, ৳, ₹"
                       />
                     </div>
                     <div>
@@ -788,13 +790,14 @@ export default function AdminSettings() {
                       <input
                         type="text"
                         value={formData.currencyLocale}
-                        readOnly
-                        className="input-shop bg-muted cursor-not-allowed"
+                        onChange={(e) => setFormData({ ...formData, currencyLocale: e.target.value })}
+                        className="input-shop"
+                        placeholder="e.g., en-US, bn-BD"
                       />
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Currency is auto-filled based on the selected country
+                    Currency is auto-filled when you select a country, but you can customize it manually
                   </p>
                 </div>
               </div>
