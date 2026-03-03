@@ -362,7 +362,7 @@ export default function AdminOrderDetails() {
               </div>
               <div>
                 <span className="text-muted-foreground">Phone</span>
-                <p className="font-medium">{order.customer_phone}</p>
+                <a href={`tel:${order.customer_phone}`} className="font-medium text-primary hover:underline">{order.customer_phone}</a>
               </div>
               {order.customer_email && (
                 <div>
