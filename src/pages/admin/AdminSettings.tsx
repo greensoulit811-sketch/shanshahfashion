@@ -960,25 +960,25 @@ export default function AdminSettings() {
                     { key: 'brand_border', label: 'Border', desc: 'Borders, dividers' },
                     { key: 'brand_card', label: 'Card / Surface', desc: 'Cards, modals, popups' },
                   ].map((item) => (
-                    <div key={item.key} className="space-y-1">
-                      <label className="block text-sm font-medium">{item.label}</label>
-                      <div className="flex items-center gap-2">
+                    <div key={item.key} className="space-y-2 p-3 rounded-xl bg-secondary/30 border border-border/50">
+                      <label className="block text-sm font-semibold">{item.label}</label>
+                      <div className="flex items-center gap-3">
                         <input
                           type="color"
                           value={(formData as any)[item.key]}
                           onChange={(e) => setFormData({ ...formData, [item.key]: e.target.value })}
-                          className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0"
+                          className="w-11 h-11 rounded-xl border-2 border-border cursor-pointer shrink-0 shadow-sm"
                         />
                         <input
                           type="text"
                           value={(formData as any)[item.key]}
                           onChange={(e) => setFormData({ ...formData, [item.key]: e.target.value })}
-                          className="input-shop text-xs font-mono"
+                          className="input-shop text-xs font-mono flex-1"
                           placeholder="#000000"
                           maxLength={7}
                         />
                       </div>
-                      <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                      <p className="text-[11px] text-muted-foreground">{item.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -998,7 +998,7 @@ export default function AdminSettings() {
                     />
                     <span className="text-sm font-mono w-16 text-right">{formData.brand_radius}rem</span>
                   </div>
-                  <div className="flex gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
                     {[
                       { val: '0', label: 'Sharp' },
                       { val: '0.375', label: 'Subtle' },
@@ -1011,10 +1011,10 @@ export default function AdminSettings() {
                         type="button"
                         onClick={() => setFormData({ ...formData, brand_radius: r.val })}
                         className={cn(
-                          'px-3 py-1 text-xs border transition-colors',
+                          'px-4 py-2 text-xs font-semibold border-2 transition-all duration-200 shadow-sm hover:shadow-md',
                           formData.brand_radius === r.val
-                            ? 'border-accent bg-accent/10 text-accent'
-                            : 'border-border hover:border-accent/50'
+                            ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                            : 'border-border bg-card text-foreground hover:border-primary/50 hover:bg-secondary/50'
                         )}
                         style={{ borderRadius: `${r.val}rem` }}
                       >
@@ -1044,10 +1044,10 @@ export default function AdminSettings() {
                         type="button"
                         onClick={() => setFormData({ ...formData, brand_accent: preset.color, themeAccentColor: preset.color })}
                         className={cn(
-                          'w-10 h-10 rounded-lg border-2 transition-all hover:scale-110',
+                          'w-11 h-11 rounded-xl border-2 transition-all duration-200 hover:scale-110 shadow-sm',
                           formData.brand_accent === preset.color
-                            ? 'border-foreground ring-2 ring-offset-2 ring-foreground'
-                            : 'border-transparent'
+                            ? 'border-foreground ring-2 ring-offset-2 ring-foreground/30 scale-110'
+                            : 'border-transparent hover:border-foreground/20'
                         )}
                         style={{ backgroundColor: preset.color }}
                         title={preset.name}
