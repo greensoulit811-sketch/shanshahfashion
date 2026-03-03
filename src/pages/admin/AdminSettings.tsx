@@ -92,6 +92,7 @@ export default function AdminSettings() {
   const [pixelTestResult, setPixelTestResult] = useState<'success' | 'error' | null>(null);
   const [isTestingCapi, setIsTestingCapi] = useState(false);
   const [capiTestResult, setCapiTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
   
   // CAPI Token state
   const [capiToken, setCapiToken] = useState('');
@@ -752,52 +753,77 @@ export default function AdminSettings() {
                   </Popover>
                 </div>
 
-                {/* Currency Display */}
+                {/* Currency Selector */}
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <label className="block text-sm font-medium">{t('admin.currency')}</label>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">
-                        {t('admin.currencyCode')}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.currencyCode}
-                        onChange={(e) => setFormData({ ...formData, currencyCode: e.target.value })}
-                        className="input-shop"
-                        placeholder="e.g., USD, BDT, INR"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">
-                        {t('admin.currencySymbol')}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.currencySymbol}
-                        onChange={(e) => setFormData({ ...formData, currencySymbol: e.target.value })}
-                        className="input-shop"
-                        placeholder="e.g., $, ৳, ₹"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-muted-foreground mb-1">
-                        {t('admin.currencyLocale')}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.currencyLocale}
-                        onChange={(e) => setFormData({ ...formData, currencyLocale: e.target.value })}
-                        className="input-shop"
-                        placeholder="e.g., en-US, bn-BD"
-                      />
-                    </div>
-                  </div>
+                  <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={currencyOpen}
+                        className="w-full justify-between h-10 bg-background"
+                      >
+                        {formData.currencyCode
+                          ? `${formData.currencyCode} (${formData.currencySymbol})`
+                          : 'Select currency'}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] p-0 z-50" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search currency..." />
+                        <CommandList>
+                          <CommandEmpty>No currency found.</CommandEmpty>
+                          <CommandGroup className="max-h-[300px] overflow-auto">
+                            {(() => {
+                              const seen = new Set<string>();
+                              return countries
+                                .filter((c) => {
+                                  if (seen.has(c.currencyCode)) return false;
+                                  seen.add(c.currencyCode);
+                                  return true;
+                                })
+                                .sort((a, b) => a.currencyCode.localeCompare(b.currencyCode))
+                                .map((country) => (
+                                  <CommandItem
+                                    key={country.currencyCode}
+                                    value={`${country.currencyCode} ${country.currencySymbol} ${country.name}`}
+                                    onSelect={() => {
+                                      setFormData({
+                                        ...formData,
+                                        currencyCode: country.currencyCode,
+                                        currencySymbol: country.currencySymbol,
+                                        currencyLocale: country.currencyLocale,
+                                      });
+                                      setCurrencyOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        'mr-2 h-4 w-4',
+                                        formData.currencyCode === country.currencyCode
+                                          ? 'opacity-100'
+                                          : 'opacity-0'
+                                      )}
+                                    />
+                                    <span className="font-medium mr-2">{country.currencyCode}</span>
+                                    <span className="text-muted-foreground text-sm">
+                                      {country.currencySymbol} — {country.name}
+                                    </span>
+                                  </CommandItem>
+                                ));
+                            })()}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Currency is auto-filled when you select a country, but you can customize it manually
+                    Selected: {formData.currencyCode} ({formData.currencySymbol}) · Locale: {formData.currencyLocale}
                   </p>
                 </div>
               </div>
