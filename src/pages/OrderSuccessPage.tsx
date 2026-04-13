@@ -31,24 +31,24 @@ export default function OrderSuccessPage() {
             </div>
             <p className="text-2xl font-bold text-accent">{orderId}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Please save this for your records
+              ভবিষ্যতের জন্য এটি সংরক্ষণ করুন
             </p>
           </div>
 
           <div className="bg-secondary/50 rounded-xl p-6 mb-8 text-left">
-            <h3 className="font-semibold mb-4">What's Next?</h3>
+            <h3 className="font-semibold mb-4">পরবর্তী পদক্ষেপ কি?</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <span className="text-accent">•</span>
-                You'll receive an order confirmation via SMS/email
+                আপনি SMS/ইমেলের মাধ্যমে একটি অর্ডার নিশ্চিতকরণ বার্তা পাবেন
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">•</span>
-                Our team will process your order within 24 hours
+                আমাদের টিম ২৪ ঘণ্টার মধ্যে আপনার অর্ডারটি প্রসেস করবে
               </li>
               <li className="flex gap-2">
                 <span className="text-accent">•</span>
-                You'll be notified when your order is shipped
+                আপনার অর্ডারটি শিপ করা হলে আপনাকে জানানো হবে
               </li>
             </ul>
           </div>

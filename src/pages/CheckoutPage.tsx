@@ -153,7 +153,7 @@ export default function CheckoutPage() {
     }
 
     if (requiresTrxId && !transactionId.trim()) {
-      toast.error('Transaction ID is required for this payment method');
+      toast.error('এই পেমেন্ট পদ্ধতির জন্য ট্রানজ্যাকশন আইডি প্রয়োজন');
       return;
     }
 
@@ -177,7 +177,7 @@ export default function CheckoutPage() {
           customer_email: null,
           shipping_address: formData.address,
           shipping_city: '-',
-          shipping_method: selectedShipping?.name || 'Standard',
+          shipping_method: selectedShipping?.name || 'স্ট্যান্ডার্ড',
           shipping_cost: shippingCost,
           payment_method: selectedPayment?.code || 'cod',
           subtotal,
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
           status: 'pending',
           notes: null,
           payment_method_id: selectedPayment?.id || null,
-          payment_method_name: selectedPayment?.name || 'Cash on Delivery',
+          payment_method_name: selectedPayment?.name || 'ক্যাশ অন ডেলিভারি',
           payment_status: hasPartial ? 'partial_paid' : 'unpaid',
           paid_amount: advanceAmount,
           due_amount: dueOnDelivery,
@@ -281,7 +281,7 @@ export default function CheckoutPage() {
                     <Skeleton className="h-20 w-full" />
                   </div>
                 ) : shippingMethods.length === 0 ? (
-                  <p className="text-muted-foreground">No shipping methods available</p>
+                  <p className="text-muted-foreground">কোন শিপিং পদ্ধতি পাওয়া যায়নি</p>
                 ) : (
                   <div className="space-y-3">
                     {shippingMethods.map((method) => (
@@ -307,7 +307,7 @@ export default function CheckoutPage() {
                     <Skeleton className="h-20 w-full" />
                   </div>
                 ) : paymentMethods.length === 0 ? (
-                  <p className="text-muted-foreground">No payment methods available</p>
+                  <p className="text-muted-foreground">কোন পেমেন্ট পদ্ধতি পাওয়া যায়নি</p>
                 ) : (
                   <div className="space-y-3">
                     {paymentMethods.map((pm) => (
@@ -348,7 +348,7 @@ export default function CheckoutPage() {
                     <Input
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
-                      placeholder="Enter your transaction/reference ID"
+                      placeholder="আপনার ট্রানজ্যাকশন/রেফারেন্স আইডি দিন"
                       required
                     />
                   </div>
@@ -357,14 +357,14 @@ export default function CheckoutPage() {
                 {/* Partial Payment Breakdown */}
                 {hasPartial && formData.paymentMethodId && (
                   <div className="mt-4 p-4 border border-accent/30 bg-accent/5 rounded-lg">
-                    <h3 className="font-semibold text-sm mb-2">Payment Breakdown</h3>
+                    <h3 className="font-semibold text-sm mb-2">পেমেন্টের বিবরণ</h3>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span>Pay now (advance):</span>
+                        <span>এখন পরিশোধ (অগ্রিম):</span>
                         <span className="font-semibold">{formatCurrency(advanceAmount)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Pay on delivery:</span>
+                        <span>ডেলিভারির সময় পরিশোধ:</span>
                         <span className="font-semibold">{formatCurrency(dueOnDelivery)}</span>
                       </div>
                     </div>
@@ -415,7 +415,7 @@ export default function CheckoutPage() {
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-accent">
-                      <span>{t('checkout.discount') || 'Discount'}</span>
+                      <span>{t('checkout.discount') || 'ডিসকাউন্ট'}</span>
                       <span>-{formatCurrency(discountAmount)}</span>
                     </div>
                   )}
@@ -435,11 +435,11 @@ export default function CheckoutPage() {
                 {hasPartial && (
                   <div className="text-xs text-muted-foreground mb-4 space-y-1">
                     <div className="flex justify-between">
-                      <span>Advance payment:</span>
+                      <span>অগ্রিম পেমেন্ট:</span>
                       <span className="font-medium text-foreground">{formatCurrency(advanceAmount)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Due on delivery:</span>
+                      <span>ডেলিভারির সময় পরিশোধ:</span>
                       <span className="font-medium text-foreground">{formatCurrency(dueOnDelivery)}</span>
                     </div>
                   </div>

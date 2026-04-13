@@ -102,7 +102,7 @@ const defaultSettings: SiteSettings = {
   currency_code: 'BDT',
   currency_symbol: '৳',
   currency_locale: 'bn-BD',
-  language: 'en',
+  language: 'bn',
   updated_at: new Date().toISOString(),
   fb_pixel_enabled: false,
   fb_pixel_id: null,

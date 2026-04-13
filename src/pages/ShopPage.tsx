@@ -77,7 +77,7 @@ export default function ShopPage() {
     <div className="space-y-6">
       {/* Categories */}
       <div>
-        <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-foreground">Categories</h3>
+        <h3 className="font-bold text-sm uppercase tracking-wider mb-4 text-foreground">ক্যাটাগরি</h3>
         <div className="space-y-1">
           <button
             onClick={() => setSelectedCategory('all')}
@@ -87,7 +87,7 @@ export default function ShopPage() {
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
-            All Products
+            সব প্রোডাক্ট
           </button>
           {categories.map((cat) => (
             <button
@@ -115,7 +115,7 @@ export default function ShopPage() {
           setSearchParams({});
         }}
       >
-        Clear All Filters
+        ফিল্টার মুছুন
       </Button>
     </div>
   );
@@ -125,9 +125,9 @@ export default function ShopPage() {
       <div className="container-shop section-padding">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-1">Shop</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-1">শপ</h1>
           <p className="text-muted-foreground text-sm">
-            {isLoading ? 'Loading...' : `${filteredProducts.length} products found`}
+            {isLoading ? 'লোড হচ্ছে...' : `${filteredProducts.length}টি প্রোডাক্ট পাওয়া গেছে`}
           </p>
         </div>
 
@@ -148,7 +148,7 @@ export default function ShopPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="search"
-                  placeholder="Search products..."
+                  placeholder="প্রোডাক্ট খুঁজুন..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-shop pl-11 rounded-xl"
@@ -166,12 +166,12 @@ export default function ShopPage() {
               {/* Sort */}
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-full sm:w-44">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder="সাজান" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="newest">সর্বশেষ</SelectItem>
+                  <SelectItem value="price-low">দাম: কম থেকে বেশি</SelectItem>
+                  <SelectItem value="price-high">দাম: বেশি থেকে কম</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -180,12 +180,12 @@ export default function ShopPage() {
                 <SheetTrigger asChild>
                   <Button variant="outline" className="lg:hidden">
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
-                    Filters
+                    ফিল্টার
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80">
                   <SheetHeader>
-                    <SheetTitle>Filters</SheetTitle>
+                    <SheetTitle>ফিল্টার</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6">
                     <FilterContent />
@@ -209,9 +209,9 @@ export default function ShopPage() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <p className="text-muted-foreground text-lg">No products found</p>
+                <p className="text-muted-foreground text-lg">কোন প্রোডাক্ট পাওয়া যায়নি</p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Try adjusting your filters or search query
+                  ফিল্টার বা সার্চ কিউরি পরিবর্তন করে আবার চেষ্টা করুন
                 </p>
               </div>
             )}

@@ -375,8 +375,6 @@ export default function AdminSettings() {
   };
 
   const languageOptions = [
-    { code: 'en', name: 'English', nativeName: 'English' },
-    { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
     { code: 'bn', name: 'Bangla', nativeName: 'বাংলা' },
   ];
 

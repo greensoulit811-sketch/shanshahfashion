@@ -24,7 +24,7 @@ export function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
 
     if (product.has_variants) {
-      toast.info('Please select size/color options');
+      toast.info('অনুগ্রহ করে সাইজ/কালার অপশন নির্বাচন করুন');
       navigate(`/product/${product.slug}`);
       return;
     }
@@ -54,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
 
     if (product.has_variants) {
-      toast.info('Please select size/color options');
+      toast.info('অনুগ্রহ করে সাইজ/কালার অপশন নির্বাচন করুন');
       navigate(`/product/${product.slug}`);
       return;
     }
@@ -80,10 +80,10 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="group bg-card rounded-2xl border border-border/60 flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 hover:border-border">
+    <div className="group bg-card rounded-lg border border-border/60 flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 hover:border-border">
       <Link to={`/product/${product.slug}`} className="block flex-1">
         {/* Image */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-secondary/50">
+        <div className="relative aspect-[5/6] overflow-hidden bg-secondary/50">
           <img
             src={product.images[0] || '/placeholder.svg'}
             alt={product.name}
@@ -112,14 +112,14 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4 text-center">
           <p className="text-[11px] text-muted-foreground mb-1 uppercase tracking-widest font-medium">
             {product.category?.name || t('product.uncategorized')}
           </p>
-          <h3 className="font-semibold text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">
+          <h3 className="font-semibold text-sm lg:text-lg line-clamp-1 mb-2 group-hover:text-primary transition-colors leading-snug">
             {product.name}
           </h3>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 justify-center">
             {hasDiscount ? (
               <>
                 <span className="font-bold text-primary text-base">
@@ -144,14 +144,10 @@ export function ProductCard({ product }: ProductCardProps) {
           className="w-full h-9 sm:h-11 text-xs sm:text-sm font-medium rounded-lg border-border hover:border-primary hover:bg-primary/5 transition-all gap-1.5 sm:gap-2"
           onClick={handleAddToCart}
           disabled={isAddingToCart || product.stock === 0}
-          aria-label={product.has_variants ? 'Select Options' : t('product.addToCart')}
+          aria-label={product.has_variants ? 'অপশন দেখুন' : t('product.addToCart')}
         >
-          {isAddingToCart ? (
-            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-          ) : (
-            <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          )}
-          {product.has_variants ? 'Options' : t('product.addToCart')}
+          {isAddingToCart && <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />}
+          {product.has_variants ? 'অপশন দেখুন' : t('product.addToCart')}
         </Button>
         <Button
           size="sm"
@@ -160,11 +156,7 @@ export function ProductCard({ product }: ProductCardProps) {
           disabled={isBuyingNow || product.stock === 0}
           aria-label={t('product.buyNow')}
         >
-          {isBuyingNow ? (
-            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-          ) : (
-            <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          )}
+          {isBuyingNow && <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />}
           {t('product.buyNow')}
         </Button>
       </div>

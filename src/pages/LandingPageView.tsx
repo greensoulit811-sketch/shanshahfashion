@@ -114,7 +114,7 @@ export default function LandingPageView() {
       return;
     }
     if (requiresTrxId && !transactionId.trim()) {
-      toast.error('Transaction ID is required');
+      toast.error('ট্রানজ্যাকশন আইডি প্রয়োজন');
       return;
     }
 
@@ -144,7 +144,7 @@ export default function LandingPageView() {
           status: 'pending',
           notes: formData.notes || null,
           payment_method_id: selectedPayment?.id || null,
-          payment_method_name: selectedPayment?.name || 'Cash on Delivery',
+          payment_method_name: selectedPayment?.name || 'ক্যাশ অন ডেলিভারি',
           payment_status: hasPartial ? 'partial_paid' : 'unpaid',
           paid_amount: advanceAmount,
           due_amount: dueOnDelivery,
@@ -179,8 +179,8 @@ export default function LandingPageView() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-          <Button onClick={() => navigate('/')}>Go Home</Button>
+          <h1 className="text-2xl font-bold mb-2">পেজটি পাওয়া যায়নি</h1>
+          <Button onClick={() => navigate('/')}>হোমে ফিরে যান</Button>
         </div>
       </div>
     );

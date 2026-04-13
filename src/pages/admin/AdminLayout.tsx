@@ -46,18 +46,18 @@ export default function AdminLayout() {
     { name: t('admin.products'), href: '/admin/products', icon: Package, roles: ['admin', 'manager'] },
     { name: t('admin.categories'), href: '/admin/categories', icon: FolderOpen, roles: ['admin', 'manager'] },
     { name: t('admin.orders'), href: '/admin/orders', icon: ShoppingCart, roles: ['admin', 'manager', 'order_handler'] },
-    { name: 'Checkout Leads', href: '/admin/leads', icon: Users, roles: ['admin', 'manager'] },
+    { name: 'চেকআউট লিডস', href: '/admin/leads', icon: Users, roles: ['admin', 'manager'] },
     { name: t('admin.slider'), href: '/admin/slider', icon: Image, roles: ['admin', 'manager'] },
-    { name: 'Coupons', href: '/admin/coupons', icon: Tag, roles: ['admin', 'manager'] },
-    { name: 'Shipping Zones', href: '/admin/shipping', icon: MapPin, roles: ['admin'] },
-    { name: 'Shipping Methods', href: '/admin/shipping-methods', icon: Truck, roles: ['admin'] },
-    { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare, roles: ['admin', 'manager'] },
-    { name: 'Courier', href: '/admin/courier', icon: Truck, roles: ['admin'] },
-    { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard, roles: ['admin'] },
-    { name: 'Pages', href: '/admin/pages', icon: FileText, roles: ['admin'] },
-    { name: 'Landing Pages', href: '/admin/landing-pages', icon: Megaphone, roles: ['admin'] },
-    { name: 'Homepage', href: '/admin/homepage', icon: LayoutTemplate, roles: ['admin'] },
-    { name: 'Users', href: '/admin/users', icon: ShieldCheck, roles: ['admin'] },
+    { name: 'কুপন', href: '/admin/coupons', icon: Tag, roles: ['admin', 'manager'] },
+    { name: 'শিপিং জোন', href: '/admin/shipping', icon: MapPin, roles: ['admin'] },
+    { name: 'শিপিং মেথড', href: '/admin/shipping-methods', icon: Truck, roles: ['admin'] },
+    { name: 'রিভিউ', href: '/admin/reviews', icon: MessageSquare, roles: ['admin', 'manager'] },
+    { name: 'কুরিয়ার', href: '/admin/courier', icon: Truck, roles: ['admin'] },
+    { name: 'পেমেন্ট মেথড', href: '/admin/payment-methods', icon: CreditCard, roles: ['admin'] },
+    { name: 'পেজসমূহ', href: '/admin/pages', icon: FileText, roles: ['admin'] },
+    { name: 'ল্যান্ডিং পেজ', href: '/admin/landing-pages', icon: Megaphone, roles: ['admin'] },
+    { name: 'হোমপেজ', href: '/admin/homepage', icon: LayoutTemplate, roles: ['admin'] },
+    { name: 'ইউজার', href: '/admin/users', icon: ShieldCheck, roles: ['admin'] },
     { name: t('admin.settings'), href: '/admin/settings', icon: Settings, roles: ['admin'] },
   ];
 
@@ -118,14 +118,14 @@ export default function AdminLayout() {
           className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
         >
           <Store className="h-5 w-5" />
-          <span className="font-medium">Back to Store</span>
+          <span className="font-medium">দোকানে ফিরে যান</span>
         </Link>
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
         >
           <LogOut className="h-5 w-5" />
-          <span className="font-medium">Logout</span>
+          <span className="font-medium">লগআউট</span>
         </button>
       </div>
     </div>

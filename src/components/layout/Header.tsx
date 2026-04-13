@@ -32,8 +32,6 @@ export function Header() {
   ];
 
   const languageOptions = [
-    { code: 'en', label: 'English' },
-    { code: 'hi', label: 'हिन्दी' },
     { code: 'bn', label: 'বাংলা' },
   ];
 

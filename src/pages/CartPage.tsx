@@ -21,7 +21,6 @@ export default function CartPage() {
           <Link to="/shop">
             <Button className="btn-accent">
               {t('cart.continueShopping')}
-              <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>
         </div>
@@ -133,7 +132,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('cart.shipping')}</span>
-                  <span className="font-medium">Calculated at checkout</span>
+                  <span className="font-medium">চেকআউটে গণনা করা হবে</span>
                 </div>
               </div>
 
@@ -142,11 +141,11 @@ export default function CartPage() {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Coupon code"
+                    placeholder="কুপন কোড"
                     className="input-shop flex-1 text-sm"
                   />
                   <Button variant="outline" size="sm">
-                    Apply
+                    আবেদন করুন
                   </Button>
                 </div>
               </div>
@@ -161,7 +160,6 @@ export default function CartPage() {
               <Link to="/checkout">
                 <Button size="lg" className="btn-accent w-full">
                   {t('cart.proceedToCheckout')}
-                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
 

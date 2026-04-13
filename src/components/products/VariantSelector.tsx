@@ -125,7 +125,7 @@ export function VariantSelector({ variants, selectedVariant, onSelect, onColorSe
       {sizes.length > 0 && (
         <div>
           <label className="text-sm font-semibold mb-3 block tracking-wide">
-            Size
+            সাইজ
             {selectedSize && <span className="text-muted-foreground font-normal ml-1.5">({selectedSize})</span>}
           </label>
           <div className="flex flex-wrap gap-2.5">
@@ -158,7 +158,7 @@ export function VariantSelector({ variants, selectedVariant, onSelect, onColorSe
       {visibleColors.length > 0 && (
         <div>
           <label className="text-sm font-semibold mb-3 block tracking-wide">
-            Color
+            কালার
             {selectedColor && <span className="text-muted-foreground font-normal ml-1.5">({selectedColor})</span>}
           </label>
           <div className="flex flex-wrap gap-2.5">

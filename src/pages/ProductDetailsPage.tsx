@@ -125,7 +125,7 @@ export default function ProductDetailsPage() {
 
   const handleAddToCart = async () => {
     if (hasVariants && !selectedVariant) {
-      toast.error('Please select size/color');
+      toast.error('অনুগ্রহ করে সাইজ/কালার নির্বাচন করুন');
       return;
     }
     
@@ -169,7 +169,7 @@ export default function ProductDetailsPage() {
 
   const handleBuyNow = async () => {
     if (hasVariants && !selectedVariant) {
-      toast.error('Please select size/color');
+      toast.error('অনুগ্রহ করে সাইজ/কালার নির্বাচন করুন');
       return;
     }
     
@@ -311,7 +311,7 @@ export default function ProductDetailsPage() {
                     ))}
                   </div>
                   <span className="text-sm font-medium text-foreground">{avgRating.toFixed(1)}</span>
-                  <span className="text-sm text-muted-foreground">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</span>
+                  <span className="text-sm text-muted-foreground">({reviews.length}টি রিভিউ)</span>
                 </div>
               )}
 
@@ -327,7 +327,7 @@ export default function ProductDetailsPage() {
                         {formatCurrency(selectedVariant.variant_price)}
                       </span>
                       <span className="bg-destructive/10 text-destructive px-2.5 py-1 text-xs font-bold rounded-md">
-                        Save {formatCurrency(selectedVariant.variant_price - selectedVariant.variant_sale_price)}
+                        সাশ্রয় {formatCurrency(selectedVariant.variant_price - selectedVariant.variant_sale_price)}
                       </span>
                     </>
                   ) : (
@@ -344,7 +344,7 @@ export default function ProductDetailsPage() {
                       {formatCurrency(product.price)}
                     </span>
                     <span className="bg-destructive/10 text-destructive px-2.5 py-1 text-xs font-bold rounded-md">
-                      Save {formatCurrency(product.price - product.sale_price!)}
+                      সাশ্রয় {formatCurrency(product.price - product.sale_price!)}
                     </span>
                   </>
                 ) : (
@@ -380,7 +380,7 @@ export default function ProductDetailsPage() {
                     <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-sm font-semibold text-emerald-600">{t('product.inStock')}</span>
                     <span className="text-sm text-muted-foreground">
-                      — {effectiveStock} available
+                      — {effectiveStock}টি স্টকে আছে
                     </span>
                   </>
                 ) : (
@@ -430,11 +430,7 @@ export default function ProductDetailsPage() {
                   onClick={handleAddToCart}
                   disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
                 >
-                  {isAddingToCart ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <ShoppingBag className="h-5 w-5" />
-                  )}
+                  {isAddingToCart && <Loader2 className="h-5 w-5 animate-spin" />}
                   {t('product.addToCart')}
                 </Button>
                 <Button
@@ -443,11 +439,7 @@ export default function ProductDetailsPage() {
                   onClick={handleBuyNow}
                   disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
                 >
-                  {isBuyingNow ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Zap className="h-5 w-5" />
-                  )}
+                  {isBuyingNow && <Loader2 className="h-5 w-5 animate-spin" />}
                   {t('product.buyNow')}
                 </Button>
               </div>
@@ -460,8 +452,8 @@ export default function ProductDetailsPage() {
                   rel="noopener noreferrer"
                   className="hidden md:flex items-center justify-center gap-3 w-full py-3.5 px-6 bg-[#25D366] hover:bg-[#1fb855] text-white rounded-xl font-semibold transition-colors shadow-sm"
                 >
-                  <MessageCircle className="h-5 w-5" />
-                  Order on WhatsApp
+
+                  হোয়াটসঅ্যাপে অর্ডার করুন
                 </a>
               )}
             </div>
@@ -470,15 +462,15 @@ export default function ProductDetailsPage() {
             <div className="grid grid-cols-3 gap-3 py-1">
               <div className="flex flex-col items-center text-center gap-2 p-3 rounded-xl bg-secondary/40">
                 <Truck className="h-5 w-5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground leading-tight">Fast Delivery</span>
+                <span className="text-xs font-medium text-muted-foreground leading-tight">দ্রুত ডেলিভারি</span>
               </div>
               <div className="flex flex-col items-center text-center gap-2 p-3 rounded-xl bg-secondary/40">
                 <Shield className="h-5 w-5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground leading-tight">Secure Payment</span>
+                <span className="text-xs font-medium text-muted-foreground leading-tight">নিরাপদ পেমেন্ট</span>
               </div>
               <div className="flex flex-col items-center text-center gap-2 p-3 rounded-xl bg-secondary/40">
                 <Package className="h-5 w-5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground leading-tight">Quality Assured</span>
+                <span className="text-xs font-medium text-muted-foreground leading-tight">নিশ্চিত গুণমান</span>
               </div>
             </div>
 
@@ -497,7 +489,7 @@ export default function ProductDetailsPage() {
                 </AccordionTrigger>
                 <AccordionContent className="px-5 pb-5">
                   <div className="text-muted-foreground text-[0.938rem] leading-[1.75] whitespace-pre-line">
-                    {product.description || 'No description available.'}
+                    {product.description || 'কোন বিবরণ পাওয়া যায়নি।'}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -505,7 +497,7 @@ export default function ProductDetailsPage() {
               {(product as any).specifications && Array.isArray((product as any).specifications) && (product as any).specifications.length > 0 && (
                 <AccordionItem value="specifications" className="border border-border/60 rounded-xl overflow-hidden">
                   <AccordionTrigger className="px-5 py-4 text-sm font-bold uppercase tracking-wider hover:no-underline hover:bg-secondary/30 transition-colors">
-                    SPECIFICATIONS
+                    বৈশিষ্ট্যসমূহ
                   </AccordionTrigger>
                   <AccordionContent className="px-5 pb-5">
                     <div className="rounded-lg overflow-hidden border border-border/40">
@@ -536,7 +528,7 @@ export default function ProductDetailsPage() {
                       className="rounded-lg font-medium"
                       onClick={() => setShowReviewForm(!showReviewForm)}
                     >
-                      {showReviewForm ? 'Cancel' : 'Write a Review'}
+                      {showReviewForm ? 'বাতিল' : 'রিভিউ লিখুন'}
                     </Button>
                   </div>
                   {showReviewForm && (
@@ -560,7 +552,7 @@ export default function ProductDetailsPage() {
           <section className="mt-20 pt-12 border-t border-border">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold">{t('product.relatedProducts')}</h2>
-              <Link to="/shop" className="text-sm font-medium text-primary hover:underline">View All</Link>
+              <Link to="/shop" className="text-sm font-medium text-primary hover:underline">সব দেখুন</Link>
             </div>
             <div className="product-grid">
               {relatedProducts.map((p) => (
@@ -582,11 +574,7 @@ export default function ProductDetailsPage() {
               disabled={isAddingToCart || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.addToCart')}
             >
-              {isAddingToCart ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <ShoppingBag className="h-5 w-5" />
-              )}
+              {isAddingToCart && <Loader2 className="h-5 w-5 animate-spin" />}
               {t('product.addToCart')}
             </Button>
             <Button
@@ -595,11 +583,7 @@ export default function ProductDetailsPage() {
               disabled={isBuyingNow || effectiveStock === 0 || (hasVariants && !selectedVariant)}
               aria-label={t('product.buyNow')}
             >
-              {isBuyingNow ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Zap className="h-5 w-5" />
-              )}
+              {isBuyingNow && <Loader2 className="h-5 w-5 animate-spin" />}
               {t('product.buyNow')}
             </Button>
             {whatsappEnabled && (
