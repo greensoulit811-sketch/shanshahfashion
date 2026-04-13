@@ -16,8 +16,8 @@ export function FeaturedProducts() {
         <div className="container-shop">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold">{t('home.featuredProducts')}</h2>
-              <p className="text-muted-foreground mt-1">Handpicked just for you</p>
+              <h2 className="text-lg md:text-3xl font-bold">{t('home.featuredProducts')}</h2>
+              {/* <p className="text-muted-foreground mt-1">Handpicked just for you</p> */}
             </div>
           </div>
           <div className="product-grid">
@@ -48,7 +48,7 @@ export function FeaturedProducts() {
           </Link>
         </div>
 
-        <div className="product-grid">
+        <div className="product-grid gap-2 lg:gap-4">
           {products.map((product, index) => (
             <div key={product.id} className={`reveal-base stagger-${index + 1} ${isVisible ? 'reveal-visible' : ''}`}>
               <ProductCard product={product} />

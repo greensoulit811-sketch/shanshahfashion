@@ -48,7 +48,7 @@ export function BestSellers() {
           </Link>
         </div>
 
-        <div className="product-grid">
+        <div className="product-grid gap-4">
           {products.map((product, index) => (
             <div key={product.id} className={`reveal-base stagger-${index + 1} ${isVisible ? 'reveal-visible' : ''}`}>
               <ProductCard product={product} />

@@ -34,8 +34,8 @@ export function FeaturedCategories() {
       <div className="container-shop">
         <div className={`flex items-center justify-between mb-8 reveal-left ${isVisible ? 'reveal-visible' : ''}`}>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold">{t('home.shopByCategory')}</h2>
-            <p className="text-muted-foreground mt-1">Find what you're looking for</p>
+            <h2 className="text-lg md:text-3xl font-bold">{t('home.shopByCategory')}</h2>
+            {/* <p className="text-muted-foreground mt-1">Find what you're looking for</p> */}
           </div>
           <Link
             to="/categories"
@@ -45,7 +45,7 @@ export function FeaturedCategories() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
           {categories.slice(0, 8).map((category, index) => (
             <Link
               key={category.id}

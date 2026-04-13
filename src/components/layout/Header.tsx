@@ -38,7 +38,7 @@ export function Header() {
   return (
     <header className="header-sticky">
       <div className="container-shop">
-        <div className="flex items-center justify-between h-18 md:h-24">
+        <div className="flex items-center justify-between h-18 md:h-20">
           {/* Mobile menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
