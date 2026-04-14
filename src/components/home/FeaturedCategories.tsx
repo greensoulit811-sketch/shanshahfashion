@@ -16,7 +16,7 @@ export function FeaturedCategories() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">{t('home.shopByCategory')}</h2>
-              <p className="text-muted-foreground mt-1">Find what you're looking for</p>
+              {/* <p className="text-muted-foreground mt-1">Find what you're looking for</p> */}
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
