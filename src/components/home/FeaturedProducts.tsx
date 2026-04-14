@@ -35,10 +35,10 @@ export function FeaturedProducts() {
   return (
     <section className="section-padding bg-secondary/50" ref={ref}>
       <div className="container-shop">
-        <div className={`flex items-center justify-between mb-8 reveal-left ${isVisible ? 'reveal-visible' : ''}`}>
+        <div className={`flex items-center justify-between mb-5 reveal-left ${isVisible ? 'reveal-visible' : ''}`}>
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">{t('home.featuredProducts')}</h2>
-            <p className="text-muted-foreground mt-1">Handpicked just for you</p>
+            {/* <p className="text-muted-foreground mt-1">Handpicked just for you</p> */}
           </div>
           <Link
             to="/shop"

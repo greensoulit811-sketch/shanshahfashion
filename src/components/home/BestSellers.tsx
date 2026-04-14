@@ -14,10 +14,10 @@ export function BestSellers() {
     return (
       <section className="section-padding">
         <div className="container-shop">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">{t('home.bestSellers')}</h2>
-              <p className="text-muted-foreground mt-1">Customer favorites this month</p>
+              {/* <p className="text-muted-foreground mt-1">Customer favorites this month</p> */}
             </div>
           </div>
           <div className="product-grid">
@@ -35,10 +35,10 @@ export function BestSellers() {
   return (
     <section className="section-padding" ref={ref}>
       <div className="container-shop">
-        <div className={`flex items-center justify-between mb-8 reveal-left ${isVisible ? 'reveal-visible' : ''}`}>
+        <div className={`flex items-center justify-between mb-5 reveal-left ${isVisible ? 'reveal-visible' : ''}`}>
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">{t('home.bestSellers')}</h2>
-            <p className="text-muted-foreground mt-1">Customer favorites this month</p>
+            {/* <p className="text-muted-foreground mt-1">Customer favorites this month</p> */}
           </div>
           <Link
             to="/shop?filter=bestsellers"
@@ -48,7 +48,7 @@ export function BestSellers() {
           </Link>
         </div>
 
-        <div className="product-grid gap-4">
+        <div className="product-grid gap-2 lg:gap-4">
           {products.map((product, index) => (
             <div key={product.id} className={`reveal-base stagger-${index + 1} ${isVisible ? 'reveal-visible' : ''}`}>
               <ProductCard product={product} />
