@@ -17,7 +17,7 @@ export function BestSellers() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">{t('home.bestSellers')}</h2>
-              {/* <p className="text-muted-foreground mt-1">Customer favorites this month</p> */}
+               <p className="text-muted-foreground mt-1">Customer favorites this monthfhgsdfg khg</p>
             </div>
           </div>
           <div className="product-grid">
