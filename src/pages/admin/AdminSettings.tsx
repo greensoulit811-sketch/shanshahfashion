@@ -109,14 +109,28 @@ export default function AdminSettings() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const response = await supabase.functions.invoke('manage-capi-token', {
+      const { data, error } = await supabase.functions.invoke('manage-capi-token', {
         method: 'GET',
       });
 
-      if (response.data) {
-        setHasCapiToken(response.data.has_token || false);
-        setCapiTokenMasked(response.data.masked || null);
-        setTokenLastUpdated(response.data.updated_at || null);
+      if (!error && data) {
+        setHasCapiToken(data.has_token || false);
+        setCapiTokenMasked(data.masked || null);
+        setTokenLastUpdated(data.updated_at || null);
+      } else {
+        // Fallback to direct DB read if function is unreachable
+        const { data: dbData } = await supabase
+          .from('capi_secrets')
+          .select('updated_at, access_token')
+          .eq('id', 'global')
+          .maybeSingle();
+        
+        if (dbData) {
+          const hasToken = !!dbData.access_token && dbData.access_token.trim().length > 0;
+          setHasCapiToken(hasToken);
+          setTokenLastUpdated(dbData.updated_at);
+          setCapiTokenMasked(hasToken ? dbData.access_token.substring(0, 4) + "••••••••" : null);
+        }
       }
     } catch {
       // Silently fail
@@ -134,19 +148,43 @@ export default function AdminSettings() {
     }
     setIsSavingToken(true);
     try {
-      const response = await supabase.functions.invoke('manage-capi-token', {
+      const { data, error: invokeError } = await supabase.functions.invoke('manage-capi-token', {
         body: { access_token: capiToken.trim() },
       });
 
-      if (response.data?.success) {
+      if (invokeError) {
+        console.warn('[AdminSettings] Edge Function unreachable, attempting direct DB fallback');
+        // Fallback: Try direct database upsert
+        const { error: dbError } = await supabase
+          .from('capi_secrets')
+          .upsert({ 
+            id: 'global', 
+            access_token: capiToken.trim(), 
+            updated_at: new Date().toISOString() 
+          });
+
+        if (dbError) {
+          toast.error(`Failed to save token: ${dbError.message}`);
+          return;
+        }
+        
+        toast.success('Access token saved securely');
+        setCapiToken('');
+        setShowTokenInput(false);
+        await fetchTokenStatus();
+        return;
+      }
+
+      if (data?.success) {
         toast.success('Access token saved securely');
         setCapiToken('');
         setShowTokenInput(false);
         await fetchTokenStatus();
       } else {
-        toast.error(response.data?.error || 'Failed to save token');
+        toast.error(data?.error || 'Failed to save token');
       }
-    } catch {
+    } catch (error) {
+      console.error('Save token error:', error);
       toast.error('Failed to save access token');
     } finally {
       setIsSavingToken(false);

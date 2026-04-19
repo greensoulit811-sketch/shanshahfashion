@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       if (upsertError) {
         console.error("[manage-capi-token] Upsert error:", upsertError.message);
         return new Response(
-          JSON.stringify({ error: "Failed to save token" }),
+          JSON.stringify({ error: `Database error: ${upsertError.message}` }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

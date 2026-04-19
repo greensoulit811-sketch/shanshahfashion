@@ -5,6 +5,7 @@ import { Product, Category } from '@/hooks/useShopData';
 import { useCart } from '@/contexts/CartContext';
 import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { Button } from '@/components/ui/button';
+import { trackAddToCart } from '@/lib/facebook-pixel';
 import { WishlistButton } from '@/components/products/WishlistButton';
 import { toast } from 'sonner';
 
@@ -14,7 +15,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
-  const { t, formatCurrency } = useSiteSettings();
+  const { t, formatCurrency, settings } = useSiteSettings();
   const navigate = useNavigate();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
@@ -40,6 +41,14 @@ export function ProductCard({ product }: ProductCardProps) {
       image: product.images[0] || '/placeholder.svg',
       quantity: 1,
       stock: product.stock,
+    });
+
+    trackAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: (product.sale_price ?? product.price) * 1,
+      currency: 'BDT', // Defaulting to BDT if settings not available here, but let's try to pass settings
+      quantity: 1,
     });
     
     toast.success(t('product.addedToCart'), {
@@ -69,6 +78,14 @@ export function ProductCard({ product }: ProductCardProps) {
       image: product.images[0] || '/placeholder.svg',
       quantity: 1,
       stock: product.stock,
+    });
+
+    trackAddToCart({
+      contentId: product.id,
+      contentName: product.name,
+      value: (product.sale_price ?? product.price) * 1,
+      currency: settings.currency_code,
+      quantity: 1,
     });
     
     navigate('/checkout?mode=buynow');

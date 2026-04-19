@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { useProducts, useCategories } from '@/hooks/useShopData';
 import { Button } from '@/components/ui/button';
+import { trackSearch } from '@/lib/facebook-pixel';
 import {
   Select,
   SelectContent,
@@ -23,6 +24,18 @@ export default function ShopPage() {
 
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+
+  // Track search
+  const lastTrackedSearch = useRef('');
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery && searchQuery.length >= 3 && searchQuery !== lastTrackedSearch.current) {
+        trackSearch(searchQuery);
+        lastTrackedSearch.current = searchQuery;
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
