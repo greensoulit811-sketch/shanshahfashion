@@ -355,8 +355,9 @@ export default function AdminSettings() {
         fb_capi_api_version: pixelData.fb_capi_api_version || 'v20.0',
       } as any);
       toast.success('Marketing settings saved successfully');
-    } catch (error) {
-      toast.error('Failed to save marketing settings');
+    } catch (error: any) {
+      console.error('Marketing save error:', error);
+      toast.error(`Error: ${error.message || 'Failed to save settings'}`);
     }
   };
 
