@@ -121,6 +121,7 @@
     "continueShop": "কেনাকাটা চালিয়ে যান",
     "status": {
       "pending": "অপেক্ষমান",
+      "confirmed": "নিশ্চিত করা হয়েছে",
       "processing": "প্রসেসিং",
       "shipped": "শিপ করা হয়েছে",
       "delivered": "ডেলিভারি হয়েছে",

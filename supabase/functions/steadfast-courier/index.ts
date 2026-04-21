@@ -143,6 +143,7 @@ Deno.serve(async (req) => {
 
       if (res.ok && data.status === 200) {
         await supabase.from('orders').update({
+          status: 'shipped', // Automatically mark as shipped
           courier_provider: 'steadfast', courier_status: 'created',
           courier_tracking_id: data.consignment?.tracking_code,
           courier_consignment_id: data.consignment?.consignment_id?.toString(),
