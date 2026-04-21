@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Eye, MoreHorizontal, RefreshCw, FileText, Printer } from 'lucide-react';
+import { Search, Eye, MoreHorizontal, RefreshCw, FileText, Printer, Truck, Loader2 } from 'lucide-react';
 import { useOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -33,6 +33,7 @@ export default function AdminOrders() {
   const updateStatus = useUpdateOrderStatus();
   const { t, formatCurrency, settings } = useSiteSettings();
   const navigate = useNavigate();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -103,6 +104,33 @@ export default function AdminOrders() {
       }
     } catch (err: any) {
       toast.error('Failed to send Purchase event: ' + (err.message || 'Unknown error'));
+    }
+  };
+
+  const handleSyncAll = async () => {
+    setIsSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await supabase.functions.invoke('steadfast-courier', {
+        body: { action: 'sync-all' },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (response.error) throw new Error(response.error.message);
+      
+      const result = response.data;
+      if (result.success) {
+        toast.success(`Success! Synchronized ${result.count} orders.`);
+        refetch();
+      } else {
+        toast.error(result.error || 'Failed to sync orders');
+      }
+    } catch (err: any) {
+      toast.error('Sync failed: ' + err.message);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
