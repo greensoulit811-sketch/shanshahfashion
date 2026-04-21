@@ -181,20 +181,37 @@ Deno.serve(async (req) => {
 
       if (res.ok && data.status === 200) {
         let courierStatus = 'created';
+        let mainOrderStatus = null;
         const ds = data.delivery_status?.toLowerCase();
-        if (ds === 'delivered') courierStatus = 'delivered';
-        else if (ds === 'cancelled') courierStatus = 'cancelled';
-        else if (ds === 'pending') courierStatus = 'pending';
-        else if (ds) courierStatus = 'in_transit';
+        
+        if (ds === 'delivered') {
+          courierStatus = 'delivered';
+          mainOrderStatus = 'delivered';
+        } else if (ds === 'cancelled' || ds === 'returned') {
+          courierStatus = 'cancelled';
+          mainOrderStatus = 'cancelled';
+        } else if (ds === 'pending') {
+          courierStatus = 'pending';
+        } else if (ds) {
+          courierStatus = 'in_transit';
+          mainOrderStatus = 'shipped';
+        }
 
-        await supabase.from('orders').update({ 
+        const updateData: any = { 
           courier_status: courierStatus, 
           courier_updated_at: new Date().toISOString() 
-        }).eq('id', order_id);
+        };
+        
+        if (mainOrderStatus) {
+          updateData.status = mainOrderStatus;
+        }
+
+        await supabase.from('orders').update(updateData).eq('id', order_id);
 
         return createResponse({ 
           success: true, 
           courier_status: courierStatus, 
+          main_order_status: mainOrderStatus,
           delivery_status: data.delivery_status 
         });
       }
