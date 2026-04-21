@@ -15,78 +15,101 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user is admin
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const url = new URL(req.url);
+    const pathAction = url.pathname.split('/').pop();
+    const action = (pathAction && pathAction !== 'steadfast-courier') ? pathAction : body.action;
+
+    // We wrapper everything in a 200 response to avoid the "non-2xx" error in browser
+    const createResponse = (data: any) => {
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    };
+
+    // Verify user is logged in
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return createResponse({ success: false, error: 'Unauthorized: No auth header' });
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      return createResponse({ success: false, error: 'Unauthorized: Invalid session' });
+    }
+
+    // Check if admin
+    const { data: isAdmin, error: rpcError } = await supabase.rpc('is_admin', { _user_id: user.id });
+    if (rpcError || !isAdmin) {
+      return createResponse({ 
+        success: false, 
+        error: 'Admin access required. Please make sure you are logged in as an administrator.' 
       });
     }
 
-    const { data: isAdmin } = await supabase.rpc('is_admin', { _user_id: user.id });
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: 'Admin access required' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const url = new URL(req.url);
-    const action = url.pathname.split('/').pop();
-
-    const { data: settings } = await supabase
+    // Get courier settings
+    const { data: settings, error: settingsError } = await supabase
       .from('courier_settings')
       .select('*')
       .eq('provider', 'steadfast')
       .maybeSingle();
 
+    if (settingsError) {
+      return createResponse({ success: false, error: 'Database error: ' + settingsError.message });
+    }
+
     if (action === 'test-connection') {
       if (!settings?.enabled) {
-        return new Response(JSON.stringify({ success: false, error: 'Steadfast not enabled' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        return createResponse({ 
+          success: false, 
+          error: 'Steadfast is not enabled. Please toggle "Enable Integration" and click Save first.' 
         });
       }
 
-      const res = await fetch(`${settings.api_base_url}/get_balance`, {
-        headers: { 'Api-Key': settings.api_key, 'Secret-Key': settings.api_secret, 'Content-Type': 'application/json' },
-      });
-      const resText = await res.text();
-      let data: any;
-      try { data = JSON.parse(resText); } catch { 
-        return new Response(JSON.stringify({ success: false, error: 'Invalid response from Steadfast API: ' + resText.substring(0, 200) }), {
-          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      if (!settings.api_key || !settings.api_secret) {
+        return createResponse({ success: false, error: 'API Key or Secret is missing.' });
       }
-      
-      if (res.ok && data.status === 200) {
-        return new Response(JSON.stringify({ success: true, balance: data.current_balance }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+
+      try {
+        const res = await fetch(`${settings.api_base_url}/get_balance`, {
+          headers: { 
+            'Api-Key': settings.api_key, 
+            'Secret-Key': settings.api_secret, 
+            'Content-Type': 'application/json' 
+          },
         });
+        
+        const resText = await res.text();
+        let data: any;
+        try { 
+          data = JSON.parse(resText); 
+        } catch { 
+          return createResponse({ 
+            success: false, 
+            error: 'Invalid response from Steadfast API. Please verify your API Base URL.' 
+          });
+        }
+        
+        if (res.ok && data.status === 200) {
+          return createResponse({ success: true, balance: data.current_balance });
+        }
+        
+        return createResponse({ 
+          success: false, 
+          error: data.message || 'API Connection Failed: Incorrect credentials or server error.' 
+        });
+      } catch (err: any) {
+        return createResponse({ success: false, error: 'Fetch failed: ' + err.message });
       }
-      return new Response(JSON.stringify({ success: false, error: data.message || 'Failed' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
     }
 
     if (action === 'create-parcel') {
       if (!settings?.enabled) {
-        return new Response(JSON.stringify({ success: false, error: 'Steadfast not enabled' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return createResponse({ success: false, error: 'Steadfast not enabled' });
       }
 
-      const body = await req.json();
       const payload = {
         invoice: body.invoice,
         recipient_name: body.recipient_name,
@@ -98,15 +121,18 @@ Deno.serve(async (req) => {
 
       const res = await fetch(`${settings.api_base_url}/create_order`, {
         method: 'POST',
-        headers: { 'Api-Key': settings.api_key, 'Secret-Key': settings.api_secret, 'Content-Type': 'application/json' },
+        headers: { 
+          'Api-Key': settings.api_key, 
+          'Secret-Key': settings.api_secret, 
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify(payload),
       });
+
       const resText = await res.text();
       let data: any;
       try { data = JSON.parse(resText); } catch {
-        return new Response(JSON.stringify({ success: false, error: 'Invalid response from Steadfast API: ' + resText.substring(0, 200) }), {
-          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return createResponse({ success: false, error: 'Invalid JSON response from courier.' });
       }
 
       await supabase.from('courier_logs').insert({
@@ -120,93 +146,72 @@ Deno.serve(async (req) => {
           courier_provider: 'steadfast', courier_status: 'created',
           courier_tracking_id: data.consignment?.tracking_code,
           courier_consignment_id: data.consignment?.consignment_id?.toString(),
-          courier_reference: body.invoice, courier_payload: payload, courier_response: data,
-          courier_created_at: new Date().toISOString(), courier_updated_at: new Date().toISOString(),
+          courier_updated_at: new Date().toISOString(),
         }).eq('id', body.order_id);
 
-        return new Response(JSON.stringify({ 
-          success: true, tracking_code: data.consignment?.tracking_code,
+        return createResponse({ 
+          success: true, 
+          tracking_code: data.consignment?.tracking_code,
           consignment_id: data.consignment?.consignment_id,
-        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        });
       }
-      return new Response(JSON.stringify({ success: false, error: data.message || data.errors || 'Failed' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      
+      return createResponse({ success: false, error: data.message || 'Failed to create parcel' });
     }
 
     if (action === 'track-status') {
-      if (!settings?.enabled) {
-        return new Response(JSON.stringify({ success: false, error: 'Steadfast not enabled' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      const { consignment_id, order_id } = await req.json();
+      const { consignment_id, order_id } = body;
       if (!consignment_id) {
-        return new Response(JSON.stringify({ success: false, error: 'Consignment ID required' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return createResponse({ success: false, error: 'Consignment ID required' });
       }
 
       const res = await fetch(`${settings.api_base_url}/status_by_cid/${consignment_id}`, {
-        headers: { 'Api-Key': settings.api_key, 'Secret-Key': settings.api_secret, 'Content-Type': 'application/json' },
+        headers: { 
+          'Api-Key': settings.api_key, 
+          'Secret-Key': settings.api_secret, 
+          'Content-Type': 'application/json' 
+        },
       });
+
       const resText = await res.text();
       let data: any;
       try { data = JSON.parse(resText); } catch {
-        return new Response(JSON.stringify({ success: false, error: 'Invalid response from Steadfast API: ' + resText.substring(0, 200) }), {
-          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return createResponse({ success: false, error: 'Invalid response from courier tracking.' });
       }
-
-      await supabase.from('courier_logs').insert({
-        order_id, provider: 'steadfast', action: 'track_status',
-        status: res.ok ? 'success' : 'failed', message: data.delivery_status || '',
-        request_payload: { consignment_id }, response_payload: data,
-      });
 
       if (res.ok && data.status === 200) {
         let courierStatus = 'created';
         const ds = data.delivery_status?.toLowerCase();
         if (ds === 'delivered') courierStatus = 'delivered';
         else if (ds === 'cancelled') courierStatus = 'cancelled';
-        else if (ds === 'pending' || ds === 'in_review') courierStatus = 'pending';
+        else if (ds === 'pending') courierStatus = 'pending';
         else if (ds) courierStatus = 'in_transit';
 
-        const updateData: Record<string, any> = { courier_status: courierStatus, courier_updated_at: new Date().toISOString() };
-        if (courierStatus === 'delivered') updateData.status = 'delivered';
-        else if (courierStatus === 'in_transit') updateData.status = 'shipped';
-        
-        await supabase.from('orders').update(updateData).eq('id', order_id);
+        await supabase.from('orders').update({ 
+          courier_status: courierStatus, 
+          courier_updated_at: new Date().toISOString() 
+        }).eq('id', order_id);
 
-        return new Response(JSON.stringify({ 
-          success: true, courier_status: courierStatus, delivery_status: data.delivery_status 
-        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        return createResponse({ 
+          success: true, 
+          courier_status: courierStatus, 
+          delivery_status: data.delivery_status 
+        });
       }
-      return new Response(JSON.stringify({ success: false, error: data.message || 'Failed' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createResponse({ success: false, error: data.message || 'Failed to track status' });
     }
 
-    if (action === 'get-settings') {
-      return new Response(JSON.stringify({ 
-        success: true,
-        settings: settings ? {
-          enabled: settings.enabled, api_base_url: settings.api_base_url,
-          pickup_address: settings.pickup_address, pickup_phone: settings.pickup_phone,
-          default_weight: settings.default_weight, cod_enabled: settings.cod_enabled,
-          has_api_key: !!settings.api_key, has_api_secret: !!settings.api_secret,
-        } : null
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
+    return createResponse({ error: 'Unknown action' });
 
-    return new Response(JSON.stringify({ error: 'Unknown action' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Server Error: ' + error.message,
+      technical_details: error.stack
+    }), {
+      status: 200, // Still return 200 to see the message
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2, Palette, Server, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Save, RotateCcw, Globe, Languages, DollarSign, Clock, Store, Mail, Phone, MapPin, Share2, Megaphone, CheckCircle, XCircle, Loader2, Palette, Server, Eye, EyeOff, ShieldCheck, Truck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useSiteSettings, useUpdateSiteSettings } from '@/contexts/SiteSettingsContext';
 import { useStoreSettings, useUpdateStoreSettings } from '@/hooks/useStoreSettings';
@@ -12,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { validatePixelId, testPixelConnection, testCapiEvent } from '@/lib/facebook-pixel';
 import { supabase } from '@/integrations/supabase/client';
+import { useCourierSettings, useSaveCourierSettings, useTestCourierConnection } from '@/hooks/useCourierSettings';
 import {
   Command,
   CommandEmpty,
@@ -102,6 +104,24 @@ export default function AdminSettings() {
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [showTokenValue, setShowTokenValue] = useState(false);
   const [tokenLastUpdated, setTokenLastUpdated] = useState<string | null>(null);
+
+  // Courier states
+  const { data: courierSettings, isLoading: courierLoading } = useCourierSettings('steadfast');
+  const saveCourierSettings = useSaveCourierSettings();
+  const testCourierConnection = useTestCourierConnection();
+  const [courierStatus, setCourierStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [courierFormData, setCourierFormData] = useState({
+    enabled: false,
+    api_base_url: 'https://portal.packzy.com/api/v1',
+    api_key: '',
+    api_secret: '',
+    merchant_id: '',
+    pickup_address: '',
+    pickup_phone: '',
+    default_weight: 0.5,
+    cod_enabled: true,
+    show_tracking_to_customer: false,
+  });
 
   // Fetch CAPI token status on mount
   const fetchTokenStatus = useCallback(async () => {
@@ -225,6 +245,24 @@ export default function AdminSettings() {
       });
     }
   }, [settings]);
+
+  // Update courier form when settings load
+  useEffect(() => {
+    if (courierSettings) {
+      setCourierFormData({
+        enabled: courierSettings.enabled,
+        api_base_url: courierSettings.api_base_url || 'https://portal.packzy.com/api/v1',
+        api_key: courierSettings.api_key || '',
+        api_secret: courierSettings.api_secret || '',
+        merchant_id: courierSettings.merchant_id || '',
+        pickup_address: courierSettings.pickup_address || '',
+        pickup_phone: courierSettings.pickup_phone || '',
+        default_weight: courierSettings.default_weight || 0.5,
+        cod_enabled: courierSettings.cod_enabled,
+        show_tracking_to_customer: courierSettings.show_tracking_to_customer,
+      });
+    }
+  }, [courierSettings]);
 
   // Update store data when loaded
   useEffect(() => {
@@ -417,7 +455,36 @@ export default function AdminSettings() {
     { code: 'bn', name: 'Bangla', nativeName: 'বাংলা' },
   ];
 
-  const isLoading = siteLoading || storeLoading;
+  const handleCourierSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await saveCourierSettings.mutateAsync({
+        provider: 'steadfast',
+        ...courierFormData,
+      });
+    } catch (error) {
+      // toast handled in hook
+    }
+  };
+
+  const handleTestCourier = async () => {
+    setCourierStatus('idle');
+    try {
+      const result = await testCourierConnection.mutateAsync('steadfast');
+      if (result.success) {
+        setCourierStatus('success');
+        toast.success(`Connected! Balance: ${result.balance || 'N/A'} BDT`);
+      } else {
+        setCourierStatus('error');
+        toast.error(result.error || 'Connection failed');
+      }
+    } catch (error: any) {
+      setCourierStatus('error');
+      toast.error(error.message || 'Connection failed');
+    }
+  };
+
+  const isLoading = siteLoading || storeLoading || courierLoading;
 
   if (isLoading) {
     return (
@@ -436,7 +503,7 @@ export default function AdminSettings() {
       <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('admin.settingsTitle')}</h1>
 
       <Tabs defaultValue="store" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
+        <TabsList className="grid w-full grid-cols-5 lg:w-[900px]">
           <TabsTrigger value="store" className="gap-2">
             <Store className="h-4 w-4" />
             Store Info
@@ -452,6 +519,10 @@ export default function AdminSettings() {
           <TabsTrigger value="marketing" className="gap-2">
             <Megaphone className="h-4 w-4" />
             Marketing
+          </TabsTrigger>
+          <TabsTrigger value="courier" className="gap-2">
+            <Truck className="h-4 w-4" />
+            Courier
           </TabsTrigger>
         </TabsList>
 
@@ -1494,6 +1565,167 @@ export default function AdminSettings() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateSettings.isPending ? 'Saving...' : 'Save Marketing Settings'}
               </Button>
+            </div>
+          </form>
+        </TabsContent>
+        
+        {/* Courier Settings Tab */}
+        <TabsContent value="courier">
+          <form onSubmit={handleCourierSubmit} className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6 font-shop">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-6 w-6 text-accent" />
+                  <div>
+                    <h2 className="text-xl font-bold">Steadfast Courier</h2>
+                    <p className="text-sm text-muted-foreground">Configure Steadfast courier integration for order delivery</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Label htmlFor="courier_enabled" className="text-sm font-medium">Enable Integration</Label>
+                  <Switch
+                    id="courier_enabled"
+                    checked={courierFormData.enabled}
+                    onCheckedChange={(checked) => setCourierFormData({ ...courierFormData, enabled: checked })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">API Credentials</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="courier_api_base_url">API Base URL</Label>
+                    <Input
+                      id="courier_api_base_url"
+                      value={courierFormData.api_base_url}
+                      onChange={(e) => setCourierFormData({ ...courierFormData, api_base_url: e.target.value })}
+                      placeholder="https://portal.steadfast.com.bd/api/v1"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="courier_api_key">API Key</Label>
+                    <Input
+                      id="courier_api_key"
+                      type="password"
+                      value={courierFormData.api_key}
+                      onChange={(e) => setCourierFormData({ ...courierFormData, api_key: e.target.value })}
+                      placeholder="Enter API key"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="courier_api_secret">API Secret</Label>
+                    <Input
+                      id="courier_api_secret"
+                      type="password"
+                      value={courierFormData.api_secret}
+                      onChange={(e) => setCourierFormData({ ...courierFormData, api_secret: e.target.value })}
+                      placeholder="Enter API secret"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Store Info</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="courier_merchant_id">Merchant ID (Optional)</Label>
+                    <Input
+                      id="courier_merchant_id"
+                      value={courierFormData.merchant_id}
+                      onChange={(e) => setCourierFormData({ ...courierFormData, merchant_id: e.target.value })}
+                      placeholder="Your Steadfast merchant ID"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="courier_pickup_address">Pickup Address</Label>
+                    <Input
+                      id="courier_pickup_address"
+                      value={courierFormData.pickup_address}
+                      onChange={(e) => setCourierFormData({ ...courierFormData, pickup_address: e.target.value })}
+                      placeholder="Store warehouse address"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="courier_pickup_phone">Pickup Phone</Label>
+                    <Input
+                      id="courier_pickup_phone"
+                      value={courierFormData.pickup_phone}
+                      onChange={(e) => setCourierFormData({ ...courierFormData, pickup_phone: e.target.value })}
+                      placeholder="+880..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-border">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Options</h3>
+                  
+                  <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                    <div>
+                      <Label htmlFor="courier_cod">Enable COD</Label>
+                      <p className="text-xs text-muted-foreground">Cash on Delivery orders</p>
+                    </div>
+                    <Switch
+                      id="courier_cod"
+                      checked={courierFormData.cod_enabled}
+                      onCheckedChange={(checked) => setCourierFormData({ ...courierFormData, cod_enabled: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                    <div>
+                      <Label htmlFor="courier_tracking">Show Tracking</Label>
+                      <p className="text-xs text-muted-foreground">Show tracking to customers</p>
+                    </div>
+                    <Switch
+                      id="courier_tracking"
+                      checked={courierFormData.show_tracking_to_customer}
+                      onCheckedChange={(checked) => setCourierFormData({ ...courierFormData, show_tracking_to_customer: checked })}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-end gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleTestCourier}
+                    disabled={testCourierConnection.isPending || !courierFormData.api_key}
+                  >
+                    {testCourierConnection.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : courierStatus === 'success' ? (
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                    ) : courierStatus === 'error' ? (
+                      <XCircle className="h-4 w-4 mr-2 text-red-500" />
+                    ) : (
+                      <Zap className="h-4 w-4 mr-2 text-accent" />
+                    )}
+                    Test Connection
+                  </Button>
+                  
+                  <Button
+                    type="submit"
+                    className="w-full btn-accent"
+                    disabled={saveCourierSettings.isPending}
+                  >
+                    {saveCourierSettings.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Save Courier Settings
+                  </Button>
+                </div>
+              </div>
             </div>
           </form>
         </TabsContent>

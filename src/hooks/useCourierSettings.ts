@@ -84,7 +84,8 @@ export const useTestCourierConnection = () => {
     mutationFn: async (provider: string) => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      const response = await supabase.functions.invoke('steadfast-courier/test-connection', {
+      const response = await supabase.functions.invoke('steadfast-courier', {
+        body: { action: 'test-connection' },
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
@@ -112,8 +113,8 @@ export const useCreateCourierParcel = () => {
     }) => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      const response = await supabase.functions.invoke('steadfast-courier/create-parcel', {
-        body: payload,
+      const response = await supabase.functions.invoke('steadfast-courier', {
+        body: { ...payload, action: 'create-parcel' },
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
@@ -140,8 +141,8 @@ export const useTrackCourierStatus = () => {
     mutationFn: async (payload: { consignment_id: string; order_id: string }) => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      const response = await supabase.functions.invoke('steadfast-courier/track-status', {
-        body: payload,
+      const response = await supabase.functions.invoke('steadfast-courier', {
+        body: { ...payload, action: 'track-status' },
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
