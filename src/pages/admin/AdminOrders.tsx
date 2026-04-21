@@ -138,10 +138,22 @@ export default function AdminOrders() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">{t('admin.orders')}</h1>
-        <Button variant="outline" size="sm" onClick={() => refetch()}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSyncAll}
+            disabled={isSyncing}
+            className="hidden sm:flex"
+          >
+            {isSyncing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Truck className="h-4 w-4 mr-2" />}
+            Sync Courier
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
